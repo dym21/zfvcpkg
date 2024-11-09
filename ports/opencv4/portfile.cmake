@@ -39,6 +39,7 @@ vcpkg_from_github(
       "${ARM64_WINDOWS_FIX}"
       0022-fix-supportqnx.patch
       "${CUDA_12_4_FIX}"
+	  0001-disable-openmp-tbb.patch
 )
 # Disallow accidental build of vendored copies
 file(REMOVE_RECURSE "${SOURCE_PATH}/3rdparty/openexr")
@@ -503,6 +504,7 @@ vcpkg_cmake_configure(
         ${ADDITIONAL_BUILD_FLAGS}
         -DBUILD_IPP_IW=${WITH_IPP}
         -DOPENCV_LAPACK_FIND_PACKAGE_ONLY=ON
+		-DOPENCV_DISABLE_THREAD_SUPPORT=OFF
 )
 
 vcpkg_cmake_install()
