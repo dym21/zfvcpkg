@@ -1,0 +1,25 @@
+From fb4a2fa47e51d13a204473b1582ca4e3d2b82bac Mon Sep 17 00:00:00 2001
+From: dym21 <dym21@163.com>
+Date: Wed, 30 Oct 2024 20:04:17 +0800
+Subject: [PATCH] fix-test-link-error
+
+---
+ CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index a570264..e631835 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -71,7 +71,7 @@ install(
+ 
+ add_subdirectory(src)
+ add_subdirectory(doc)
+-add_subdirectory(test)
++#add_subdirectory(test)
+ 
+ ######## Exported targets
+ 
+-- 
+2.45.1.windows.1
+

@@ -1,0 +1,58 @@
+From d724ddebd7e364e3c23854714b7940ff93967202 Mon Sep 17 00:00:00 2001
+From: dym21 <dym21@163.com>
+Date: Mon, 4 Nov 2024 17:25:27 +0800
+Subject: [PATCH] disable-openmp-tbb
+
+---
+ .../core/cmake/parallel/detect_openmp.cmake   | 19 ++++++++++---------
+ modules/core/src/parallel.cpp                 |  6 +++---
+ 2 files changed, 13 insertions(+), 12 deletions(-)
+
+diff --git a/modules/core/cmake/parallel/detect_openmp.cmake b/modules/core/cmake/parallel/detect_openmp.cmake
+index 39c050c..927d045 100644
+--- a/modules/core/cmake/parallel/detect_openmp.cmake
++++ b/modules/core/cmake/parallel/detect_openmp.cmake
+@@ -2,12 +2,13 @@ if(CMAKE_VERSION VERSION_LESS "3.9")
+   message(STATUS "OpenMP detection requires CMake 3.9+")  # OpenMP::OpenMP_CXX target
+ endif()
+ 
+-find_package(OpenMP)
+-if(OpenMP_FOUND)
+-  if(TARGET OpenMP::OpenMP_CXX)
+-    set(HAVE_OPENMP 1)
+-    ocv_add_external_target(openmp "" "OpenMP::OpenMP_CXX" "HAVE_OPENMP=1")
+-  else()
+-    message(WARNING "OpenMP: missing OpenMP::OpenMP_CXX target")
+-  endif()
+-endif()
++# find_package(OpenMP)
++# if(OpenMP_FOUND)
++#   if(TARGET OpenMP::OpenMP_CXX)
++#     set(HAVE_OPENMP 1)
++#     ocv_add_external_target(openmp "" "OpenMP::OpenMP_CXX" "HAVE_OPENMP=1")
++#   else()
++#     message(WARNING "OpenMP: missing OpenMP::OpenMP_CXX target")
++#   endif()
++# endif()
++set(HAVE_OPENMP 0)
+\ No newline at end of file
+diff --git a/modules/core/src/parallel.cpp b/modules/core/src/parallel.cpp
+index 2b7a75c..5dd1477 100644
+--- a/modules/core/src/parallel.cpp
++++ b/modules/core/src/parallel.cpp
+@@ -84,9 +84,9 @@
+     #define HAVE_GCD
+ #endif
+ 
+-#if defined _MSC_VER && _MSC_VER >= 1600
+-    #define HAVE_CONCURRENCY
+-#endif
++//#if defined _MSC_VER && _MSC_VER >= 1600
++//    #define HAVE_CONCURRENCY
++//#endif
+ 
+ /* IMPORTANT: always use the same order of defines
+    - HAVE_TBB         - 3rdparty library, should be explicitly enabled
+-- 
+2.45.1.windows.1
+

@@ -1,0 +1,28 @@
+From 8b7d1c43df90e6483c94f0c197bdb666827f0d86 Mon Sep 17 00:00:00 2001
+From: dym21 <dym21@163.com>
+Date: Wed, 30 Oct 2024 18:36:52 +0800
+Subject: [PATCH] fix-sw64-error
+
+---
+ src/error.cpp | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/error.cpp b/src/error.cpp
+index b978c3a..3d8a4e7 100644
+--- a/src/error.cpp
++++ b/src/error.cpp
+@@ -124,9 +124,11 @@ struct exit_code_category final : public error_category
+ #            if defined(SIGPROF)
+                     case SIGPROF: return "SIGPROF:   Profiling timer expired";
+ #            endif
++#ifndef __sw_64
+ #            if defined(SIGPWR)
+                     case SIGPWR: return "SIGPWR:    Power failure (System V)";
+ #            endif
++#endif
+ #            if defined(SIGQUIT)
+                     case SIGQUIT: return "SIGQUIT:   Quit from keyboard";
+ #            endif
+-- 
+2.45.1.windows.1
+
