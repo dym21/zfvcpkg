@@ -1,0 +1,39 @@
+From 90642db749b0d0913000f3ae6771cf070343f649 Mon Sep 17 00:00:00 2001
+From: Your Name <you@example.com>
+Date: Tue, 19 Nov 2024 18:18:36 +0800
+Subject: [PATCH] fix-sw64-error
+
+---
+ Source/FreeImage/NNQuantizer.cpp | 2 +-
+ Source/Quantizers.h              | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Source/FreeImage/NNQuantizer.cpp b/Source/FreeImage/NNQuantizer.cpp
+index f907c41..cdba5c8 100644
+--- a/Source/FreeImage/NNQuantizer.cpp
++++ b/Source/FreeImage/NNQuantizer.cpp
+@@ -272,7 +272,7 @@ int NNQuantizer::contest(int b, int g, int r) {
+ 		*f++ -= betafreq;
+ 		*p++ += (betafreq << gammashift);
+ 	}
+-	freq[bestpos] += beta;
++	freq[bestpos] += beta_;
+ 	bias[bestpos] -= betagamma;
+ 	return bestbiaspos;
+ }
+diff --git a/Source/Quantizers.h b/Source/Quantizers.h
+index 7591c9b..6061362 100644
+--- a/Source/Quantizers.h
++++ b/Source/Quantizers.h
+@@ -111,7 +111,7 @@ static const int gammashift = 10;
+ // static const int gamma = (((int)1) << gammashift);
+ /// beta = 1 / 1024
+ static const int betashift = 10;
+-static const int beta = (intbias >> betashift);
++static const int beta_ = (intbias >> betashift);
+ static const int betagamma = (intbias << (gammashift-betashift));
+ //@}
+ 
+-- 
+2.20.1
+

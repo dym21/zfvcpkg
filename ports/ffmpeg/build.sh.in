@@ -2,6 +2,23 @@
 
 set -e
 
+if [[ "$OSTYPE"  == "msys" ]]; then
+	export PATH="/usr/bin:$PATH"
+else
+	export PATH="$PATH:/usr/bin"
+fi
+
+command -v cygpath >/dev/null && have_cygpath=1
+
+cygpath() {
+    if [ -n "$have_cygpath" ]; then
+        command cygpath "$@"
+    else
+        eval _p='$'$#
+        printf '%s\n' "$_p"
+    fi
+}
+
 move_binary() {
     SOURCE=$1
     TARGET=$2

@@ -8,6 +8,7 @@ vcpkg_from_gitlab(
     PATCHES
         fix-uwp-build.patch
         fix-config-error.patch
+		0001-fix-test-link-error.patch
 )
 
 
@@ -21,12 +22,10 @@ string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "static" BUILD_STATIC)
 
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
-    OPTIONS_DEBUG
-        -DBUILD_BINARY=OFF
-    OPTIONS_RELEASE
-        ${FEATURE_OPTIONS}
     OPTIONS
         -DBUILD_STATIC=${BUILD_STATIC}
+		-DBUILD_BINARY=OFF
+		-DBUILD_SHARED_LIBS=OFF
 )
 
 vcpkg_cmake_install()

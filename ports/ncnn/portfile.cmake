@@ -23,6 +23,7 @@ vcpkg_cmake_configure(
         -DNCNN_BUILD_TOOLS=OFF
         -DNCNN_BUILD_EXAMPLES=OFF
         -DNCNN_BUILD_BENCHMARK=OFF
+		-DNCNN_OPENMP=OFF
         -DNCNN_SHARED_LIB=${BUILD_SHARED}
 )
 

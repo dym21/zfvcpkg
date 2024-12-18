@@ -173,6 +173,9 @@ function(z_vcpkg_get_build_and_host_system build_system host_system is_cross) #h
         elseif(MACHINE MATCHES "loongarch64")
             set(build_cpu_fam loongarch64)
             set(build_cpu loongarch64)
+        elseif(MACHINE MATCHES "sw_64")
+            set(build_cpu_fam sw_64)
+            set(build_cpu sw_64)
         else()
             # https://github.com/mesonbuild/meson/blob/master/docs/markdown/Reference-tables.md#cpu-families
             if(NOT DEFINED VCPKG_MESON_CROSS_FILE OR NOT DEFINED VCPKG_MESON_NATIVE_FILE)
@@ -227,6 +230,9 @@ function(z_vcpkg_get_build_and_host_system build_system host_system is_cross) #h
     elseif(VCPKG_TARGET_ARCHITECTURE MATCHES "loongarch64")
         set(host_cpu_fam loongarch64)
         set(host_cpu loongarch64)
+    elseif(MACHINE MATCHES "sw_64")
+            set(build_cpu_fam sw_64)
+            set(build_cpu sw_64)
     elseif(VCPKG_TARGET_ARCHITECTURE MATCHES "wasm32")
         set(host_cpu_fam wasm32)
         set(host_cpu wasm32)
@@ -394,7 +400,7 @@ function(vcpkg_configure_meson)
     if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic")
         set(MESON_DEFAULT_LIBRARY shared)
     else()
-        set(MESON_DEFAULT_LIBRARY static)
+        set(MESON_DEFAULT_LIBRARY shared)
     endif()
 
     vcpkg_list(APPEND arg_OPTIONS --libdir lib) # else meson install into an architecture describing folder

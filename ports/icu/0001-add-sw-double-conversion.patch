@@ -1,0 +1,25 @@
+From c41e9f9c66017e2446f3e8aaf1152baa48ce8cfc Mon Sep 17 00:00:00 2001
+From: Your Name <you@example.com>
+Date: Tue, 3 Dec 2024 10:15:23 +0800
+Subject: [PATCH] add-sw-double-conversion
+
+---
+ source/i18n/double-conversion-utils.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/source/i18n/double-conversion-utils.h b/source/i18n/double-conversion-utils.h
+index 303668f..7fe6736 100644
+--- a/source/i18n/double-conversion-utils.h
++++ b/source/i18n/double-conversion-utils.h
+@@ -159,7 +159,7 @@ int main(int argc, char** argv) {
+     defined(__AARCH64EL__) || defined(__aarch64__) || defined(__AARCH64EB__) || \
+     defined(__riscv) || defined(__e2k__) || \
+     defined(__or1k__) || defined(__arc__) || defined(__ARC64__) || \
+-    defined(__microblaze__) || defined(__XTENSA__) || \
++    defined(__microblaze__) || defined(__XTENSA__) || defined(__sw_64__) || \ 
+     defined(__EMSCRIPTEN__) || defined(__wasm32__)
+ #define DOUBLE_CONVERSION_CORRECT_DOUBLE_OPERATIONS 1
+ #elif defined(__mc68000__) || \
+-- 
+2.20.1
+

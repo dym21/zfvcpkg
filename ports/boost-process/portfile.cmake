@@ -8,6 +8,7 @@ vcpkg_from_github(
     HEAD_REF master
     PATCHES
         opt-filesystem.patch
+		0001-fix-sw64-error.patch
         
 )
 

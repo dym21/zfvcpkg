@@ -1,0 +1,28 @@
+From 74b00ea613a63940c96708b7a25e4c1485a48c63 Mon Sep 17 00:00:00 2001
+From: dym21 <dym21@163.com>
+Date: Tue, 3 Dec 2024 10:57:44 +0800
+Subject: [PATCH] fix-aarch64-error
+
+---
+ libavutil/aarch64/cpu.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/libavutil/aarch64/cpu.c b/libavutil/aarch64/cpu.c
+index 7631d13..c9a672e 100644
+--- a/libavutil/aarch64/cpu.c
++++ b/libavutil/aarch64/cpu.c
+@@ -32,7 +32,11 @@ static int detect_flags(void)
+     int flags = 0;
+ 
+     unsigned long hwcap = ff_getauxval(AT_HWCAP);
++#ifdef AT_HWCAP2
+     unsigned long hwcap2 = ff_getauxval(AT_HWCAP2);
++#else
++    unsigned long hwcap2 = 0;
++#endif
+ 
+     if (hwcap & HWCAP_AARCH64_ASIMDDP)
+         flags |= AV_CPU_FLAG_DOTPROD;
+-- 
+2.45.1.windows.1
+

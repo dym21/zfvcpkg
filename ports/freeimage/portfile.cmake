@@ -21,6 +21,7 @@ vcpkg_from_sourceforge(
         remove_auto_ptr.patch
         rawlib-build-fix.patch
         typedef-xcode.patch
+		0001-fix-sw64-error.patch
 )
 
 file(COPY "${CMAKE_CURRENT_LIST_DIR}/CMakeLists.txt"

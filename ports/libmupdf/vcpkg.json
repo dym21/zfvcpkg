@@ -8,7 +8,6 @@
   "dependencies": [
     "curl",
     "freetype",
-    "glfw3",
     "gumbo",
     "harfbuzz",
     "jbig2dec",
@@ -18,7 +17,12 @@
       "name": "vcpkg-cmake",
       "host": true
     },
-    "zlib"
+    "zlib",
+	{
+      "name": "vcpkg-msbuild",
+      "host": true,
+      "platform": "windows"
+    }
   ],
   "features": {
     "ocr": {

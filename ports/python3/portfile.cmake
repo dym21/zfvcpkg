@@ -276,6 +276,8 @@ else()
     if(VCPKG_TARGET_IS_OSX)
         list(APPEND OPTIONS "LIBS=-liconv -lintl")
     endif()
+	
+	list(APPEND OPTIONS "LIBS=-lpthread")
 
     if("readline" IN_LIST FEATURES)
         list(APPEND OPTIONS "--with-readline")

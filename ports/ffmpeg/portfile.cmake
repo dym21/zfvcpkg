@@ -17,6 +17,8 @@ vcpkg_from_github(
         0040-ffmpeg-add-av_stream_get_first_dts-for-chromium.patch # Do not remove this patch. It is required by chromium
         0041-add-const-for-opengl-definition.patch
         0043-fix-miss-head.patch
+		0001-fix-c11-flag.patch
+		0001-fix-aarch64-error.patch
 )
 
 if(SOURCE_PATH MATCHES " ")
@@ -51,6 +53,10 @@ elseif(VCPKG_CMAKE_SYSTEM_NAME STREQUAL "Android")
     string(APPEND OPTIONS " --target-os=android --enable-jni --enable-mediacodec")
 elseif(VCPKG_CMAKE_SYSTEM_NAME STREQUAL "QNX")
     string(APPEND OPTIONS " --target-os=qnx")
+endif()
+
+if(VCPKG_TARGET_ARCHITECTURE STREQUAL "mips64")
+	string(APPEND OPTIONS " --disable-inline-asm --disable-asm")
 endif()
 
 if(VCPKG_TARGET_IS_OSX)

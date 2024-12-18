@@ -23,16 +23,6 @@
       "version>=": "1.86.0"
     },
     {
-      "name": "boost-context",
-      "platform": "!uwp & !emscripten",
-      "version>=": "1.86.0"
-    },
-    {
-      "name": "boost-coroutine",
-      "platform": "!(arm & windows) & !uwp & !emscripten",
-      "version>=": "1.86.0"
-    },
-    {
       "name": "boost-date-time",
       "version>=": "1.86.0"
     },

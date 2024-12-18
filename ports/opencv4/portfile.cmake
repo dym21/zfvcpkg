@@ -427,18 +427,16 @@ vcpkg_cmake_configure(
         -DCV_ENABLE_INTRINSICS=${CV_ENABLE_INTRINSICS}
         ###### Additional build flags
         ${ADDITIONAL_BUILD_FLAGS}
-<<<<<<< HEAD
         -DBUILD_IPP_IW=${WITH_IPP}
         -DOPENCV_LAPACK_FIND_PACKAGE_ONLY=ON
 		-DOPENCV_DISABLE_THREAD_SUPPORT=OFF
-=======
+		-DWITH_DIRECTML=OFF
     OPTIONS_RELEASE
         ###### Python install path
         ${PYTHON_EXTRA_DEFINES_RELEASE}
     OPTIONS_DEBUG
         ###### Python install path
         ${PYTHON_EXTRA_DEFINES_DEBUG}
->>>>>>> upstream/master
 )
 
 vcpkg_cmake_install()

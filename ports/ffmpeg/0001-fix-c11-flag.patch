@@ -1,0 +1,339 @@
+From 8b843169f9f3a23b05a54b8019d018567d950510 Mon Sep 17 00:00:00 2001
+From: dym21 <dym21@163.com>
+Date: Mon, 18 Nov 2024 19:57:51 +0800
+Subject: [PATCH] fix-c11-flag
+
+---
+ configure                           | 23 +++++------------------
+ libavcodec/arm/mpegvideo_arm.c      |  8 ++++++++
+ libavcodec/ccaption_dec.c           |  8 ++++++++
+ libavcodec/version.c                |  9 +++++++++
+ libavdevice/version.c               |  9 +++++++++
+ libavfilter/version.c               |  9 +++++++++
+ libavfilter/vf_yadif_videotoolbox.m |  8 ++++++++
+ libavformat/img2.c                  |  9 +++++++++
+ libavformat/mov_chan.c              |  9 +++++++++
+ libavformat/version.c               |  9 +++++++++
+ libavutil/hash.c                    |  9 +++++++++
+ libavutil/version.c                 |  9 +++++++++
+ libpostproc/version.c               |  8 ++++++++
+ libswresample/version.c             |  9 +++++++++
+ libswscale/version.c                |  8 ++++++++
+ 15 files changed, 126 insertions(+), 18 deletions(-)
+
+diff --git a/configure b/configure
+index d77a55b..1085f07 100644
+--- a/configure
++++ b/configure
+@@ -5623,28 +5623,15 @@ if test "$?" != 0; then
+     die "C compiler test failed."
+ fi
+ 
+-add_cppflags -D_ISOC11_SOURCE
++add_cppflags -D_ISOC99_SOURCE
+ add_cxxflags -D__STDC_CONSTANT_MACROS
+-check_cxxflags_cc -std=$stdcxx ctype.h "__cplusplus >= 201103L" ||
+-    { check_cxxflags -std=c++11 && stdcxx="c++11" || { check_cxxflags -std=c++0x && stdcxx="c++0x"; }; }
++check_cxxflags -std=c++11 || check_cxxflags -std=c++0x
+ 
+ # some compilers silently accept -std=c11, so we also need to check that the
+ # version macro is defined properly
+-check_cflags_cc -std=$stdc ctype.h "__STDC_VERSION__ >= 201112L" ||
+-    { check_cflags_cc -std=c11 ctype.h "__STDC_VERSION__ >= 201112L" && stdc="c11" || die "Compiler lacks C11 support"; }
+-
+-test_cc <<EOF || die "Compiler lacks support for C11 static assertions"
+-#include <assert.h>
+-#include <stddef.h>
+-struct Foo {
+-    int a;
+-    void *ptr;
+-} obj;
+-static_assert(offsetof(struct Foo, a) == 0,
+-              "First element of struct does not have offset 0");
+-_Static_assert(offsetof(struct Foo, ptr) >= offsetof(struct Foo, a) + sizeof(obj.a),
+-               "elements not properly ordered in struct");
+-EOF
++test_cflags_cc -std=c11 ctype.h "__STDC_VERSION__ >= 201112L" &&
++    add_cflags -std=c11 ||
++    check_cflags -std=c99
+ 
+ check_cppflags -D_FILE_OFFSET_BITS=64
+ check_cppflags -D_LARGEFILE_SOURCE
+diff --git a/libavcodec/arm/mpegvideo_arm.c b/libavcodec/arm/mpegvideo_arm.c
+index 28a3f2c..f6b8400 100644
+--- a/libavcodec/arm/mpegvideo_arm.c
++++ b/libavcodec/arm/mpegvideo_arm.c
+@@ -27,6 +27,14 @@
+ #include "mpegvideo_arm.h"
+ #include "asm-offsets.h"
+ 
++#ifndef static_assert
++#if (__GNUC__ >= 4 && __GNUC_MINOR__ >=6) || (__GNUC__ >= 5)
++#define static_assert(x, y) _Static_assert(x, y)
++#else
++#define static_assert(x, y)
++#endif
++#endif
++
+ #if HAVE_NEON
+ #define CHECK_OFFSET(s, m, o)          \
+     static_assert(offsetof(s, m) == o, \
+diff --git a/libavcodec/ccaption_dec.c b/libavcodec/ccaption_dec.c
+index d8b992b..0914cf8 100644
+--- a/libavcodec/ccaption_dec.c
++++ b/libavcodec/ccaption_dec.c
+@@ -25,6 +25,14 @@
+ #include "codec_internal.h"
+ #include "libavutil/opt.h"
+ 
++#ifndef static_assert
++#if (__GNUC__ >= 4 && __GNUC_MINOR__ >=6) || (__GNUC__ >= 5)
++#define static_assert(x, y) _Static_assert(x, y)
++#else
++#define static_assert(x, y)
++#endif
++#endif
++
+ #define SCREEN_ROWS 15
+ #define SCREEN_COLUMNS 32
+ 
+diff --git a/libavcodec/version.c b/libavcodec/version.c
+index 27f9432..e52c314 100644
+--- a/libavcodec/version.c
++++ b/libavcodec/version.c
+@@ -27,6 +27,15 @@
+ #include "version.h"
+ 
+ #include "libavutil/ffversion.h"
++
++#ifndef static_assert
++#if (__GNUC__ >= 4 && __GNUC_MINOR__ >=6) || (__GNUC__ >= 5)
++#define static_assert(x, y) _Static_assert(x, y)
++#else
++#define static_assert(x, y)
++#endif
++#endif
++
+ const char av_codec_ffversion[] = "FFmpeg version " FFMPEG_VERSION;
+ 
+ unsigned avcodec_version(void)
+diff --git a/libavdevice/version.c b/libavdevice/version.c
+index a058efe..57a97f7 100644
+--- a/libavdevice/version.c
++++ b/libavdevice/version.c
+@@ -26,6 +26,15 @@
+ #include "version.h"
+ 
+ #include "libavutil/ffversion.h"
++
++#ifndef static_assert
++#if (__GNUC__ >= 4 && __GNUC_MINOR__ >=6) || (__GNUC__ >= 5)
++#define static_assert(x, y) _Static_assert(x, y)
++#else
++#define static_assert(x, y)
++#endif
++#endif
++
+ const char av_device_ffversion[] = "FFmpeg version " FFMPEG_VERSION;
+ 
+ unsigned avdevice_version(void)
+diff --git a/libavfilter/version.c b/libavfilter/version.c
+index 54c2864..d43ee56 100644
+--- a/libavfilter/version.c
++++ b/libavfilter/version.c
+@@ -25,6 +25,15 @@
+ #include "version.h"
+ 
+ #include "libavutil/ffversion.h"
++
++#ifndef static_assert
++#if (__GNUC__ >= 4 && __GNUC_MINOR__ >=6) || (__GNUC__ >= 5)
++#define static_assert(x, y) _Static_assert(x, y)
++#else
++#define static_assert(x, y)
++#endif
++#endif
++
+ const char av_filter_ffversion[] = "FFmpeg version " FFMPEG_VERSION;
+ 
+ unsigned avfilter_version(void)
+diff --git a/libavfilter/vf_yadif_videotoolbox.m b/libavfilter/vf_yadif_videotoolbox.m
+index 09520db..53fc7f4 100644
+--- a/libavfilter/vf_yadif_videotoolbox.m
++++ b/libavfilter/vf_yadif_videotoolbox.m
+@@ -275,6 +275,14 @@ fail:
+     return AVERROR_EXTERNAL;
+ }
+ 
++#ifndef static_assert
++#if (__GNUC__ >= 4 && __GNUC_MINOR__ >=6) || (__GNUC__ >= 5)
++#define static_assert(x, y) _Static_assert(x, y)
++#else
++#define static_assert(x, y)
++#endif
++#endif
++
+ static av_cold int yadif_videotoolbox_init(AVFilterContext *ctx)
+ {
+     if (@available(macOS 10.11, iOS 8.0, *)) {
+diff --git a/libavformat/img2.c b/libavformat/img2.c
+index 9981867..b098b46 100644
+--- a/libavformat/img2.c
++++ b/libavformat/img2.c
+@@ -26,6 +26,15 @@
+ #include "internal.h"
+ #include "img2.h"
+ 
++#ifndef static_assert
++#if (__GNUC__ >= 4 && __GNUC_MINOR__ >=6) || (__GNUC__ >= 5)
++#define static_assert(x, y) _Static_assert(x, y)
++#else
++#define static_assert(x, y)
++#endif
++#endif
++
++
+ #define IMG_TAGS(TAG)               \
+     TAG(MJPEG,           jpeg     ) \
+     TAG(MJPEG,           jpg      ) \
+diff --git a/libavformat/mov_chan.c b/libavformat/mov_chan.c
+index 4484a22..d409597 100644
+--- a/libavformat/mov_chan.c
++++ b/libavformat/mov_chan.c
+@@ -32,6 +32,15 @@
+ #include "libavcodec/codec_id.h"
+ #include "mov_chan.h"
+ 
++#ifndef static_assert
++#if (__GNUC__ >= 4 && __GNUC_MINOR__ >=6) || (__GNUC__ >= 5)
++#define static_assert(x, y) _Static_assert(x, y)
++#else
++#define static_assert(x, y)
++#endif
++#endif
++
++
+ enum {
+     c_L      = AV_CHAN_FRONT_LEFT,
+     c_R      = AV_CHAN_FRONT_RIGHT,
+diff --git a/libavformat/version.c b/libavformat/version.c
+index c0781d3..84c9531 100644
+--- a/libavformat/version.c
++++ b/libavformat/version.c
+@@ -26,6 +26,15 @@
+ #include "version.h"
+ 
+ #include "libavutil/ffversion.h"
++
++#ifndef static_assert
++#if (__GNUC__ >= 4 && __GNUC_MINOR__ >=6) || (__GNUC__ >= 5)
++#define static_assert(x, y) _Static_assert(x, y)
++#else
++#define static_assert(x, y)
++#endif
++#endif
++
+ const char av_format_ffversion[] = "FFmpeg version " FFMPEG_VERSION;
+ 
+ unsigned avformat_version(void)
+diff --git a/libavutil/hash.c b/libavutil/hash.c
+index fbc2419..357046c 100644
+--- a/libavutil/hash.c
++++ b/libavutil/hash.c
+@@ -39,6 +39,15 @@
+ #include "intreadwrite.h"
+ #include "mem.h"
+ 
++#ifndef static_assert
++#if (__GNUC__ >= 4 && __GNUC_MINOR__ >=6) || (__GNUC__ >= 5)
++#define static_assert(x, y) _Static_assert(x, y)
++#else
++#define static_assert(x, y)
++#endif
++#endif
++
++
+ // ENTRY(HASH_TYPE, HASH_NAME, HASH_SIZE)
+ #define HASHES(ENTRY)                   \
+     ENTRY(MD5,        "MD5",        16) \
+diff --git a/libavutil/version.c b/libavutil/version.c
+index afab190..78d9452 100644
+--- a/libavutil/version.c
++++ b/libavutil/version.c
+@@ -26,6 +26,15 @@
+ #include "version.h"
+ 
+ #include "libavutil/ffversion.h"
++
++#ifndef static_assert
++#if (__GNUC__ >= 4 && __GNUC_MINOR__ >=6) || (__GNUC__ >= 5)
++#define static_assert(x, y) _Static_assert(x, y)
++#else
++#define static_assert(x, y)
++#endif
++#endif
++
+ const char av_util_ffversion[] = "FFmpeg version " FFMPEG_VERSION;
+ 
+ const char *av_version_info(void)
+diff --git a/libpostproc/version.c b/libpostproc/version.c
+index 304abe0..9c3fdcd 100644
+--- a/libpostproc/version.c
++++ b/libpostproc/version.c
+@@ -25,6 +25,14 @@
+ #include "version.h"
+ 
+ #include "libavutil/ffversion.h"
++
++#ifndef static_assert
++#if (__GNUC__ >= 4 && __GNUC_MINOR__ >=6) || (__GNUC__ >= 5)
++#define static_assert(x, y) _Static_assert(x, y)
++#else
++#define static_assert(x, y)
++#endif
++#endif
+ const char postproc_ffversion[] = "FFmpeg version " FFMPEG_VERSION;
+ 
+ unsigned postproc_version(void)
+diff --git a/libswresample/version.c b/libswresample/version.c
+index 40fbbab..6f802f2 100644
+--- a/libswresample/version.c
++++ b/libswresample/version.c
+@@ -25,6 +25,15 @@
+ #include "version.h"
+ 
+ #include "libavutil/ffversion.h"
++
++#ifndef static_assert
++#if (__GNUC__ >= 4 && __GNUC_MINOR__ >=6) || (__GNUC__ >= 5)
++#define static_assert(x, y) _Static_assert(x, y)
++#else
++#define static_assert(x, y)
++#endif
++#endif
++
+ const char swr_ffversion[] = "FFmpeg version " FFMPEG_VERSION;
+ 
+ unsigned swresample_version(void)
+diff --git a/libswscale/version.c b/libswscale/version.c
+index 31135f9..18aaea9 100644
+--- a/libswscale/version.c
++++ b/libswscale/version.c
+@@ -24,6 +24,14 @@
+ #include "swscale.h"
+ #include "version.h"
+ 
++#ifndef static_assert
++#if (__GNUC__ >= 4 && __GNUC_MINOR__ >=6) || (__GNUC__ >= 5)
++#define static_assert(x, y) _Static_assert(x, y)
++#else
++#define static_assert(x, y)
++#endif
++#endif
++
+ unsigned swscale_version(void)
+ {
+     static_assert(LIBSWSCALE_VERSION_MICRO >= 100, "micro version starts at 100");
+-- 
+2.45.1.windows.1
+

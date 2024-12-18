@@ -4,6 +4,8 @@ vcpkg_from_github(
     REF "v${VERSION}"
     SHA512 78f237ce5ec6a4f122d0609bf48c2a9dfcb701e3ce5587906050fbf32d2115dae1984e7cce0f554edda0bd7ec35e4c7aacfc3d1dfb51ea8aa9feebb7f2b3db59
     HEAD_REF main
+	PATCHES
+		0001-fix-std-filesystem-error.patch
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS OPTIONS

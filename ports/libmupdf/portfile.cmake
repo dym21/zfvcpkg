@@ -28,6 +28,17 @@ vcpkg_cmake_configure(
 
 vcpkg_cmake_install()
 
+if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x86")
+	vcpkg_install_msbuild(
+		SOURCE_PATH "${SOURCE_PATH}"
+		PROJECT_SUBPATH "platform/win32/mupdf.sln"
+		TARGET libresources
+		RELEASE_CONFIGURATION "Release"
+		DEBUG_CONFIGURATION "Debug"
+		PLATFORM Win32
+	)
+endif()
+
 file(COPY "${SOURCE_PATH}/include/mupdf" DESTINATION "${CURRENT_PACKAGES_DIR}/include")
 
 vcpkg_copy_pdbs()

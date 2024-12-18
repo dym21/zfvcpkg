@@ -34,6 +34,7 @@ endif()
 
 file(GLOB_RECURSE SOURCES "source/*.c" "generated/*.c" "source/*.h")
 list(FILTER SOURCES EXCLUDE REGEX "source/tools/[a-z]*\\.c$")
+list(FILTER SOURCES EXCLUDE REGEX "source/helpers/mu-office-lib/mu-office-lib.c")
 list(FILTER SOURCES EXCLUDE REGEX "source/tests/.*.c$")
 list(FILTER SOURCES EXCLUDE REGEX "source/fitz/output-docx.c")
 
@@ -43,17 +44,13 @@ endif()
 
 add_library(libmupdf ${SOURCES})
 
-if(WIN32)
-  target_compile_definitions(libmupdf PRIVATE -DSHARE_JPEG -DFZ_ENABLE_JS=0 -DFZ_ENABLE_ICC=0 -DMEMENTO_MUPDF_HACKS -DFZ_ENABLE_DOCX_OUTPUT=0 -DFZ_ENABLE_ODT_OUTPUT=0)
-else()
-  target_compile_definitions(libmupdf PRIVATE -DHAVE_PTHREAD=1 -DSHARE_JPEG -DFZ_ENABLE_JS=0 -DFZ_ENABLE_ICC=0 -DMEMENTO_MUPDF_HACKS -DFZ_ENABLE_DOCX_OUTPUT=0 -DFZ_ENABLE_ODT_OUTPUT=0)
-endif()
+target_compile_definitions(libmupdf PUBLIC -DSHARE_JPEG -DFZ_ENABLE_JS=0 -DFZ_ENABLE_ICC=0 -DMEMENTO_MUPDF_HACKS -DFZ_ENABLE_DOCX_OUTPUT=0 -DFZ_ENABLE_ODT_OUTPUT=0  -DFZ_ENABLE_HTML=0 -DFZ_ENABLE_EPUB=0 -DNOTO_SMALL)
 
 
 if (ENABLE_OCR)
-  target_compile_definitions(libmupdf PRIVATE -DHAVE_TESSERACT=1 -DHAVE_LEPTONICA=1)
+  target_compile_definitions(libmupdf PUBLIC -DHAVE_TESSERACT=1 -DHAVE_LEPTONICA=1)
 else()
-  target_compile_definitions(libmupdf PRIVATE -DOCR_DISABLED=1)
+  target_compile_definitions(libmupdf PUBLIC -DOCR_DISABLED=1)
 endif()
 
 target_include_directories(libmupdf
