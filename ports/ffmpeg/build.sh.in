@@ -2,17 +2,6 @@
 
 set -e
 
-command -v cygpath >/dev/null && have_cygpath=1
-
-cygpath() {
-    if [ -n "$have_cygpath" ]; then
-        command cygpath "$@"
-    else
-        eval _p='$'$#
-        printf '%s\n' "$_p"
-    fi
-}
-
 move_binary() {
     SOURCE=$1
     TARGET=$2

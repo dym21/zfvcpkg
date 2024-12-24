@@ -94,9 +94,7 @@ function(vcpkg_download_distfile out_var)
         "FILENAME;SHA512"
         "URLS;HEADERS"
     )
-	set(arg_SKIP_SHA512 1)
-	set(arg_SHA512 0)
-	set(arg_ALWAYS_REDOWNLOAD 0)
+
     if(NOT DEFINED arg_URLS)
         message(FATAL_ERROR "vcpkg_download_distfile requires a URLS argument.")
     endif()
@@ -110,12 +108,12 @@ function(vcpkg_download_distfile out_var)
         message(FATAL_ERROR "ALWAYS_REDOWNLOAD option requires SKIP_SHA512 as well")
     endif()
 
-    # if(NOT arg_SKIP_SHA512 AND NOT DEFINED arg_SHA512)
-        # message(FATAL_ERROR "vcpkg_download_distfile requires a SHA512 argument.
-# If you do not know the SHA512, add it as 'SHA512 0' and re-run this command.")
-    # elseif(arg_SKIP_SHA512 AND DEFINED arg_SHA512)
-        # message(FATAL_ERROR "vcpkg_download_distfile must not be passed both SHA512 and SKIP_SHA512.")
-    # endif()
+    if(NOT arg_SKIP_SHA512 AND NOT DEFINED arg_SHA512)
+        message(FATAL_ERROR "vcpkg_download_distfile requires a SHA512 argument.
+If you do not know the SHA512, add it as 'SHA512 0' and re-run this command.")
+    elseif(arg_SKIP_SHA512 AND DEFINED arg_SHA512)
+        message(FATAL_ERROR "vcpkg_download_distfile must not be passed both SHA512 and SKIP_SHA512.")
+    endif()
 
     if(_VCPKG_INTERNAL_NO_HASH_CHECK)
         set(arg_SKIP_SHA512 1)

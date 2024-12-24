@@ -65,6 +65,10 @@
           "default-features": false
         },
         {
+          "name": "libffi",
+          "default-features": false
+        },
+        {
           "name": "liblzma",
           "default-features": false
         },

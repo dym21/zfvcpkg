@@ -17,6 +17,7 @@
       ]
     },
     "gettext-libintl",
+    "libffi",
     "libiconv",
     "pcre2",
     {

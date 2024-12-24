@@ -41,7 +41,7 @@ function(vcpkg_install_meson)
     endforeach()
 
     vcpkg_list(SET renamed_libs)
-    if(VCPKG_TARGET_IS_WINDOWS)
+    if(VCPKG_TARGET_IS_WINDOWS AND VCPKG_LIBRARY_LINKAGE STREQUAL static AND NOT VCPKG_TARGET_IS_MINGW)
         # Meson names all static libraries lib<name>.a which basically breaks the world
         file(GLOB_RECURSE gen_libraries "${CURRENT_PACKAGES_DIR}*/**/lib*.a")
         foreach(gen_library IN LISTS gen_libraries)

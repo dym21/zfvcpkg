@@ -400,7 +400,7 @@ function(vcpkg_configure_meson)
     if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic")
         set(MESON_DEFAULT_LIBRARY shared)
     else()
-        set(MESON_DEFAULT_LIBRARY shared)
+        set(MESON_DEFAULT_LIBRARY static)
     endif()
 
     vcpkg_list(APPEND arg_OPTIONS --libdir lib) # else meson install into an architecture describing folder

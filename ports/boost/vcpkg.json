@@ -223,6 +223,10 @@
       "version>=": "1.86.0"
     },
     {
+      "name": "boost-interprocess",
+      "version>=": "1.86.0"
+    },
+    {
       "name": "boost-interval",
       "version>=": "1.86.0"
     },

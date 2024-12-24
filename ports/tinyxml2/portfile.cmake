@@ -14,9 +14,6 @@ vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS
         -Dtinyxml2_BUILD_TESTING=OFF
-		-DCMAKE_CXX_VISIBILITY_PRESET=hidden
-		-DCMAKE_VISIBILITY_INLINES_HIDDEN=ON
-		
 )
 
 vcpkg_cmake_install()
