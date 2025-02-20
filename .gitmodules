@@ -1,0 +1,3 @@
+[submodule "vcpkg-registry"]
+	path = vcpkg-registry
+	url = https://github.com/luncliff/vcpkg-registry.git

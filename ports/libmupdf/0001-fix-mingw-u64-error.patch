@@ -1,0 +1,25 @@
+From cc4d0954eaeb0309af808461c6e214bd874f90ef Mon Sep 17 00:00:00 2001
+From: "hxdx@hotmail.com" <hxdx>
+Date: Wed, 19 Feb 2025 14:12:41 +0800
+Subject: [PATCH] fix mingw u64 error
+
+---
+ source/fitz/time.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/source/fitz/time.c b/source/fitz/time.c
+index 26ab05d..ffe2b1f 100644
+--- a/source/fitz/time.c
++++ b/source/fitz/time.c
+@@ -34,7 +34,7 @@
+ 
+ #ifndef _WINRT
+ 
+-#define DELTA_EPOCH_IN_MICROSECS 11644473600000000Ui64
++#define DELTA_EPOCH_IN_MICROSECS 11644473600000000ULL
+ 
+ int gettimeofday(struct timeval *tv, struct timezone *tz)
+ {
+-- 
+2.45.1.windows.1
+
