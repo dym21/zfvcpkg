@@ -9,6 +9,7 @@ vcpkg_from_github(
     PATCHES
         dont-generate-extract-3rd-party-things.patch
         fix-NAN-on-Win11.patch # https://github.com/ArtifexSoftware/mupdf/pull/54
+		0001-fix-mingw-u64-error.patch
 )
 
 file(COPY "${CMAKE_CURRENT_LIST_DIR}/CMakeLists.txt" DESTINATION "${SOURCE_PATH}")
@@ -29,7 +30,7 @@ vcpkg_cmake_configure(
 
 vcpkg_cmake_install()
 
-if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x86")
+if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x86" AND NOT VCPKG_TARGET_IS_MINGW)
 	vcpkg_install_msbuild(
 		SOURCE_PATH "${SOURCE_PATH}"
 		PROJECT_SUBPATH "platform/win32/mupdf.sln"

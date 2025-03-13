@@ -17,6 +17,13 @@ else()
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
   )
 endif() 
+if(MINGW)
+find_program(MAKE_EXE NAMES make REQUIRED)
+execute_process(
+  COMMAND ${MAKE_EXE} "generate"
+  WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+)
+endif()
 
 
 find_package(freetype NO_MODULE REQUIRED)
@@ -32,6 +39,12 @@ if (ENABLE_OCR)
   find_package(Tesseract CONFIG REQUIRED)
 endif()
 
+if(MINGW)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=native")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
+	add_definitions(-DUi64=ULL)
+endif()
+
 file(GLOB_RECURSE SOURCES "source/*.c" "generated/*.c" "source/*.h")
 list(FILTER SOURCES EXCLUDE REGEX "source/tools/[a-z]*\\.c$")
 list(FILTER SOURCES EXCLUDE REGEX "source/helpers/mu-office-lib/mu-office-lib.c")
@@ -44,8 +57,7 @@ endif()
 
 add_library(libmupdf ${SOURCES})
 
-target_compile_definitions(libmupdf PUBLIC -DSHARE_JPEG -DFZ_ENABLE_JS=0 -DFZ_ENABLE_ICC=0 -DMEMENTO_MUPDF_HACKS -DFZ_ENABLE_DOCX_OUTPUT=0 -DFZ_ENABLE_ODT_OUTPUT=0  -DFZ_ENABLE_HTML=0 -DFZ_ENABLE_EPUB=0 -DNOTO_SMALL)
-
+target_compile_definitions(libmupdf PUBLIC -DSHARE_JPEG -DFZ_ENABLE_JS=0 -DFZ_ENABLE_ICC=0 -DMEMENTO_MUPDF_HACKS -DFZ_ENABLE_DOCX_OUTPUT=0 -DFZ_ENABLE_ODT_OUTPUT=0  -DFZ_ENABLE_HTML=0 -DFZ_ENABLE_EPUB=0 -DNOTO_SMALL -DTOFU_NOTO)
 
 if (ENABLE_OCR)
   target_compile_definitions(libmupdf PUBLIC -DHAVE_TESSERACT=1 -DHAVE_LEPTONICA=1)

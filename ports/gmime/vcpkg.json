@@ -8,7 +8,6 @@
   "supports": "!xbox",
   "dependencies": [
     "glib",
-    "libiconv",
     {
       "name": "gmime",
       "host": true
