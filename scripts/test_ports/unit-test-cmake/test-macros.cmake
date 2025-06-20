@@ -22,10 +22,17 @@ macro(message level msg)
     endif()
 endmacro()
 
+# Call this at the end of testing.
+macro(unit_test_report_result)
+    if(Z_VCPKG_UNIT_TEST_HAS_ERROR)
+        _message(FATAL_ERROR "At least one test failed")
+    endif()
+endmacro()
+
 set(Z_VCPKG_UNIT_TEST_HAS_ERROR OFF CACHE BOOL "" FORCE)
 unset_fatal_error()
 
-# in order to allow namespacing
+# Set <namespace>_MATCHED, preserve parent scope's CMAKE_MATCH_<...>
 function(unit_test_match namespace value regex)
     if("${value}" MATCHES "${regex}")
         set("${namespace}_MATCHED" ON PARENT_SCOPE)
@@ -86,7 +93,8 @@ function(unit_test_check_variable_equal utcve_test utcve_variable utcve_value)
         return()
     endif()
 
-    if(NOT DEFINED "${utcve_variable}" AND NOT "${utcve_variable}" MATCHES "^ENV\\{")
+    unit_test_match(utcve "${utcve_variable}" "^ENV\\{")
+    if(NOT DEFINED "${utcve_variable}" AND NOT utcve_MATCHED)
         message(SEND_ERROR "${utcve_test} failed to set ${utcve_variable};
     expected: \"${utcve_value}\"")
         set_has_error()
