@@ -23,14 +23,6 @@
       "version>=": "1.88.0"
     },
     {
-<<<<<<< HEAD
-=======
-      "name": "boost-context",
-      "platform": "!uwp & !emscripten",
-      "version>=": "1.88.0"
-    },
-    {
->>>>>>> upstream/master
       "name": "boost-date-time",
       "version>=": "1.88.0"
     },
