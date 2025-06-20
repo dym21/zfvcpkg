@@ -2,13 +2,13 @@
 
 set -e
 
- if [[ "$OSTYPE"  == "msys" ]]; then
-	 export PATH="/usr/bin:$PATH"
- else
-	 export PATH="$PATH:/usr/bin"
- fi
+ # if [[ "$OSTYPE"  == "msys" ]]; then
+	 # export PATH="/usr/bin:$PATH"
+ # else
+	 # export PATH="$PATH:/usr/bin"
+ # fi
 
-command -v cygpath >/dev/null && have_cygpath=1
+# command -v cygpath >/dev/null && have_cygpath=1
 
 move_binary() {
     SOURCE=$1

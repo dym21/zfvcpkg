@@ -1,0 +1,29 @@
+From 253d86e3cbaf9e4a435097bfd0bcc83a7fa207b0 Mon Sep 17 00:00:00 2001
+From: "hxdx@hotmail.com" <hxdx>
+Date: Wed, 21 May 2025 14:52:25 +0800
+Subject: [PATCH] fix-msvc-utf8
+
+---
+ CMakeLists.txt | 6 ------
+ 1 file changed, 6 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index fef5a29..968699d 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -165,12 +165,6 @@ IF(MNN_BUILD_CONVERTER)
+ ENDIF()
+ ENDIF()
+ 
+-# specify source file encoding explicitly, fix cross-platform garbled output issue
+-# we need do this after protobuf which set different execution-charset
+-IF(MSVC)
+-  set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} /source-charset:utf-8")
+-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /source-charset:utf-8")
+-ENDIF()
+ 
+ IF(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND NOT MNN_BUILD_SHARED_LIBS AND NOT (MSVC OR WIN32))
+   SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
+-- 
+2.49.0.windows.1
+

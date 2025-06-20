@@ -22,9 +22,9 @@ vcpkg_cmake_configure(
         -DCMAKE_REQUIRE_FIND_PACKAGE_libdeflate=ON
         -DOPENEXR_BUILD_EXAMPLES=OFF
         -DOPENEXR_INSTALL_PKG_CONFIG=ON
-    OPTIONS_DEBUG
         -DOPENEXR_BUILD_TOOLS=OFF
         -DOPENEXR_INSTALL_TOOLS=OFF
+		-DOPENEXR_IS_SUBPROJECT=ON
 )
 vcpkg_cmake_install()
 vcpkg_copy_pdbs()

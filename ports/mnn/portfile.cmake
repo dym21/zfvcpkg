@@ -5,12 +5,11 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO alibaba/MNN
-    REF 1.1.0
+    REF 3.1.0
     SHA512 3e31eec9a876be571cb2d29e0a2bcdb8209a43a43a5eeae19b295fadfb1252dd5bd4ed5b7c584706171e1b531710248193bc04520a796963e2b21546acbedae0
     HEAD_REF master
     PATCHES
-        use-package-and-install.patch
-        fix-linux.patch
+        0001-fix-msvc-utf8.patch
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
@@ -28,34 +27,10 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     tools       MNN_BUILD_CONVERTER
     gpu         MNN_GPU_TRACE
     system      MNN_USE_SYSTEM_LIB
+    avx2        MNN_AVX2
+    avx512      MNN_AVX512
 )
 
-# 'cuda' feature in Windows failes with Ninja because of parallel PDB access. Make it optional
-set(NINJA_OPTION WINDOWS_USE_MSBUILD)
-if(NOT "cuda" IN_LIST FEATURES)
-    unset(NINJA_OPTION)
-endif()
-
-set(FLATC_EXEC "${CURRENT_HOST_INSTALLED_DIR}/tools/flatbuffers/flatc${VCPKG_HOST_EXECUTABLE_SUFFIX}")
-if (NOT EXISTS "${FLATC_EXEC}")
-    message(FATAL_ERROR "Expected ${FLATC_EXEC} to exist.")
-endif()
-
-# regenerate some code files by schemes and flatbuffers
-vcpkg_execute_build_process(
-    COMMAND "${FLATC_EXEC}" "-c" "-b" "--gen-object-api" "--reflect-names"
-        "../default/BasicOptimizer.fbs"
-        "../default/CaffeOp.fbs"
-        "../default/GpuLibrary.fbs"
-        "../default/MNN.fbs"
-        "../default/Tensor.fbs"
-        "../default/TensorflowOp.fbs"
-        "../default/TFQuantizeOp.fbs"
-        "../default/Type.fbs"
-        "../default/UserDefine.fbs"
-    WORKING_DIRECTORY "${SOURCE_PATH}/schema/current/"
-    LOGNAME flatc-${TARGET_TRIPLET}
-  )
 
 if(VCPKG_TARGET_IS_WINDOWS)
     string(COMPARE EQUAL "${VCPKG_CRT_LINKAGE}" "static" USE_RUNTIME_MT)
@@ -70,8 +45,6 @@ vcpkg_cmake_configure(
     OPTIONS
         ${FEATURE_OPTIONS} ${PLATFORM_OPTIONS}
         -DMNN_BUILD_SHARED_LIBS=${BUILD_SHARED}
-        # 1.1.0.0-${commit}
-        -DMNN_VERSION_MAJOR=1 -DMNN_VERSION_MINOR=1 -DMNN_VERSION_PATCH=0 -DMNN_VERSION_BUILD=0 -DMNN_VERSION_SUFFIX=-d6795ad
     OPTIONS_DEBUG
         -DMNN_DEBUG_MEMORY=ON -DMNN_DEBUG_TENSOR_SIZE=ON
 )
