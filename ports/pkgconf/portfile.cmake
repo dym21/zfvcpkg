@@ -11,13 +11,10 @@ vcpkg_from_github(
     REF "pkgconf-${VERSION}"
     SHA512 8c73b8f9c3dd3c72e6b0acf139a68054d631484af4618f46c30c3c13947294986d809bbac0648af9e974739fd42e1730a4e22323884d7cf72f0843a972991a99
     HEAD_REF master
-<<<<<<< HEAD
-	PATCHES
-		0001-gix-gcc13-strndup-error.patch
-=======
     PATCHES
         "${ADD_MISSING_DEFINE_PATCH}"
->>>>>>> upstream/master
+	001-gix-gcc13-strndup-error.patch
+
 )
 
 vcpkg_configure_meson(

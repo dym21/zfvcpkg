@@ -19,13 +19,7 @@
       "version>=": "1.88.0"
     },
     {
-<<<<<<< HEAD
-=======
-      "name": "boost-context",
-      "version>=": "1.88.0"
-    },
-    {
->>>>>>> upstream/master
+
       "name": "boost-headers",
       "version>=": "1.88.0"
     }

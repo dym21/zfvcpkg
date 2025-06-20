@@ -22,11 +22,8 @@ vcpkg_from_github(
       0015-fix-freetype.patch
       0017-fix-flatbuffers.patch
       0019-opencl-kernel.patch
-<<<<<<< HEAD
       0020-miss-openexr.patch
       0001-disable-openmp-tbb.patch
-=======
->>>>>>> upstream/master
 )
 
 vcpkg_find_acquire_program(PKGCONFIG)

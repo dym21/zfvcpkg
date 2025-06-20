@@ -84,24 +84,6 @@
       "version>=": "1.88.0"
     },
     "mpi"
-<<<<<<< HEAD
   ]
 
-=======
-  ],
-  "features": {
-    "python3": {
-      "description": "Build Python3 bindings",
-      "supports": "!static",
-      "dependencies": [
-        {
-          "name": "boost-python",
-          "platform": "!uwp & !emscripten & !ios & !android",
-          "version>=": "1.88.0"
-        },
-        "python3"
-      ]
-    }
-  }
->>>>>>> upstream/master
 }
