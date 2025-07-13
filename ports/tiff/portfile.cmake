@@ -62,7 +62,8 @@ set(_file "${CURRENT_PACKAGES_DIR}/debug/lib/pkgconfig/libtiff-4.pc")
 if(EXISTS "${_file}")
     vcpkg_replace_string("${_file}" "-ltiff" "-ltiffd")
 endif()
-vcpkg_fixup_pkgconfig()
+
+#vcpkg_fixup_pkgconfig()
 
 file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug/include"

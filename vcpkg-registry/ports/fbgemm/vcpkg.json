@@ -1,0 +1,20 @@
+{
+  "name": "fbgemm",
+  "version-semver": "0.8.0",
+  "description": "FB (Facebook) + GEMM (General Matrix-Matrix Multiplication)",
+  "homepage": "https://github.com/pytorch/FBGEMM",
+  "license": "BSD-3-Clause",
+  "supports": "x64",
+  "dependencies": [
+    "asmjit",
+    "cpuinfo",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ]
+}

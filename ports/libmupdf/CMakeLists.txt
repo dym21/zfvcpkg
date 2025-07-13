@@ -50,6 +50,8 @@ list(FILTER SOURCES EXCLUDE REGEX "source/tools/[a-z]*\\.c$")
 list(FILTER SOURCES EXCLUDE REGEX "source/helpers/mu-office-lib/mu-office-lib.c")
 list(FILTER SOURCES EXCLUDE REGEX "source/tests/.*.c$")
 list(FILTER SOURCES EXCLUDE REGEX "source/fitz/output-docx.c")
+list(FILTER SOURCES EXCLUDE REGEX "source/fitz/memento\\.c$")
+
 
 if (ENABLE_OCR)
   list(APPEND SOURCES "source/fitz/tessocr.cpp")
@@ -57,7 +59,7 @@ endif()
 
 add_library(libmupdf ${SOURCES})
 
-target_compile_definitions(libmupdf PUBLIC -DSHARE_JPEG -DFZ_ENABLE_JS=0 -DFZ_ENABLE_ICC=0 -DMEMENTO_MUPDF_HACKS -DFZ_ENABLE_DOCX_OUTPUT=0 -DFZ_ENABLE_ODT_OUTPUT=0  -DFZ_ENABLE_HTML=0 -DFZ_ENABLE_EPUB=0 -DNOTO_SMALL -DTOFU_NOTO)
+target_compile_definitions(libmupdf PUBLIC -DSHARE_JPEG -DFZ_ENABLE_JS=0 -DFZ_ENABLE_ICC=0 -DFZ_ENABLE_DOCX_OUTPUT=0 -DFZ_ENABLE_ODT_OUTPUT=0  -DFZ_ENABLE_HTML=0 -DFZ_ENABLE_EPUB=0 -DTOFU_EMOJI -DTOFU_SIL -DNOTO_TANGUT=0)
 
 if (ENABLE_OCR)
   target_compile_definitions(libmupdf PUBLIC -DHAVE_TESSERACT=1 -DHAVE_LEPTONICA=1)

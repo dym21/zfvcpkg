@@ -1,0 +1,84 @@
+{
+  "name": "llama-cpp",
+  "version": "5568",
+  "description": "LLM inference in C/C++",
+  "homepage": "https://github.com/ggml-org/llama.cpp",
+  "license": "MIT",
+  "dependencies": [
+    {
+      "name": "curl",
+      "default-features": false
+    },
+    "minja",
+    "nlohmann-json",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ],
+  "default-features": [
+    {
+      "name": "metal",
+      "platform": "osx | ios"
+    }
+  ],
+  "features": {
+    "cuda": {
+      "description": "Use CUDA",
+      "dependencies": [
+        "cuda",
+        "nvidia-cudnn-frontend"
+      ]
+    },
+    "metal": {
+      "description": "Use Metal",
+      "supports": "osx | ios"
+    },
+    "opencl": {
+      "description": "Use OpenCL",
+      "dependencies": [
+        "opencl"
+      ]
+    },
+    "openmp": {
+      "description": "Use OpenMP"
+    },
+    "tools": {
+      "description": "Build llama tools",
+      "supports": "windows | linux | osx",
+      "dependencies": [
+        {
+          "name": "cpp-httplib",
+          "features": [
+            "openssl"
+          ]
+        },
+        {
+          "name": "curl",
+          "features": [
+            "openssl"
+          ]
+        },
+        "miniaudio",
+        "stb"
+      ]
+    },
+    "vulkan": {
+      "description": "Use Vulkan",
+      "dependencies": [
+        {
+          "name": "glslang",
+          "host": true,
+          "features": [
+            "tools"
+          ]
+        },
+        "vulkan"
+      ]
+    }
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "name": "tensorflow-lite",
+  "version-semver": "2.19.0",
+  "port-version": 1,
+  "description": "An Open Source Machine Learning Framework for Everyone",
+  "homepage": "https://github.com/tensorflow/tensorflow",
+  "license": "Apache-2.0",
+  "dependencies": [
+    "abseil",
+    "eigen3",
+    "farmhash",
+    "fft2d",
+    "flatbuffers",
+    {
+      "name": "flatbuffers",
+      "host": true
+    },
+    "fp16",
+    "gemmlowp",
+    "ml-dtypes",
+    "neon2sse",
+    {
+      "name": "nsync",
+      "platform": "android"
+    },
+    {
+      "name": "protobuf",
+      "host": true
+    },
+    "ruy",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    },
+    "xnnpack"
+  ],
+  "features": {
+    "gpu": {
+      "description": "Enable GPU delegates",
+      "dependencies": [
+        "opencl",
+        "opengl-registry",
+        {
+          "name": "tensorflow-lite",
+          "default-features": false,
+          "features": [
+            "metal"
+          ],
+          "platform": "osx | ios"
+        },
+        "vulkan-headers"
+      ]
+    },
+    "metal": {
+      "description": "Enable Metal delegate",
+      "supports": "osx | ios",
+      "dependencies": [
+        {
+          "name": "coreml-tools",
+          "platform": "osx | ios"
+        },
+        "protobuf"
+      ]
+    }
+  }
+}

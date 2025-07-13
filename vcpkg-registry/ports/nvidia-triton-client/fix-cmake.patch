@@ -1,0 +1,185 @@
+diff --git a/src/c++/CMakeLists.txt b/src/c++/CMakeLists.txt
+index 71c4338..e5e0ff4 100644
+--- a/src/c++/CMakeLists.txt
++++ b/src/c++/CMakeLists.txt
+@@ -58,17 +58,7 @@ endif()
+ #
+ include(FetchContent)
+ 
+-FetchContent_Declare(
+-  repo-common
+-  GIT_REPOSITORY ${TRITON_REPO_ORGANIZATION}/common.git
+-  GIT_TAG ${TRITON_COMMON_REPO_TAG}
+-  GIT_SHALLOW ON
+-)
+-
+-FetchContent_Declare(
+-  googletest
+-  URL https://github.com/google/googletest/archive/9406a60c7839052e4944ea4dbc8344762a89f9bd.zip
+-)
++find_package(TritonCommon CONFIG REQUIRED)
+ 
+ if(TRITON_ENABLE_CC_GRPC)
+   set(TRITON_COMMON_ENABLE_PROTOBUF ON)
+@@ -82,7 +72,6 @@ endif()
+ if(TRITON_ENABLE_TESTS)
+   FetchContent_MakeAvailable(googletest)
+ endif()
+-FetchContent_MakeAvailable(repo-common)
+ 
+ if(TRITON_ENABLE_TESTS)
+   include_directories(
+diff --git a/src/c++/library/CMakeLists.txt b/src/c++/library/CMakeLists.txt
+index d44cd57..6d2e641 100644
+--- a/src/c++/library/CMakeLists.txt
++++ b/src/c++/library/CMakeLists.txt
+@@ -48,7 +48,7 @@ target_include_directories(
+ if(TRITON_ENABLE_CC_HTTP OR TRITON_ENABLE_EXAMPLES)
+   find_package(RapidJSON CONFIG REQUIRED)
+   add_library(
+-      json-utils-library EXCLUDE_FROM_ALL OBJECT
++      json-utils-library OBJECT
+       json_utils.h json_utils.cc
+   )
+   target_include_directories(
+@@ -196,20 +196,14 @@ if(TRITON_ENABLE_CC_GRPC)
+   )
+ 
+   add_library(
+-      grpc-client-library EXCLUDE_FROM_ALL OBJECT
++      grpc-client-library OBJECT
+       ${REQUEST_SRCS} ${REQUEST_HDRS}
+   )
+-  add_dependencies(
+-      grpc-client-library
+-      grpc-service-library proto-library
+-  )
+ 
+   # libgrpcclient_static.a
+   add_library(
+       grpcclient_static STATIC
+       $<TARGET_OBJECTS:grpc-client-library>
+-      $<TARGET_OBJECTS:grpc-service-library>
+-      $<TARGET_OBJECTS:proto-library>
+   )
+   add_library(
+       TritonClient::grpcclient_static ALIAS grpcclient_static
+@@ -225,6 +219,8 @@ if(TRITON_ENABLE_CC_GRPC)
+       grpcclient_static
+       PRIVATE gRPC::grpc++
+       PRIVATE gRPC::grpc
++      PRIVATE TritonCommon::grpc-service-library
++      PRIVATE TritonCommon::proto-library
+       PUBLIC protobuf::libprotobuf
+       PUBLIC Threads::Threads
+   )
+@@ -232,8 +228,6 @@ if(TRITON_ENABLE_CC_GRPC)
+   # libgrpcclient.so
+   add_library(
+       grpcclient SHARED
+-      $<TARGET_OBJECTS:grpc-service-library>
+-      $<TARGET_OBJECTS:proto-library>
+       $<TARGET_OBJECTS:grpc-client-library>
+   )
+   add_library(
+@@ -253,6 +247,8 @@ if(TRITON_ENABLE_CC_GRPC)
+       grpcclient
+       PRIVATE gRPC::grpc++
+       PRIVATE gRPC::grpc
++      PRIVATE TritonCommon::grpc-service-library
++      PRIVATE TritonCommon::proto-library
+       PUBLIC protobuf::libprotobuf
+       PUBLIC Threads::Threads
+   )
+@@ -272,13 +268,13 @@ if(TRITON_ENABLE_CC_GRPC)
+         POSITION_INDEPENDENT_CODE ON
+     )
+ 
++    find_path(TRITON_GRPC_INCLUDE_DIR NAMES grpc_service.grpc.pb.h REQUIRED)
+     target_include_directories(
+       ${_client_target}
+       PUBLIC
+         $<INSTALL_INTERFACE:include>
+         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+-        $<TARGET_PROPERTY:proto-library,INCLUDE_DIRECTORIES>
+-        $<TARGET_PROPERTY:grpc-service-library,INCLUDE_DIRECTORIES>
++        ${TRITON_GRPC_INCLUDE_DIR}
+       PRIVATE
+         ${CMAKE_CURRENT_SOURCE_DIR}
+     )
+@@ -335,20 +331,12 @@ if(TRITON_ENABLE_CC_GRPC)
+       )
+     endif() # NOT WIN32
+ 
+-    install(
+-      DIRECTORY
+-        ${CMAKE_CURRENT_BINARY_DIR}/../../third-party/grpc/include/
+-        ${CMAKE_CURRENT_BINARY_DIR}/../../third-party/absl/include/
+-        ${CMAKE_CURRENT_BINARY_DIR}/../../third-party/protobuf/include/
+-        ${CMAKE_CURRENT_BINARY_DIR}/../../third-party/re2/include/
+-        DESTINATION include
+-    )
+   endif()
+ 
+   install(
+       FILES
+       ${CMAKE_CURRENT_SOURCE_DIR}/grpc_client.h
+-      DESTINATION include
++      DESTINATION include/triton
+   )
+ endif() # TRITON_ENABLE_CC_GRPC
+ 
+@@ -373,7 +361,7 @@ if(TRITON_ENABLE_CC_HTTP)
+   )
+ 
+   add_library(
+-      http-client-library EXCLUDE_FROM_ALL OBJECT
++      http-client-library OBJECT
+       ${REQUEST_SRCS} ${REQUEST_HDRS}
+   )
+ 
+@@ -387,7 +375,7 @@ if(TRITON_ENABLE_CC_HTTP)
+   target_link_libraries(
+     http-client-library
+     PUBLIC
+-      triton-common-json        # from repo-common
++      TritonCommon::triton-common-json
+   )
+ 
+   # libhttpclient_static.a
+@@ -401,7 +389,7 @@ if(TRITON_ENABLE_CC_HTTP)
+ 
+   target_link_libraries(
+       httpclient_static
+-      PRIVATE triton-common-json
++      PRIVATE TritonCommon::triton-common-json
+       PUBLIC CURL::libcurl
+       PUBLIC Threads::Threads
+   )
+@@ -433,7 +421,7 @@ if(TRITON_ENABLE_CC_HTTP)
+ 
+   target_link_libraries(
+       httpclient
+-      PRIVATE triton-common-json
++      PRIVATE TritonCommon::triton-common-json
+       PUBLIC CURL::libcurl
+       PUBLIC Threads::Threads
+   )
+@@ -490,7 +478,7 @@ if(TRITON_ENABLE_CC_HTTP)
+   install(
+       FILES
+       ${CMAKE_CURRENT_SOURCE_DIR}/http_client.h
+-      DESTINATION include
++      DESTINATION include/triton
+   )
+ endif() # TRITON_ENABLE_CC_HTTP
+ 
+@@ -500,7 +488,7 @@ if(TRITON_ENABLE_CC_HTTP OR TRITON_ENABLE_CC_GRPC)
+       ${CMAKE_CURRENT_SOURCE_DIR}/common.h
+       ${CMAKE_CURRENT_SOURCE_DIR}/ipc.h
+       ${CMAKE_CURRENT_SOURCE_DIR}/cencode.h
+-      DESTINATION include
++      DESTINATION include/triton
+   )
+ 
+   include(GNUInstallDirs)

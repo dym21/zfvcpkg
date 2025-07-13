@@ -72,11 +72,6 @@
       "version>=": "1.88.0"
     },
     {
-      "name": "boost-cobalt",
-      "platform": "!uwp",
-      "version>=": "1.88.0"
-    },
-    {
       "name": "boost-compat",
       "version>=": "1.88.0"
     },

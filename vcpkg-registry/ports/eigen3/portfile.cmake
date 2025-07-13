@@ -1,0 +1,38 @@
+vcpkg_from_gitlab(
+    GITLAB_URL https://gitlab.com
+    OUT_SOURCE_PATH SOURCE_PATH
+    REPO libeigen/eigen
+    REF 2265a5e025601d501903c772799ce29fb73c8efa # 
+    SHA512 972c7d229aa77770528b4361cb1d308848c0f7dfcd846a372c32376c73871e0ed8e855e77e8ad3a67bd216e25a3f161d79dcd7a5ca61f4566d85410c3474b45f
+    HEAD_REF master
+)
+
+if(VCPKG_TARGET_IS_ANDROID OR VCPKG_TARGET_IS_IOS)
+    list(APPEND PLATFORM_OPTIONS -DCMAKE_Fortran_COMPILER=OFF)
+endif()
+
+vcpkg_cmake_configure(
+    SOURCE_PATH "${SOURCE_PATH}"
+    OPTIONS
+        -DBUILD_TESTING=OFF
+        -DEIGEN_BUILD_DOC=OFF
+        -DEIGEN_BUILD_PKGCONFIG=ON
+        ${PLATFORM_OPTIONS}
+    OPTIONS_RELEASE
+        -DCMAKEPACKAGE_INSTALL_DIR=${CURRENT_PACKAGES_DIR}/lib/cmake/${PORT}
+        -DPKGCONFIG_INSTALL_DIR=${CURRENT_PACKAGES_DIR}/lib/pkgconfig
+    OPTIONS_DEBUG
+        -DCMAKEPACKAGE_INSTALL_DIR=${CURRENT_PACKAGES_DIR}/debug/lib/cmake/${PORT}
+        -DPKGCONFIG_INSTALL_DIR=${CURRENT_PACKAGES_DIR}/debug/lib/pkgconfig
+)
+vcpkg_cmake_install()
+vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/${PORT} PACKAGE_NAME Eigen3)
+vcpkg_fixup_pkgconfig()
+
+file(REMOVE_RECURSE
+    "${CURRENT_PACKAGES_DIR}/debug/include"
+    "${CURRENT_PACKAGES_DIR}/debug/share"
+)
+
+file(INSTALL "${SOURCE_PATH}/COPYING.README" DESTINATION "${CURRENT_PACKAGES_DIR}/share")
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")

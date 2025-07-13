@@ -1,0 +1,276 @@
+{
+  "default": {
+    "abseil": {
+      "baseline": "20250127.1",
+      "port-version": 0
+    },
+    "apple-crypto": {
+      "baseline": "3.0.0",
+      "port-version": 0
+    },
+    "apple-nio-ssl": {
+      "baseline": "2.25.0",
+      "port-version": 0
+    },
+    "asmjit": {
+      "baseline": "2025-03-10",
+      "port-version": 0
+    },
+    "basis-universal": {
+      "baseline": "1.50.0",
+      "port-version": 0
+    },
+    "coreml-tools": {
+      "baseline": "8.2",
+      "port-version": 0
+    },
+    "cpuinfo": {
+      "baseline": "2025-03-28",
+      "port-version": 0
+    },
+    "cudnn-frontend": {
+      "baseline": "1.12.0",
+      "port-version": 0
+    },
+    "d3d12-transition-layer": {
+      "baseline": "2024-09-14",
+      "port-version": 0
+    },
+    "directml": {
+      "baseline": "1.15.2",
+      "port-version": 0
+    },
+    "dlpack": {
+      "baseline": "1.0",
+      "port-version": 1
+    },
+    "eigen3": {
+      "baseline": "2025-04-23",
+      "port-version": 0
+    },
+    "etcpak": {
+      "baseline": "2.0",
+      "port-version": 0
+    },
+    "farmhash": {
+      "baseline": "2021-10-28",
+      "port-version": 2
+    },
+    "fbgemm": {
+      "baseline": "0.8.0",
+      "port-version": 0
+    },
+    "fft2d": {
+      "baseline": "1.0",
+      "port-version": 4
+    },
+    "fp16": {
+      "baseline": "2024-06-20",
+      "port-version": 1
+    },
+    "gemmlowp": {
+      "baseline": "2023-11-04",
+      "port-version": 0
+    },
+    "glslang": {
+      "baseline": "15.1.0",
+      "port-version": 0
+    },
+    "godot": {
+      "baseline": "4.3",
+      "port-version": 1
+    },
+    "google-filament": {
+      "baseline": "1.40.0",
+      "port-version": 0
+    },
+    "google-jni-bind": {
+      "baseline": "1.2.1-beta",
+      "port-version": 0
+    },
+    "google-pthreadpool": {
+      "baseline": "2025-03-19",
+      "port-version": 0
+    },
+    "libdispatch": {
+      "baseline": "5.10.1",
+      "port-version": 0
+    },
+    "libkineto": {
+      "baseline": "2024-11-22",
+      "port-version": 0
+    },
+    "liblzma": {
+      "baseline": "5.6.2",
+      "port-version": 0
+    },
+    "llama-cpp": {
+      "baseline": "5568",
+      "port-version": 0
+    },
+    "metal-cpp": {
+      "baseline": "macOS15.2_iOS18.2",
+      "port-version": 0
+    },
+    "miniaudio": {
+      "baseline": "0.11.22",
+      "port-version": 0
+    },
+    "minja": {
+      "baseline": "2025-05-15",
+      "port-version": 0
+    },
+    "ml-dtypes": {
+      "baseline": "0.5.2",
+      "port-version": 1
+    },
+    "neon2sse": {
+      "baseline": "2025-04-03",
+      "port-version": 0
+    },
+    "nsync": {
+      "baseline": "1.29.2",
+      "port-version": 2
+    },
+    "nvidia-cnmem": {
+      "baseline": "2018-11-28",
+      "port-version": 1
+    },
+    "nvidia-cudnn-frontend": {
+      "baseline": "1.12.0",
+      "port-version": 0
+    },
+    "nvidia-cutlass": {
+      "baseline": "3.5.1",
+      "port-version": 0
+    },
+    "nvidia-nvbench": {
+      "baseline": "2024-06-01",
+      "port-version": 0
+    },
+    "nvidia-tools-extension-sdk": {
+      "baseline": "3.1.0",
+      "port-version": 0
+    },
+    "nvidia-triton-client": {
+      "baseline": "2025-01-17",
+      "port-version": 0
+    },
+    "nvidia-triton-common": {
+      "baseline": "2024-11-27",
+      "port-version": 0
+    },
+    "nvidia-triton-core": {
+      "baseline": "2025-02-08",
+      "port-version": 0
+    },
+    "onnx": {
+      "baseline": "1.16.2",
+      "port-version": 1
+    },
+    "onnx-optimizer": {
+      "baseline": "0.3.19",
+      "port-version": 0
+    },
+    "onnxruntime": {
+      "baseline": "1.21.0",
+      "port-version": 0
+    },
+    "opencl": {
+      "baseline": "v2024.10.24",
+      "port-version": 0
+    },
+    "opencl-headers": {
+      "baseline": "v2024.10.24",
+      "port-version": 0
+    },
+    "opencl-on-dx12": {
+      "baseline": "1.2404.1.0",
+      "port-version": 1
+    },
+    "openjdk": {
+      "baseline": "jdk-23+10",
+      "port-version": 0
+    },
+    "openssl": {
+      "baseline": "3.2.1",
+      "port-version": 0
+    },
+    "openssl1": {
+      "baseline": "1.1.1w",
+      "port-version": 1
+    },
+    "openssl3": {
+      "baseline": "3.4.0",
+      "port-version": 0
+    },
+    "psimd": {
+      "baseline": "2020-05-17",
+      "port-version": 0
+    },
+    "pthreadpool": {
+      "baseline": "2024-06-17",
+      "port-version": 0
+    },
+    "ruy": {
+      "baseline": "2024-03-22",
+      "port-version": 0
+    },
+    "smol-v": {
+      "baseline": "2024-09-26",
+      "port-version": 0
+    },
+    "spine-runtimes": {
+      "baseline": "2025-02-11",
+      "port-version": 0
+    },
+    "sse2neon": {
+      "baseline": "1.8.0",
+      "port-version": 0
+    },
+    "system-qt5": {
+      "baseline": "2022-10-25",
+      "port-version": 0
+    },
+    "system-qt6": {
+      "baseline": "2022-10-25",
+      "port-version": 0
+    },
+    "tensorflow-lite": {
+      "baseline": "2.19.0",
+      "port-version": 1
+    },
+    "tensorpipe": {
+      "baseline": "2022-05-14",
+      "port-version": 1
+    },
+    "winpixeventruntime": {
+      "baseline": "1.0.240308001",
+      "port-version": 0
+    },
+    "xatlas": {
+      "baseline": "2023-11-07",
+      "port-version": 0
+    },
+    "xnnpack": {
+      "baseline": "2025-04-19",
+      "port-version": 0
+    },
+    "xnvctrl": {
+      "baseline": "515.43.04",
+      "port-version": 0
+    },
+    "zenny-atomic": {
+      "baseline": "2021-10-15",
+      "port-version": 1
+    },
+    "zlib": {
+      "baseline": "2024-10-03",
+      "port-version": 0
+    },
+    "zlib-ng": {
+      "baseline": "2.2.2",
+      "port-version": 0
+    }
+  }
+}
