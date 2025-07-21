@@ -1137,7 +1137,6 @@ vcpkg_from_github(
     REF ${commit} # or Git Tag (ex. REF v1.2.3)
     SHA512 ${download_file_hash}
     GITHUB_HOST https://git-dev.hellworld.com
-    AUTHORIZATION_TOKEN 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 # maintainer@hellworld.com
 )
 ```
 
