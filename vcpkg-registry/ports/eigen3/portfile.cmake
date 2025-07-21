@@ -1,11 +1,16 @@
-vcpkg_from_gitlab(
-    GITLAB_URL https://gitlab.com
-    OUT_SOURCE_PATH SOURCE_PATH
-    REPO libeigen/eigen
-    REF 2265a5e025601d501903c772799ce29fb73c8efa # 
+vcpkg_download_distfile(
+    ARCHIVE
+    URLS "https://gitlab.com/libeigen/eigen/-/archive/${VERSION}/eigen-${VERSION}.tar.gz"
+    FILENAME "eigen-${VERSION}.tar.gz"
     SHA512 972c7d229aa77770528b4361cb1d308848c0f7dfcd846a372c32376c73871e0ed8e855e77e8ad3a67bd216e25a3f161d79dcd7a5ca61f4566d85410c3474b45f
-    HEAD_REF master
 )
+
+vcpkg_extract_source_archive_ex(
+    OUT_SOURCE_PATH SOURCE_PATH
+    ARCHIVE "${ARCHIVE}"
+    REF "${VERSION}"
+)
+
 
 if(VCPKG_TARGET_IS_ANDROID OR VCPKG_TARGET_IS_IOS)
     list(APPEND PLATFORM_OPTIONS -DCMAKE_Fortran_COMPILER=OFF)
@@ -35,4 +40,3 @@ file(REMOVE_RECURSE
 )
 
 file(INSTALL "${SOURCE_PATH}/COPYING.README" DESTINATION "${CURRENT_PACKAGES_DIR}/share")
-vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")

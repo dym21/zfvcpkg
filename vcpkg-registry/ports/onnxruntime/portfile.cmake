@@ -1,5 +1,3 @@
-vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
-
 set(ORT_GIT_COMMIT "e0b66cad282043d4377cea5269083f17771b6dfc")
 set(ORT_GIT_BRANCH "v${VERSION}")
 
@@ -9,11 +7,8 @@ vcpkg_from_github(
     REF ${ORT_GIT_BRANCH}
     SHA512 028a7f48f41d2e8a453aae25ebc4cd769db389401937928b7d452fab5f8d7af8cb63eb4150daf79589845528f0e4c3bdfefa27af70d3630398990c9e8b85387b
     PATCHES
-        fix-sources.patch
-        fix-cmake.patch
-        fix-cmake-cuda.patch
-        fix-cmake-training.patch
-        fix-cmake-tensorrt.patch
+		0001-fixerror.patch
+		0001-fix-cxxversion.patch
 )
 
 find_program(PROTOC NAMES protoc PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/protobuf" REQUIRED NO_DEFAULT_PATH NO_CMAKE_PATH)
