@@ -140,7 +140,10 @@ if("training" IN_LIST FEATURES)
     vcpkg_cmake_build(TARGET tensorboard LOGFILE_BASE build-tensorboard)
 endif()
 vcpkg_cmake_install()
-vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/onnxruntime PACKAGE_NAME onnxruntime)
+if(BUILD_SHARED_LIBS AND VCPKG_TARGET_IS_LINUX)
+    vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/onnxruntime PACKAGE_NAME onnxruntime)
+endif()
+
 vcpkg_fixup_pkgconfig() # pkg_check_modules(libonnxruntime)
 
 # cmake function which relocates the onnxruntime_providers_* library before vcpkg_copy_pdbs()
