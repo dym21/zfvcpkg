@@ -391,6 +391,10 @@
       "version>=": "1.88.0"
     },
     {
+      "name": "boost-process",
+      "version>=": "1.88.0"
+    },
+    {
 
       "name": "boost-program-options",
       "version>=": "1.88.0"

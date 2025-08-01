@@ -1,8 +1,0 @@
-{
-  "name": "openssl1",
-  "version-string": "1.1.1w",
-  "port-version": 1,
-  "description": "TLS/SSL and crypto library",
-  "homepage": "https://www.openssl.org/",
-  "license": "OpenSSL"
-}
