@@ -1,0 +1,24 @@
+From 4a2b34798f2723afa401025ca3c73cf4cbf72de1 Mon Sep 17 00:00:00 2001
+From: dym21 <dym21@163.com>
+Date: Thu, 24 Oct 2024 16:16:07 +0800
+Subject: [PATCH] gix-gcc13-log10-error
+
+---
+ sherpa-onnx/csrc/offline-whisper-model.cc | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/sherpa-onnx/csrc/offline-whisper-model.cc b/sherpa-onnx/csrc/offline-whisper-model.cc
+index 7812e1d..a04904d 100644
+--- a/sherpa-onnx/csrc/offline-whisper-model.cc
++++ b/sherpa-onnx/csrc/offline-whisper-model.cc
+@@ -9,6 +9,7 @@
+ #include <tuple>
+ #include <unordered_map>
+ #include <utility>
++#include <cmath>
+ 
+ #include "sherpa-onnx/csrc/macros.h"
+ #include "sherpa-onnx/csrc/onnx-utils.h"
+-- 
+2.45.1.windows.1
+
