@@ -16,6 +16,12 @@
     }
   ],
   "features": {
+    "coroutine": {
+      "description": "Boost.Coroutine (optional) if you use spawn() to launch coroutines",
+      "dependencies": [
+        "boost-coroutine"
+      ]
+    },
     "openssl": {
       "description": "OpenSSL (optional) if you use Asio's SSL support.",
       "dependencies": [

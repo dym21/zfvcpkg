@@ -361,8 +361,12 @@
       "name": "boost-parameter",
       "version>=": "1.88.0"
     },
-    {
 
+    {
+      "name": "boost-parser",
+      "version>=": "1.88.0"
+    },
+    {
       "name": "boost-pfr",
       "version>=": "1.88.0"
     },
@@ -392,6 +396,7 @@
     },
     {
       "name": "boost-process",
+      "platform": "!uwp & !emscripten & !android",
       "version>=": "1.88.0"
     },
     {
