@@ -1,9 +1,10 @@
-vcpkg_from_github(
+vcpkg_from_git(
     OUT_SOURCE_PATH SOURCE_PATH
-    REPO Tencent/ncnn
-    REF "${VERSION}"
-    SHA512 decc841dc353bf0ff6f33456741547f0afaa8ed9d381ca3546b319dcd1c6db8ed4d35e001cd7adcea68970ebe2f14cbacf3053a23e37991c7466bc7060490286
-    HEAD_REF master
+    URL https://github.com/Tencent/ncnn.git
+    REF 1289458569b68528ebcf6c2881af83413d186f21
+    FETCH_REF master
+    PATCHES
+        0001-fix-sw-kernel-oop.patch
 )
 
 string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)

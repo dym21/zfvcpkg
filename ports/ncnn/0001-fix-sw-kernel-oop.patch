@@ -1,0 +1,58 @@
+From 1c286a1d585f63963ce6ba5e0ce88338a7f984f9 Mon Sep 17 00:00:00 2001
+From: "hxdx@hotmail.com" <hxdx>
+Date: Fri, 15 Aug 2025 09:37:02 +0800
+Subject: [PATCH] fix-sw-kernel-oop
+
+---
+ CMakeLists.txt |  2 +-
+ src/cpu.cpp    | 21 +++++++++++++++++++++
+ 2 files changed, 22 insertions(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 800bf47..7449734 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -59,7 +59,7 @@ endif()
+ 
+ option(NCNN_SHARED_LIB "shared library support" OFF)
+ option(NCNN_ENABLE_LTO "enable link-time optimization" OFF)
+-option(NCNN_OPENMP "openmp support" ON)
++option(NCNN_OPENMP "openmp support" OFF)
+ option(NCNN_STDIO "load model from external file" ON)
+ option(NCNN_STRING "plain and verbose string" ON)
+ option(NCNN_INSTALL_SDK "install ncnn library and headers" ON)
+diff --git a/src/cpu.cpp b/src/cpu.cpp
+index 07a20df..8c65cf4 100644
+--- a/src/cpu.cpp
++++ b/src/cpu.cpp
+@@ -1441,6 +1441,27 @@ static int get_max_freq_khz(int cpuid)
+ 
+     if (!fp)
+     {
++        #if defined(__sw_64__) || defined(__sw64__)
++        if (!fp)
++        {
++            // third try, for online cpu
++            sprintf(path, "/sys/devices/system/cpu/cpu%d/cpufreq/cpuinfo_max_freq", cpuid);
++            fp = fopen(path, "rb");
++
++            if (!fp)
++                return -1;
++
++            int max_freq_khz = -1;
++            int nscan = fscanf(fp, "%d", &max_freq_khz);
++            if (nscan != 1)
++            {
++                NCNN_LOGE("fscanf cpuinfo_max_freq error %d", nscan);
++            }
++            fclose(fp);
++
++            return max_freq_khz;
++        }
++        #endif
+         // second try, for online cpu
+         sprintf(path, "/sys/devices/system/cpu/cpu%d/cpufreq/stats/time_in_state", cpuid);
+         fp = fopen(path, "rb");
+-- 
+2.49.0.windows.1
+
