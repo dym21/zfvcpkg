@@ -1,0 +1,12 @@
+libwmf provides CMake targets:
+
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(libwmf REQUIRED IMPORTED_TARGET libwmf)
+    target_link_libraries(main PRIVATE PkgConfig::libwmf)
+
+Or use the pkg-config file directly:
+
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(LIBWMF REQUIRED libwmf)
+    target_include_directories(main PRIVATE ${LIBWMF_INCLUDE_DIRS})
+    target_link_libraries(main PRIVATE ${LIBWMF_LIBRARIES})

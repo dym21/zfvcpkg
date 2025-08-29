@@ -1,0 +1,20 @@
+{
+  "name": "libwmf",
+  "version": "0.2.13",
+  "description": "libwmf is a library for reading vector images in Microsoft's native Windows Metafile Format (WMF) and for either (a) displaying them in, e.g., an X window; or (b) converting them to more standard/free file formats.",
+  "homepage": "https://github.com/caolanm/libwmf",
+  "license": "LGPL-2.1-or-later",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config", 
+      "host": true
+    },
+    "freetype",
+    "libpng",
+    "zlib"
+  ]
+}
