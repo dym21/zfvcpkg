@@ -8,7 +8,7 @@ vcpkg_from_github(
         dependencies.diff
         disable-source-utf8.patch
 )
-file(REMOVE_RECURSE "${SOURCE_PATH}/third_party")
+file(REMOVE_RECURSE "${SOURCE_PATH}/third_party/iccjpeg")
 
 set(FEATURE_OPTIONS "")
 if("aom" IN_LIST FEATURES)

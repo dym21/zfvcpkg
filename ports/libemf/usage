@@ -1,0 +1,42 @@
+The libemf library provides functionality for reading and writing Enhanced Metafile (EMF) files.
+
+## Usage
+
+### CMake
+```cmake
+find_package(libemf REQUIRED)
+target_link_libraries(main PRIVATE libemf::libemf)
+```
+
+### pkg-config
+```bash
+pkg-config --cflags --libs libemf
+```
+
+## Features
+
+- **tools**: Build EMF conversion tools (emf2svg, emf2eps, etc.)
+  - Install with: `vcpkg install libemf[tools]`
+
+## Example
+
+```cpp
+#include <libemf/libemf.h>
+
+// 创建EMF文件
+EMF *emf = emf_create();
+if (emf) {
+    // 添加绘图命令
+    emf_rectangle(emf, 10, 10, 100, 100);
+    
+    // 保存文件
+    emf_save(emf, "output.emf");
+    emf_destroy(emf);
+}
+```
+
+## Notes
+
+- This library is primarily designed for Windows EMF file format support
+- The tools feature provides command-line utilities for EMF file conversion
+- Static linking is recommended for better compatibility

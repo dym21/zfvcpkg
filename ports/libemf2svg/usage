@@ -1,0 +1,11 @@
+The package libemf2svg provides the following CMake targets:
+
+    find_package(libemf2svg CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE emf2svg)
+
+To use the command line tool, install with the tools feature:
+    vcpkg install libemf2svg[tools]
+
+The emf2svg-conv tool can be used to convert EMF files to SVG:
+    emf2svg-conv -i input.emf -o output.svg
+

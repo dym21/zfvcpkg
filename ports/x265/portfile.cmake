@@ -40,6 +40,7 @@ vcpkg_cmake_configure(
         ${OPTIONS}
         -DENABLE_SHARED=${ENABLE_SHARED}
         -DENABLE_PIC=ON
+		-DENABLE_NEON_I8MM=OFF
         -DENABLE_LIBNUMA=OFF
         "-DVERSION=${VERSION}"
     OPTIONS_DEBUG

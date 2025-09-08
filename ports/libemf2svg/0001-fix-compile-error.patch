@@ -1,0 +1,87 @@
+From 5b4d4384eb5834d4827d255a79382e21b0c7815a Mon Sep 17 00:00:00 2001
+From: Your Name <you@example.com>
+Date: Mon, 1 Sep 2025 14:16:33 +0800
+Subject: [PATCH] fix-compile-error
+
+---
+ CMakeLists.txt | 30 ++----------------------------
+ 1 file changed, 2 insertions(+), 28 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index e8086d6..eb5c205 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -12,6 +12,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
+ find_package(PNG REQUIRED)
+ find_package(Freetype REQUIRED)
+ find_package(Fontconfig REQUIRED)
++find_package(EXPAT REQUIRED)
+ 
+ set(emf2svg_VERSION ${emf2svg_VERSION_MAJOR}.${emf2svg_VERSION_MINOR}.${emf2svg_VERSION_PATCH})
+ 
+@@ -57,7 +58,6 @@ if(STATIC)
+     set(SHARED "")
+     set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+     set(BUILD_SHARED_LIBRARIES OFF)
+-    set(CMAKE_EXE_LINKER_FLAGS "-static")
+ else(STATIC)
+     set(SHARED "SHARED")
+ endif(STATIC)
+@@ -82,21 +82,12 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    add_definitions(-DDARWIN)
+ ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+ 
+-# linking directories
+-LINK_DIRECTORIES(
+-    ${CMAKE_BINARY_DIR}/
+-    /usr/local/lib
+-    /usr/lib/
+-)
+-
+ # headers directories
+ include_directories(
+     ./inc/
+     ${PNG_INCLUDE_DIRS}
+     ${FREETYPE_INCLUDE_DIRS}
+     ${FONTCONFIG_INCLUDE_DIR}
+-    /usr/include/ 
+-    /sw/include/
+ )
+ 
+ # Compile the library
+@@ -131,23 +122,6 @@ set_target_properties(emf2svg
+     SOVERSION ${emf2svg_VERSION_MAJOR}
+ )
+ 
+-# Compile the executable
+-add_executable(emf2svg-conv src/conv/emf2svg.cpp)
+-target_link_libraries(emf2svg
+-    ${PNG_LIBRARIES}
+-    ${EXTERNAL_ICONV}
+-    ${EXTERNAL_ARGP}
+-    ${FREETYPE_LIBRARIES}
+-    ${FONTCONFIG_LIBRARIES}
+-) 
+-
+-
+-target_link_libraries(emf2svg-conv
+-    emf2svg
+-)
+-
+-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall")
+-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11 -Wall")
+ 
+ if (NOT LIB_INSTALL_DIR)
+     set(LIB_INSTALL_DIR lib)
+@@ -163,7 +137,7 @@ endif ()
+ 
+ 
+ # install binaries and library
+-INSTALL(TARGETS emf2svg emf2svg-conv
++INSTALL(TARGETS emf2svg
+   RUNTIME DESTINATION ${BIN_INSTALL_DIR}
+   LIBRARY DESTINATION ${LIB_INSTALL_DIR}
+   ARCHIVE DESTINATION ${LIB_INSTALL_DIR}
+-- 
+2.49.0.windows.1
+

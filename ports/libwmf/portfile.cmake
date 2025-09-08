@@ -14,7 +14,7 @@ else()
 endif()
 
 # Set up environment variables for pkg-config to find dependencies
-set(ENV{PKG_CONFIG_PATH} "${CURRENT_INSTALLED_DIR}/lib/pkgconfig;${VCPKG_HOST_PATH_SEPARATOR}${CURRENT_INSTALLED_DIR}/debug/lib/pkgconfig")
+set(ENV{PKG_CONFIG_PATH} "${CURRENT_INSTALLED_DIR}/lib/pkgconfig${VCPKG_HOST_PATH_SEPARATOR}${CURRENT_INSTALLED_DIR}/debug/lib/pkgconfig")
 
 # Create freetype2 directory for libwmf compatibility
 if(NOT EXISTS "${CURRENT_INSTALLED_DIR}/include/freetype2")
@@ -26,24 +26,32 @@ if(NOT EXISTS "${CURRENT_INSTALLED_DIR}/include/freetype2")
     endif()
 endif()
 
-# Set up environment variables for dependencies
-if(VCPKG_TARGET_IS_WINDOWS)
-    # Windows-specific library names and paths
-    set(ENV{FREETYPE_CFLAGS} "/I${CURRENT_INSTALLED_DIR}/include /I${CURRENT_INSTALLED_DIR}/include/freetype2")
-    set(ENV{FREETYPE_LIBS} "/LIBPATH:${CURRENT_INSTALLED_DIR}/lib freetype.lib")
-    set(ENV{PNG_CFLAGS} "/I${CURRENT_INSTALLED_DIR}/include")
-    set(ENV{PNG_LIBS} "/LIBPATH:${CURRENT_INSTALLED_DIR}/lib libpng16.lib")
-    set(ENV{ZLIB_CFLAGS} "/I${CURRENT_INSTALLED_DIR}/include")
-    set(ENV{ZLIB_LIBS} "/LIBPATH:${CURRENT_INSTALLED_DIR}/lib zlib.lib")
-else()
-    # Unix-style flags
-    set(ENV{FREETYPE_CFLAGS} "-I${CURRENT_INSTALLED_DIR}/include -I${CURRENT_INSTALLED_DIR}/include/freetype2")
-    set(ENV{FREETYPE_LIBS} "-L${CURRENT_INSTALLED_DIR}/lib -lfreetype")
-    set(ENV{PNG_CFLAGS} "-I${CURRENT_INSTALLED_DIR}/include")
-    set(ENV{PNG_LIBS} "-L${CURRENT_INSTALLED_DIR}/lib -lpng16")
-    set(ENV{ZLIB_CFLAGS} "-I${CURRENT_INSTALLED_DIR}/include")
-    set(ENV{ZLIB_LIBS} "-L${CURRENT_INSTALLED_DIR}/lib -lz")
-endif()
+# # Set up environment variables for dependencies
+# if(VCPKG_TARGET_IS_WINDOWS)
+#     # Windows-specific library names and paths
+#     set(ENV{FREETYPE_CFLAGS} "-I${CURRENT_INSTALLED_DIR}/include -I${CURRENT_INSTALLED_DIR}/include/freetype2")
+#     set(ENV{FREETYPE_LIBS} "-L${CURRENT_INSTALLED_DIR}/lib -lfreetype")
+#     set(ENV{PNG_CFLAGS} "-I${CURRENT_INSTALLED_DIR}/include")
+#     set(ENV{PNG_LIBS} "-L${CURRENT_INSTALLED_DIR}/lib -llibpng16")
+#     set(ENV{ZLIB_CFLAGS} "-I${CURRENT_INSTALLED_DIR}/include")
+#     set(ENV{ZLIB_LIBS} "-L${CURRENT_INSTALLED_DIR}/lib -lzlib")
+#     # Generic autotools flags to aid detection
+#     set(ENV{CPPFLAGS} "-I${CURRENT_INSTALLED_DIR}/include -I${CURRENT_INSTALLED_DIR}/include/freetype2")
+#     set(ENV{LDFLAGS} "-L${CURRENT_INSTALLED_DIR}/lib")
+#     set(ENV{LIBS} "-lzlib -llibpng16 -lfreetype")
+# else()
+#     # Unix-style flags
+#     set(ENV{FREETYPE_CFLAGS} "-I${CURRENT_INSTALLED_DIR}/include -I${CURRENT_INSTALLED_DIR}/include/freetype2")
+#     set(ENV{FREETYPE_LIBS} "-L${CURRENT_INSTALLED_DIR}/lib -lfreetype")
+#     set(ENV{PNG_CFLAGS} "-I${CURRENT_INSTALLED_DIR}/include")
+#     set(ENV{PNG_LIBS} "-L${CURRENT_INSTALLED_DIR}/lib -lpng16")
+#     set(ENV{ZLIB_CFLAGS} "-I${CURRENT_INSTALLED_DIR}/include")
+#     set(ENV{ZLIB_LIBS} "-L${CURRENT_INSTALLED_DIR}/lib -lzlib")
+#     # Generic autotools flags to aid detection
+#     set(ENV{CPPFLAGS} "-I${CURRENT_INSTALLED_DIR}/include -I${CURRENT_INSTALLED_DIR}/include/freetype2")
+#     set(ENV{LDFLAGS} "-L${CURRENT_INSTALLED_DIR}/lib")
+#     set(ENV{LIBS} "-lzlib -lpng16 -lfreetype")
+# endif()
 
 # libwmf uses autotools for configuration
 vcpkg_configure_make(
@@ -52,12 +60,12 @@ vcpkg_configure_make(
     OPTIONS
         ${SHARED_STATIC}
         --without-x
-        --disable-docs
-        --disable-heavy
+        --enable-heavy
     CONFIGURE_ENVIRONMENT_VARIABLES
         FREETYPE_CFLAGS FREETYPE_LIBS
         PNG_CFLAGS PNG_LIBS
         ZLIB_CFLAGS ZLIB_LIBS
+        CPPFLAGS LDFLAGS LIBS
 )
 
 vcpkg_install_make()

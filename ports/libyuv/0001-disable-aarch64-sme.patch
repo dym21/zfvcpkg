@@ -1,0 +1,61 @@
+From f23c2ba2ff2c99de733141615215c70830f2521c Mon Sep 17 00:00:00 2001
+From: "hxdx@hotmail.com" <hxdx>
+Date: Wed, 3 Sep 2025 21:09:51 +0800
+Subject: [PATCH] disable-aarch64-sme
+
+---
+ CMakeLists.txt | 38 +-------------------------------------
+ 1 file changed, 1 insertion(+), 37 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index d161326..31433ae 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -99,43 +99,7 @@ if(NOT MSVC)
+   endif()
+ 
+   if(arch_lowercase STREQUAL "aarch64" OR arch_lowercase STREQUAL "arm64")
+-    # Enable AArch64 Neon dot-product and i8mm kernels.
+-    add_library(${ly_lib_name}_neon64 OBJECT
+-      ${ly_src_dir}/compare_neon64.cc
+-      ${ly_src_dir}/rotate_neon64.cc
+-      ${ly_src_dir}/row_neon64.cc
+-      ${ly_src_dir}/scale_neon64.cc)
+-    target_compile_options(${ly_lib_name}_neon64 PRIVATE -march=armv8-a+dotprod+i8mm)
+-    list(APPEND ly_lib_parts $<TARGET_OBJECTS:${ly_lib_name}_neon64>)
+-
+-    # Enable AArch64 SVE kernels.
+-    add_library(${ly_lib_name}_sve OBJECT
+-      ${ly_src_dir}/row_sve.cc)
+-    target_compile_options(${ly_lib_name}_sve PRIVATE -march=armv9-a+sve2)
+-    list(APPEND ly_lib_parts $<TARGET_OBJECTS:${ly_lib_name}_sve>)
+-
+-    set(OLD_CMAKE_REQURED_FLAGS ${CMAKE_REQUIRED_FLAGS})
+-    set(OLD_CMAKE_TRY_COMPILE_TARGET_TYPE ${CMAKE_TRY_COMPILE_TARGET_TYPE})
+-    set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -march=armv9-a+sme")
+-    set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
+-    # Check whether the compiler can compile SME functions; this fails
+-    # with Clang for Windows.
+-    check_c_source_compiles("
+-__arm_locally_streaming void func(void) { }
+-int main(void) { return 0; }
+-    " CAN_COMPILE_SME)
+-    set(CMAKE_REQUIRED_FLAGS ${OLD_CMAKE_REQURED_FLAGS})
+-    set(CMAKE_TRY_COMPILE_TARGET_TYPE ${OLD_CMAKE_TRY_COMPILE_TARGET_TYPE})
+-
+-    if (CAN_COMPILE_SME)
+-      # Enable AArch64 SME kernels.
+-      add_library(${ly_lib_name}_sme OBJECT
+-        ${ly_src_dir}/rotate_sme.cc)
+-      target_compile_options(${ly_lib_name}_sme PRIVATE -march=armv9-a+sme)
+-      list(APPEND ly_lib_parts $<TARGET_OBJECTS:${ly_lib_name}_sme>)
+-    else()
+-      add_definitions(-DLIBYUV_DISABLE_SME)
+-    endif()
++	add_definitions(-DLIBYUV_DISABLE_SME)
+   endif()
+ endif()
+ 
+-- 
+2.49.0.windows.1
+

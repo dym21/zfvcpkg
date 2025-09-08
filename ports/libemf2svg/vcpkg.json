@@ -1,0 +1,25 @@
+{
+  "name": "libemf2svg",
+  "version": "1.1.0",
+  "description": "Microsoft (MS) EMF to SVG conversion library",
+  "homepage": "https://github.com/kakwa/libemf2svg",
+  "license": "GPL-2.0-only",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    },
+    "libpng",
+    {
+      "name": "freetype",
+      "features": ["brotli", "bzip2", "png", "zlib", "error-strings"]
+    },
+    "fontconfig",
+    "zlib",
+    "expat"
+  ]
+}

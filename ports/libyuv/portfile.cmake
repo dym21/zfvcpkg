@@ -1,10 +1,13 @@
-vcpkg_from_git(
+vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
-    URL https://chromium.googlesource.com/libyuv/libyuv
+    REPO lemenkov/libyuv
     REF a37e6bc81b52d39cdcfd0f1428f5d6c2b2bc9861 # 1896 Fixes build error on macOS Homebrew LLVM 19
+    SHA512 0
+    HEAD_REF main
     # Check https://chromium.googlesource.com/libyuv/libyuv/+/refs/heads/main/include/libyuv/version.h for a version!
     PATCHES
         cmake.diff
+		0001-disable-aarch64-sme.patch
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
