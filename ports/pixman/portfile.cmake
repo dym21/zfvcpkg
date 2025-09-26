@@ -12,15 +12,16 @@ vcpkg_from_gitlab(
 set(x86_architectures x86 x64)
 if(VCPKG_TARGET_ARCHITECTURE IN_LIST x86_architectures AND NOT VCPKG_TARGET_IS_UWP)
     list(APPEND OPTIONS
-        -Dmmx=enabled
-        -Dsse2=enabled
-        -Dssse3=enabled
+        -Dmmx=disabled
+        -Dsse2=disabled
+        -Dssse3=disabled
     )
 else()
     list(APPEND OPTIONS
         -Dmmx=disabled
         -Dsse2=disabled
         -Dssse3=disabled
+		-Dloongson-mmi=disabled
     )
     if(VCPKG_TARGET_IS_ANDROID)
         vcpkg_cmake_get_vars(cmake_vars_file)

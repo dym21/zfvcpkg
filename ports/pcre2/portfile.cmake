@@ -32,6 +32,12 @@ vcpkg_check_features(
         jit   PCRE2_SUPPORT_JIT
 )
 
+if(VCPKG_TARGET_ARCHITECTURE STREQUAL "loongarch64")
+    list(REMOVE_ITEM FEATURE_OPTIONS "-DPCRE2_SUPPORT_JIT=ON")
+    list(APPEND FEATURE_OPTIONS "-DPCRE2_SUPPORT_JIT=OFF")
+endif()
+
+
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS

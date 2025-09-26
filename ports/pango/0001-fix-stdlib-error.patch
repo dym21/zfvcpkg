@@ -1,0 +1,25 @@
+From 6730656560b46f1ddc39b545a136fac02c01a882 Mon Sep 17 00:00:00 2001
+From: "hxdx@hotmail.com" <hxdx>
+Date: Tue, 16 Sep 2025 11:46:13 +0800
+Subject: [PATCH] fix-stdlib-error
+
+---
+ meson.build | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/meson.build b/meson.build
+index 9cd9026..2270a6e 100644
+--- a/meson.build
++++ b/meson.build
+@@ -551,8 +551,6 @@ root_inc = include_directories('.')
+ pango_inc = include_directories('pango')
+ 
+ subdir('pango')
+-subdir('utils')
+-subdir('tools')
+ subdir('docs')
+ if get_option('build-testsuite')
+   subdir('tests')
+-- 
+2.49.0.windows.1
+

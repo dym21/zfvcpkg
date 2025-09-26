@@ -7,7 +7,7 @@ vcpkg_extract_source_archive(
     SOURCE_PATH
     ARCHIVE "${ARCHIVE}"
     PATCHES
-        dll-bindir.diff
+    	dll-bindir.diff
 )
 
 vcpkg_list(SET options)
@@ -37,6 +37,11 @@ if(VCPKG_DETECTED_CMAKE_C_COMPILER_ID STREQUAL "MSVC")
     if(ccas_options)
         vcpkg_list(APPEND options "CCASFLAGS=\${CCASFLAGS}${ccas_options}")
     endif()
+endif()
+
+if(VCPKG_TARGET_ARCHITECTURE STREQUAL "loongarch64")
+    # 硬件浮点，默认走 lp64d
+    vcpkg_list(APPEND options "CFLAGS=\${CFLAGS} -D__loongarch_double_float")
 endif()
 
 vcpkg_make_configure(
