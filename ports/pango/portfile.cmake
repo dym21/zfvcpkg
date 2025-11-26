@@ -1,14 +1,14 @@
-vcpkg_from_gitlab(
-    GITLAB_URL https://gitlab.gnome.org/
-    OUT_SOURCE_PATH SOURCE_PATH
-    REPO GNOME/pango
-    REF "${VERSION}"
-    SHA512 c980cfed2a4811c32ba473846d7d075e0b949a833089f4cafb436ce7442719307a60eb68956606c315dd6185cb8753df87d4bac140d752eaeaf0b67b17afbd79
-    HEAD_REF master
-	PATCHES 
-		0001-fix-stdlib-error.patch
-) 
-
+string(REGEX MATCH "^([0-9]*[.][0-9]*)" VERSION_MAJOR_MINOR "${VERSION}")
+vcpkg_download_distfile(SOURCE_ARCHIVE
+    URLS "https://download.gnome.org/sources/pango/${VERSION_MAJOR_MINOR}/pango-${VERSION}.tar.xz"
+    FILENAME "pango-${VERSION}.tar.xz"
+    SHA512 19471618a66b68e19786c458387f2bc8027ecbda5aaf29efcc025a99b3a74402765c6c4c6ea2997d8f1219ef7f1bea817e6ca55e494dff24780f5d3f2a6242a2
+)
+vcpkg_extract_source_archive(SOURCE_PATH
+    ARCHIVE "${SOURCE_ARCHIVE}"
+    PATCHES
+        relax-gi-requirement.diff
+)
 
 if("introspection" IN_LIST FEATURES)
     list(APPEND OPTIONS_RELEASE -Dintrospection=enabled)
@@ -20,17 +20,16 @@ endif()
 vcpkg_configure_meson(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS
+        -Ddocumentation=false
+        -Dman-pages=false
+        -Dbuild-testsuite=false
+        -Dbuild-examples=false
         -Dfontconfig=enabled # Build with FontConfig support.
         -Dsysprof=disabled # include tracing support for sysprof
         -Dlibthai=disabled # Build with libthai support
         -Dcairo=enabled # Build with cairo support
         -Dxft=disabled # Build with xft support
         -Dfreetype=enabled # Build with freetype support
-        -Dgtk_doc=false #Build API reference for Pango using GTK-Doc
-		-Dbuild-testsuite=false
-		-Dbuild-examples=false
-		-Ddocumentation=false
-		-Dman-pages=false
         ${OPTIONS}
     OPTIONS_RELEASE
         ${OPTIONS_RELEASE}
@@ -47,5 +46,6 @@ vcpkg_install_meson(ADD_BIN_TO_PATH)
 vcpkg_fixup_pkgconfig()
 vcpkg_copy_pdbs()
 
+vcpkg_copy_tools(TOOL_NAMES pango-view pango-list pango-segmentation AUTO_CLEAN)
 
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/COPYING")

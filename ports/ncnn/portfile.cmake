@@ -1,8 +1,9 @@
 vcpkg_from_git(
     OUT_SOURCE_PATH SOURCE_PATH
-    URL https://github.com/Tencent/ncnn.git
-    REF 1289458569b68528ebcf6c2881af83413d186f21
-    FETCH_REF master
+    REPO Tencent/ncnn
+    REF "${VERSION}"
+    SHA512 bb20d8ece3dcddf49530e1ca44eaad1045702b5fb7a7c9cfd6754eb158c7349bba7d63a3ef1e1a4a6e30ed59622367b802f98bf8343bd30ff0cb6def734757c4
+    HEAD_REF master
     PATCHES
         0001-fix-sw-kernel-oop.patch
 )

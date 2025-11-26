@@ -1,9 +1,7 @@
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
-    REPO lemenkov/libyuv
-    REF a37e6bc81b52d39cdcfd0f1428f5d6c2b2bc9861 # 1896 Fixes build error on macOS Homebrew LLVM 19
-    SHA512 0
-    HEAD_REF main
+    URL https://chromium.googlesource.com/libyuv/libyuv
+    REF d98915a654d3564e4802a0004add46221c4e4348
     # Check https://chromium.googlesource.com/libyuv/libyuv/+/refs/heads/main/include/libyuv/version.h for a version!
     PATCHES
         cmake.diff
