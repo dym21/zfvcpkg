@@ -1,0 +1,82 @@
+From d0e951f2dcdd9e312ddd2cffa6edf0b7e9c5bd73 Mon Sep 17 00:00:00 2001
+From: Your Name <you@example.com>
+Date: Mon, 24 Nov 2025 19:55:08 +0800
+Subject: [PATCH] fix-mips64-support
+
+---
+ codec/common/meson.build     | 2 ++
+ codec/decoder/meson.build    | 2 ++
+ codec/encoder/meson.build    | 2 ++
+ codec/processing/meson.build | 2 ++
+ meson.build                  | 3 +++
+ 5 files changed, 11 insertions(+)
+
+diff --git a/codec/common/meson.build b/codec/common/meson.build
+index 963da74..bb58e9e 100644
+--- a/codec/common/meson.build
++++ b/codec/common/meson.build
+@@ -75,6 +75,8 @@ elif cpu_family == 'ppc'
+   asm_sources = []
+ elif cpu_family == 'ppc64'
+   asm_sources = []
++elif cpu_family == 'mips64'
++  asm_sources = []
+ else
+   error('Unsupported cpu_family @0@'.format(cpu_family))
+ endif
+diff --git a/codec/decoder/meson.build b/codec/decoder/meson.build
+index 23352ff..1edb76f 100644
+--- a/codec/decoder/meson.build
++++ b/codec/decoder/meson.build
+@@ -60,6 +60,8 @@ elif cpu_family == 'ppc'
+   asm_sources = []
+ elif cpu_family == 'ppc64'
+   asm_sources = []
++elif cpu_family == 'mips64'
++  asm_sources = []
+ else
+   error('Unsupported cpu family @0@'.format(cpu_family))
+ endif
+diff --git a/codec/encoder/meson.build b/codec/encoder/meson.build
+index bebb74c..8e1936f 100644
+--- a/codec/encoder/meson.build
++++ b/codec/encoder/meson.build
+@@ -89,6 +89,8 @@ elif cpu_family == 'ppc'
+   asm_sources = []
+ elif cpu_family == 'ppc64'
+   asm_sources = []
++elif cpu_family == 'mips64'
++  asm_sources = []
+ else
+   error('Unsupported cpu family @0@'.format(cpu_family))
+ endif
+diff --git a/codec/processing/meson.build b/codec/processing/meson.build
+index 1c56eb5..6dd4db2 100644
+--- a/codec/processing/meson.build
++++ b/codec/processing/meson.build
+@@ -62,6 +62,8 @@ elif cpu_family == 'ppc'
+   asm_sources = []
+ elif cpu_family == 'ppc64'
+   asm_sources = []
++elif cpu_family == 'mips64'
++  asm_sources = []
+ else
+   error('Unsupported cpu family @0@'.format(cpu_family))
+ endif
+diff --git a/meson.build b/meson.build
+index 1bfc0b6..3fa0f4f 100644
+--- a/meson.build
++++ b/meson.build
+@@ -99,6 +99,9 @@ if ['linux', 'freebsd', 'openbsd', 'android', 'ios', 'darwin'].contains(system)
+   elif cpu_family == 'riscv64'
+     # We don't have riscv64-specific optimization for now.
+     asm_format = asm_format64
++  elif cpu_family == 'mips64'
++    # We don't have mips64-specific optimization for now.
++    asm_format = asm_format64
+   elif cpu_family == 'ppc'
+     # We don't have powerpc-specific optimization for now.
+     asm_format = asm_format32
+-- 
+2.50.1
+

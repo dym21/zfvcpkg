@@ -10,9 +10,24 @@ vcpkg_extract_source_archive(
     ARCHIVE "${ARCHIVE}"
 )
 
+#fix loongarch64 build
+file(COPY "${VCPKG_ROOT_DIR}/scripts/config.guess" "${VCPKG_ROOT_DIR}/scripts/config.sub" DESTINATION "${SOURCE_PATH}")
+
 set(OPTIONS "")
 if(VCPKG_TARGET_IS_OSX)
     list(APPEND OPTIONS "--disable-Bsymbolic")
+endif()
+
+if(VCPKG_TARGET_ARCHITECTURE STREQUAL "loongarch64")
+    list(APPEND OPTIONS "--host=loongarch64-linux-gnu")
+endif()
+
+if(VCPKG_TARGET_ARCHITECTURE STREQUAL "aarch64")
+    list(APPEND OPTIONS "--host=aarch64-linux-gnu")
+endif()
+
+if(VCPKG_TARGET_ARCHITECTURE STREQUAL "mips64")
+    list(APPEND OPTIONS "--host=mips64el-linux-gnu")
 endif()
 
 vcpkg_configure_make(

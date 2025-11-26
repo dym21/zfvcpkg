@@ -29,6 +29,7 @@ vcpkg_cmake_configure(
         -DENABLE_NLS=OFF # nls is not supported by this port, yet
 		-DALLOW_ARM64_CRC32=OFF
         -DXZ_NLS=OFF
+        -DCMAKE_POSITION_INDEPENDENT_CODE=ON
     MAYBE_UNUSED_VARIABLES
         CMAKE_MSVC_DEBUG_INFORMATION_FORMAT
         CREATE_XZ_SYMLINKS

@@ -7,7 +7,7 @@ vcpkg_from_github(
     # Check https://chromium.googlesource.com/libyuv/libyuv/+/refs/heads/main/include/libyuv/version.h for a version!
     PATCHES
         cmake.diff
-		0001-disable-aarch64-sme.patch
+		0001-disable-asm.patch
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
@@ -15,10 +15,13 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
         tools BUILD_TOOLS
 )
 
+
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS
         ${FEATURE_OPTIONS}
+        "-DCMAKE_CXX_FLAGS=-DAT_HWCAP2=26 -DLIBYUV_DISABLE_NEON -DLIBYUV_DISABLE_NEON_DOTPROD -DLIBYUV_DISABLE_NEON_I8MM -DLIBYUV_DISABLE_SVE -DLIBYUV_DISABLE_SVE2 -DLIBYUV_DISABLE_SME"
+        "-DCMAKE_CXX_FLAGS=-DAT_HWCAP2=26 -DLIBYUV_DISABLE_NEON -DLIBYUV_DISABLE_NEON_DOTPROD -DLIBYUV_DISABLE_NEON_I8MM -DLIBYUV_DISABLE_SVE -DLIBYUV_DISABLE_SVE2 -DLIBYUV_DISABLE_SME"
     OPTIONS_DEBUG
         -DBUILD_TOOLS=OFF
 )

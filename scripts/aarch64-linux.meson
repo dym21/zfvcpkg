@@ -1,0 +1,12 @@
+[binaries]
+c = '/opt/zftoolchain/aarch64-zftoolchain-linux-gnu-x86_64/bin/aarch64-zftoolchain-linux-gnu-gcc'
+cpp = '/opt/zftoolchain/aarch64-zftoolchain-linux-gnu-x86_64/bin/aarch64-zftoolchain-linux-gnu-g++'
+ar = '/opt/zftoolchain/aarch64-zftoolchain-linux-gnu-x86_64/bin/aarch64-zftoolchain-linux-gnu-ar'
+strip = '/opt/zftoolchain/aarch64-zftoolchain-linux-gnu-x86_64/bin/aarch64-zftoolchain-linux-gnu-strip'
+pkgconfig = 'pkg-config'
+
+[host_machine]
+system = 'linux'
+cpu_family = 'aarch64'
+cpu = 'aarch64'
+endian = 'little'

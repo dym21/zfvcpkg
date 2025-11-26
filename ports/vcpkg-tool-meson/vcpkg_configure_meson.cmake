@@ -396,6 +396,10 @@ function(vcpkg_generate_meson_cmd_args)
     else()
         set(MESON_DEFAULT_LIBRARY static)
     endif()
+    
+    # 🌟 关键修改：将 VCPKG_LIBRARY_LINKAGE 转化为 Meson 选项并添加到参数列表
+    vcpkg_list(APPEND arg_OPTIONS "-Ddefault_library=${MESON_DEFAULT_LIBRARY}")
+
     set(MESON_CMAKE_BUILD_TYPE "${cmake_build_type_${buildtype}}")
     z_vcpkg_meson_setup_variables(${buildtype})
     configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/meson.template.in" "${meson_input_file_${buildtype}}" @ONLY)

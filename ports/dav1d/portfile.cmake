@@ -18,17 +18,12 @@ elseif (VCPKG_TARGET_IS_WINDOWS)
     endforeach(GAS_PATH)
 endif()
 
-set(LIBRARY_TYPE ${VCPKG_LIBRARY_LINKAGE})
-if (LIBRARY_TYPE STREQUAL "dynamic")
-    set(LIBRARY_TYPE "shared")
-endif(LIBRARY_TYPE STREQUAL "dynamic")
-
 vcpkg_configure_meson(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS
-        --default-library=${LIBRARY_TYPE}
         -Denable_tests=false
         -Denable_tools=false
+        "-Dc_args=-DAT_HWCAP2=26" # add this to enable neon instruction set
 )
 
 vcpkg_install_meson()

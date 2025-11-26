@@ -1,0 +1,24 @@
+[binaries]
+c = '/opt/zftoolchain/mips64el-zftoolchain-linux-gnu-x86_64/bin/mips64el-zftoolchain-linux-gnu-gcc'
+cpp = '/opt/zftoolchain/mips64el-zftoolchain-linux-gnu-x86_64/bin/mips64el-zftoolchain-linux-gnu-g++'
+ar = '/opt/zftoolchain/mips64el-zftoolchain-linux-gnu-x86_64/bin/mips64el-zftoolchain-linux-gnu-ar'
+strip = '/opt/zftoolchain/mips64el-zftoolchain-linux-gnu-x86_64/bin/mips64el-zftoolchain-linux-gnu-strip'
+ranlib = '/opt/zftoolchain/mips64el-zftoolchain-linux-gnu-x86_64/bin/mips64el-zftoolchain-linux-gnu-ranlib'
+pkgconfig = 'pkg-config'
+
+[built-in options]
+sys_root = '/opt/zftoolchain/mips64el-zftoolchain-linux-gnu-x86_64/mips64el-zftoolchain-linux-gnu/sysroot'
+
+c_args = ['-fPIC', '-Wno-narrowing']
+cpp_args = ['-fPIC', '-Wno-narrowing']
+
+c_link_args = ['-L/opt/zftoolchain/mips64el-zftoolchain-linux-gnu-x86_64/mips64el-zftoolchain-linux-gnu/sysroot/lib']
+cpp_link_args = ['-L/opt/zftoolchain/mips64el-zftoolchain-linux-gnu-x86_64/mips64el-zftoolchain-linux-gnu/sysroot/lib']
+
+pkg_config_path = '/home/duyongmeng/sourcecode/vcpkg/installed/cross-mips64-linux-x86/lib/pkgconfig'
+
+[host_machine]
+system = 'linux'
+cpu_family = 'mips64'
+cpu = 'mips64el'
+endian = 'little'
