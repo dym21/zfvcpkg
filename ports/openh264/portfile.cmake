@@ -9,7 +9,7 @@ vcpkg_from_github(
 )
 
 set(cxx_link_libraries "")
-if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
+if(VCPKG_LIBRARY_LINKAGE STREQUAL "static" AND NOT VCPKG_TARGET_IS_WINDOWS)
     block(PROPAGATE cxx_link_libraries)
         vcpkg_list(APPEND VCPKG_CMAKE_CONFIGURE_OPTIONS "-DVCPKG_DEFAULT_VARS_TO_CHECK=CMAKE_C_IMPLICIT_LINK_LIBRARIES;CMAKE_CXX_IMPLICIT_LINK_LIBRARIES")
         vcpkg_cmake_get_vars(cmake_vars_file)

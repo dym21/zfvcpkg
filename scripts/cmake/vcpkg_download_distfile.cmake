@@ -30,7 +30,7 @@ If you do not know the SHA512, add it as 'SHA512 0' and retry.")
     if(_VCPKG_INTERNAL_NO_HASH_CHECK)
         set(arg_SKIP_SHA512 1)
     endif()
-	set(arg_SKIP_SHA512 1)
+
     if(NOT arg_SKIP_SHA512)
         if("${arg_SHA512}" STREQUAL "0")
             string(REPEAT 0 128 arg_SHA512)
