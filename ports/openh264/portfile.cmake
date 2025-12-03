@@ -61,8 +61,6 @@ vcpkg_install_meson()
 vcpkg_copy_pdbs()
 vcpkg_fixup_pkgconfig()
 
-message(STATUS "cxx_link_libraries: ${cxx_link_libraries}")
-
 if(cxx_link_libraries)
     vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/lib/pkgconfig/openh264.pc"
         "(Libs:[^\r\n]*)"
