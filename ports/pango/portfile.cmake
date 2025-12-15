@@ -1,6 +1,8 @@
 string(REGEX MATCH "^([0-9]*[.][0-9]*)" VERSION_MAJOR_MINOR "${VERSION}")
 vcpkg_download_distfile(SOURCE_ARCHIVE
-    URLS "https://download.gnome.org/sources/pango/${VERSION_MAJOR_MINOR}/pango-${VERSION}.tar.xz"
+    URLS
+        "https://download.gnome.org/sources/pango/${VERSION_MAJOR_MINOR}/pango-${VERSION}.tar.xz"
+        "https://www.mirrorservice.org/sites/ftp.gnome.org/pub/GNOME/sources/${PORT}/${VERSION_MAJOR_MINOR}/${PORT}-${VERSION}.tar.xz"
     FILENAME "pango-${VERSION}.tar.xz"
     SHA512 19471618a66b68e19786c458387f2bc8027ecbda5aaf29efcc025a99b3a74402765c6c4c6ea2997d8f1219ef7f1bea817e6ca55e494dff24780f5d3f2a6242a2
 )
@@ -15,6 +17,12 @@ if("introspection" IN_LIST FEATURES)
     vcpkg_get_gobject_introspection_programs(PYTHON3 GIR_COMPILER GIR_SCANNER)
 else()
     list(APPEND OPTIONS_RELEASE -Dintrospection=disabled)
+endif()
+
+if(VCPKG_TARGET_IS_WINDOWS AND VCPKG_TARGET_IS_MINGW)
+    list(APPEND OPTIONS
+        "-Dc_link_args=-lstdc++"
+    )
 endif()
 
 vcpkg_configure_meson(
