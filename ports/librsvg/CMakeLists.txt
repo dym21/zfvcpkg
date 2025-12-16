@@ -186,6 +186,13 @@ target_link_libraries(pixbufloader-svg
         ${LIBRSVG_TARGET}
         PkgConfig::GDK_PIXBUF
 )
+
+if(MINGW)
+    # 显式链接标准 C++ 库
+   target_link_libraries(${LIBRSVG_TARGET} PRIVATE stdc++)
+  #  target_link_options(${LIBRSVG_TARGET} PRIVATE -static-libstdc++ -static-libgcc)
+endif()
+
 install(TARGETS pixbufloader-svg
     RUNTIME DESTINATION "${GDK_PIXBUF_MODULEDIR}"
     LIBRARY DESTINATION "${GDK_PIXBUF_MODULEDIR}"

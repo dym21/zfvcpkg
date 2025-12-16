@@ -57,7 +57,7 @@ set(FONT_SOURCES "")
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/resources")
 foreach(font IN LISTS fonts)
   cmake_path(GET font FILENAME name)
-  if (CMAKE_HOST_WIN32 AND WIN32)
+  if (MSVC)
     string(REGEX REPLACE "[-.]" "_" identifier "_binary_${name}")
     set(font_object "${CMAKE_CURRENT_BINARY_DIR}/resources/${name}.obj")
     set_source_files_properties("${font_object}" PROPERTIES EXTERNAL_OBJECT 1)
@@ -75,7 +75,6 @@ foreach(font IN LISTS fonts)
     list(APPEND FONT_SOURCES "${font_c_source}")
   endif()
 endforeach()
-
 # libmupdf
 
 # cf. Makefile, libmupdf.vcxproj
@@ -133,6 +132,19 @@ target_link_libraries(libmupdf
     $<$<BOOL:${ENABLE_OCR}>:Tesseract::libtesseract>
     $<$<BOOL:${ANDROID}>:log>
 )
+if(MINGW)
+  target_link_options(libmupdf PRIVATE -Wl,--whole-archive)
+endif(MINGW)
+
+if (CMAKE_SYSTEM_PROCESSOR MATCHES "x86|i686|x86_64")
+  target_compile_options(libmupdf PRIVATE
+    -msse2
+    -mssse3
+    -msse4.1
+  )
+endif()
+
+
 
 # installation
 
