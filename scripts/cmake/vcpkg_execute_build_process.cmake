@@ -40,9 +40,9 @@ function(vcpkg_execute_build_process)
     set(all_logs "${log_out}" "${log_err}")
 
     if(X_PORT_PROFILE)
-        vcpkg_list(PREPEND arg_COMMAND "${CMAKE_COMMAND}" "-E" "time" "-j32")
+        vcpkg_list(PREPEND arg_COMMAND "${CMAKE_COMMAND}" "-E" "time")
         if(DEFINED arg_NO_PARALLEL_COMMAND)
-            vcpkg_list(PREPEND arg_NO_PARALLEL_COMMAND "${CMAKE_COMMAND}" "-E" "time" "-j32")
+            vcpkg_list(PREPEND arg_NO_PARALLEL_COMMAND "${CMAKE_COMMAND}" "-E" "time")
         endif()
     endif()
 

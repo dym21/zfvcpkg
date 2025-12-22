@@ -27,7 +27,7 @@ vcpkg_cmake_configure(
         -DCREATE_LZMA_SYMLINKS=OFF
         -DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT=   # using flags from (vcpkg) toolchain
         -DENABLE_NLS=OFF # nls is not supported by this port, yet
-		-DALLOW_ARM64_CRC32=OFF
+	-DALLOW_ARM64_CRC32=OFF
         -DXZ_NLS=OFF
         -DCMAKE_POSITION_INDEPENDENT_CODE=ON
     MAYBE_UNUSED_VARIABLES
