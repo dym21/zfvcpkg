@@ -19,6 +19,10 @@
       "version>=": "1.89.0"
     },
     {
+      "name": "boost-context",
+      "version>=": "1.89.0"
+    },
+    {
       "name": "boost-headers",
       "version>=": "1.89.0"
     }

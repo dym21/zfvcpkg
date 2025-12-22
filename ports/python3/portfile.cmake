@@ -248,6 +248,7 @@ else()
         "--with-suffix="
         "--with-system-expat"
         "--disable-test-modules"
+		"--disable-ipv6"
     )
     if(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_BSD)
         list(APPEND OPTIONS "LIBS=-liconv -lintl")
@@ -281,7 +282,13 @@ else()
         set(_python_for_build "${CURRENT_HOST_INSTALLED_DIR}/tools/python3/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
         list(APPEND OPTIONS "--with-build-python=${_python_for_build}")
     endif()
-
+	if(VCPKG_CROSSCOMPILING)
+		# Python configure cannot test /dev/ptmx when cross compiling
+		list(APPEND OPTIONS
+			"ac_cv_file__dev_ptmx=yes"
+			"ac_cv_file__dev_ptc=no"
+		)
+	endif()
     vcpkg_make_configure(
         SOURCE_PATH "${SOURCE_PATH}"
         AUTORECONF

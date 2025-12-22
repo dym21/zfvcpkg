@@ -76,6 +76,11 @@
       "version>=": "1.89.0"
     },
     {
+      "name": "boost-cobalt",
+      "platform": "!uwp",
+      "version>=": "1.89.0"
+    },
+    {
       "name": "boost-compat",
       "version>=": "1.89.0"
     },
@@ -100,6 +105,11 @@
       "version>=": "1.89.0"
     },
     {
+      "name": "boost-context",
+      "platform": "!uwp & !emscripten",
+      "version>=": "1.89.0"
+    },
+    {
       "name": "boost-contract",
       "version>=": "1.89.0"
     },
@@ -113,6 +123,11 @@
     },
     {
       "name": "boost-core",
+      "version>=": "1.89.0"
+    },
+    {
+      "name": "boost-coroutine2",
+      "platform": "!uwp & !emscripten",
       "version>=": "1.89.0"
     },
     {
@@ -146,6 +161,11 @@
     },
     {
       "name": "boost-exception",
+      "version>=": "1.89.0"
+    },
+    {
+      "name": "boost-fiber",
+      "platform": "!uwp & !(arm & windows) & !emscripten",
       "version>=": "1.89.0"
     },
     {
@@ -364,6 +384,11 @@
       "version>=": "1.89.0"
     },
     {
+      "name": "boost-parameter-python",
+      "platform": "!uwp & !emscripten & !ios & !android",
+      "version>=": "1.89.0"
+    },
+    {
       "name": "boost-parser",
       "version>=": "1.89.0"
     },
@@ -401,7 +426,6 @@
       "version>=": "1.89.0"
     },
     {
-
       "name": "boost-program-options",
       "version>=": "1.89.0"
     },
@@ -419,6 +443,11 @@
     },
     {
       "name": "boost-ptr-container",
+      "version>=": "1.89.0"
+    },
+    {
+      "name": "boost-python",
+      "platform": "!uwp & !emscripten & !ios & !android",
       "version>=": "1.89.0"
     },
     {
@@ -480,6 +509,11 @@
     },
     {
       "name": "boost-spirit",
+      "version>=": "1.89.0"
+    },
+    {
+      "name": "boost-stacktrace",
+      "platform": "!uwp",
       "version>=": "1.89.0"
     },
     {

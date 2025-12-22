@@ -32,6 +32,11 @@
       "version>=": "1.89.0"
     },
     {
+      "name": "boost-context",
+      "platform": "!uwp & !emscripten",
+      "version>=": "1.89.0"
+    },
+    {
       "name": "boost-core",
       "version>=": "1.89.0"
     },
