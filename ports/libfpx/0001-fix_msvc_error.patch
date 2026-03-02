@@ -1,0 +1,1490 @@
+From 12f4d02562a9de07b32d56eff4b5a2298d69a7b1 Mon Sep 17 00:00:00 2001
+From: dym21 <dym21@163.com>
+Date: Mon, 2 Mar 2026 13:54:48 +0800
+Subject: [PATCH] fix_msvc_error
+
+---
+ basics/b_types.h  |  3 +-
+ fpx/f_fpxvw.cpp   |  6 ++--
+ fpx/fpxformt.cpp  |  2 ++
+ fpx/fpxlibio.cpp  |  8 ++---
+ fpx/imginfio.cpp  | 48 +++++++++++++-------------
+ fpxlib.h          | 17 +++++++---
+ jpeg/dscan.c      |  5 +++
+ ole/olecore.h     |  3 ++
+ ole/oleprop.cpp   |  6 ++--
+ ole/oleprops.h    |  6 ++--
+ ole/olestrm.cpp   | 52 ++++++++++++++++++++++++-----
+ ole/str8_16.h     |  3 +-
+ oless/ascii.cxx   | 62 ++++++++++++++++++++++++++++------
+ oless/docfile.cxx |  5 +++
+ oless/expdf.cxx   | 50 ++++++++++++++++++++--------
+ oless/expdf.hxx   | 85 +++++++++++++++++++++++++++++++++++++++++++++--
+ oless/h/dfmsp.hxx | 15 ++++++---
+ oless/h/funcs.hxx |  8 +++++
+ oless/h/owchar.h  | 25 ++++++++++++--
+ oless/h/ref.hxx   | 33 ++++++++++++++----
+ oless/h/storage.h | 10 ++++++
+ oless/h/tchar.h   | 11 ++++++
+ oless/mem.cxx     |  3 ++
+ oless/refilb.cxx  | 11 ++++++
+ oless/rexpdf.cxx  |  6 ++++
+ oless/storage.cxx |  8 +++++
+ oless/time.hxx    | 10 ++++++
+ oless/wchar.c     |  4 +++
+ 28 files changed, 415 insertions(+), 90 deletions(-)
+
+diff --git a/basics/b_types.h b/basics/b_types.h
+index 03699d2..623eb7d 100644
+--- a/basics/b_types.h
++++ b/basics/b_types.h
+@@ -53,13 +53,14 @@ typedef uint8_t	unsigned8;
+   
+ // Portable boolean type
+ #ifndef macintosh
+-
++#ifndef __cplusplus
+   #ifndef false
+     #define false 0
+   #endif
+   #ifndef true
+     #define true 1
+   #endif
++#endif /* !__cplusplus */
+ 
+   #ifndef Boolean_ID 
+     #define Boolean_ID
+diff --git a/fpx/f_fpxvw.cpp b/fpx/f_fpxvw.cpp
+index 5ea0f3f..9cff345 100644
+--- a/fpx/f_fpxvw.cpp
++++ b/fpx/f_fpxvw.cpp
+@@ -1039,9 +1039,9 @@ Boolean PFileFlashPixView::GetExtensionNumber (LPWSTR theExtensionName, short *e
+   OLEProperty*  aProp;
+   FPXWideStr    targetWStr;
+ 
+-  // Make a wide string descriptor for the ext name we're looking for
++  // Make a wide string des criptor for the ext name we're looking for
+   targetWStr.length = FPX_LPWSTRlen( theExtensionName);
+-  targetWStr.ptr = theExtensionName;
++  targetWStr.ptr = (uint16_t*)theExtensionName;
+ 
+   GetExtensionName(extensionName);
+ 
+@@ -1073,7 +1073,7 @@ Boolean PFileFlashPixView::GetExtensionNumber (LPWSTR theExtensionName, short *e
+ 
+         // Make a wide string descriptor for ext prop in file
+         thisWStr.length = FPX_LPWSTRlen( extName);
+-        thisWStr.ptr = extName;
++        thisWStr.ptr = (uint16_t*)extName;
+ 
+         // Compare the name with specified one
+         if ( !FPX_WideStrcmp(&targetWStr, &thisWStr) ) {
+diff --git a/fpx/fpxformt.cpp b/fpx/fpxformt.cpp
+index 84a2d03..2140968 100644
+--- a/fpx/fpxformt.cpp
++++ b/fpx/fpxformt.cpp
+@@ -17,12 +17,14 @@
+ //  ----------------------------------------------------------------------------
+ 
+ #ifndef macintosh
++#ifndef __cplusplus
+   #ifndef false
+     #define false 0
+   #endif
+   #ifndef true
+     #define true 1
+   #endif
++#endif /* !__cplusplus */
+ #endif
+ 
+ //  Includes
+diff --git a/fpx/fpxlibio.cpp b/fpx/fpxlibio.cpp
+index 9a3c6f3..1acad24 100644
+--- a/fpx/fpxlibio.cpp
++++ b/fpx/fpxlibio.cpp
+@@ -329,7 +329,7 @@ FPXStatus FPX_AllocFPXWideStr (FPXWideStr* theFPXArray, unsigned int nbElem)
+   if (theFPXArray == NULL) {
+     return FPX_OBJECT_CREATION_FAILED;
+   }
+-  theFPXArray->ptr    = new WCHAR [nbElem];
++  theFPXArray->ptr    = (uint16_t*)new WCHAR [nbElem];
+   if (theFPXArray->ptr==NULL) {
+     theFPXArray->length = 0;
+     return FPX_OBJECT_CREATION_FAILED;
+@@ -2553,19 +2553,19 @@ FPXStatus FPX_GetGlobalInformation(
+       theGlobalInfo->visible_outputs_valid = FALSE;
+ 
+     if (filePtr->GetGlobalInfoProperty (PID_MaxImageIndex, &aProp)) {
+-      theGlobalInfo->max_image_index = (uint32_t)(*aProp);
++      theGlobalInfo->max_image_index = (uint32_t)(DWORD)(*aProp);
+       theGlobalInfo->max_image_index_valid = TRUE;
+     } else
+       theGlobalInfo->max_image_index_valid = FALSE;
+ 
+     if (filePtr->GetGlobalInfoProperty (PID_MaxTransfoIndex, &aProp)) {
+-      theGlobalInfo->max_transform_index = (uint32_t)(*aProp);
++      theGlobalInfo->max_transform_index = (uint32_t)(DWORD)(*aProp);
+       theGlobalInfo->max_transform_index_valid = TRUE;
+     } else
+       theGlobalInfo->max_transform_index_valid = FALSE;
+ 
+     if (filePtr->GetGlobalInfoProperty (PID_MaxOperatorIndex, &aProp)) {
+-      theGlobalInfo->max_operation_index = (uint32_t)(*aProp);
++      theGlobalInfo->max_operation_index = (uint32_t)(DWORD)(*aProp);
+       theGlobalInfo->max_operation_index_valid = TRUE;
+     } else
+       theGlobalInfo->max_operation_index_valid = FALSE;
+diff --git a/fpx/imginfio.cpp b/fpx/imginfio.cpp
+index b2dde16..8dff0c4 100644
+--- a/fpx/imginfio.cpp
++++ b/fpx/imginfio.cpp
+@@ -276,7 +276,7 @@ FPXStatus FPX_SetContentDescriptionGroup (
+     
+     if (theContentGroup->test_target_in_the_image_valid)
+       if (filePtr->SetImageInfoProperty (PID_TestTargetType, TYP_TestTargetType, &aProp))
+-        *aProp = theContentGroup->test_target_in_the_image;
++        *aProp = (DWORD)theContentGroup->test_target_in_the_image;
+ 
+     if (theContentGroup->group_caption_valid)
+       if (filePtr->SetImageInfoProperty (PID_GroupCaption, TYP_GroupCaption, &aProp))
+@@ -329,7 +329,7 @@ FPXStatus FPX_GetContentDescriptionGroup (
+     OLEProperty* aProp;
+     
+     if (filePtr->GetImageInfoProperty (PID_TestTargetType, &aProp)) {
+-      theContentGroup->test_target_in_the_image = *aProp;
++      theContentGroup->test_target_in_the_image = (uint32_t)(DWORD)(*aProp);
+       theContentGroup->test_target_in_the_image_valid = true;
+     } else
+       theContentGroup->test_target_in_the_image_valid = false;
+@@ -487,7 +487,7 @@ FPXStatus FPX_SetPerPictureGroup (
+ 
+     if (thePerPictureGroup->exposure_program_valid)
+       if (filePtr->SetImageInfoProperty (PID_ExposureProgram, TYP_ExposureProgram, &aProp))
+-        *aProp = (uint32_t)(FPXExposureProgram)(thePerPictureGroup->exposure_program);
++        *aProp = (DWORD)(FPXExposureProgram)(thePerPictureGroup->exposure_program);
+ 
+     if (thePerPictureGroup->brightness_value_valid)
+       if (filePtr->SetImageInfoProperty (PID_BrightnessValue, TYP_BrightnessValue, &aProp))
+@@ -503,11 +503,11 @@ FPXStatus FPX_SetPerPictureGroup (
+ 
+     if (thePerPictureGroup->metering_mode_valid)
+       if (filePtr->SetImageInfoProperty (PID_MeteringMode, TYP_MeteringMode, &aProp))
+-        *aProp = (uint32_t)(FPXMeteringMode)(thePerPictureGroup->metering_mode);
++        *aProp = (DWORD)(FPXMeteringMode)(thePerPictureGroup->metering_mode);
+ 
+     if (thePerPictureGroup->scene_illuminant_valid)
+       if (filePtr->SetImageInfoProperty (PID_SceneIlluminant, TYP_SceneIlluminant, &aProp))
+-        *aProp = (uint32_t)(FPXSceneIlluminant)(thePerPictureGroup->scene_illuminant);
++        *aProp = (DWORD)(FPXSceneIlluminant)(thePerPictureGroup->scene_illuminant);
+ 
+     if (thePerPictureGroup->focal_length_valid)
+       if (filePtr->SetImageInfoProperty (PID_FocalLength, TYP_FocalLength, &aProp))
+@@ -519,7 +519,7 @@ FPXStatus FPX_SetPerPictureGroup (
+ 
+     if (thePerPictureGroup->flash_valid)
+       if (filePtr->SetImageInfoProperty (PID_Flash, TYP_Flash, &aProp))
+-        *aProp = (uint32_t)(FPXFlash)(thePerPictureGroup->flash);
++        *aProp = (DWORD)(FPXFlash)(thePerPictureGroup->flash);
+ 
+     if (thePerPictureGroup->flash_energy_valid)
+       if (filePtr->SetImageInfoProperty (PID_FlashEnergy, TYP_FlashEnergy, &aProp))
+@@ -527,11 +527,11 @@ FPXStatus FPX_SetPerPictureGroup (
+ 
+     if (thePerPictureGroup->flash_return_valid)
+       if (filePtr->SetImageInfoProperty (PID_FlashReturn, TYP_FlashReturn, &aProp))
+-        *aProp = (uint32_t)(FPXFlashReturn)(thePerPictureGroup->flash_return);
++        *aProp = (DWORD)(FPXFlashReturn)(thePerPictureGroup->flash_return);
+ 
+     if (thePerPictureGroup->back_light_valid)
+       if (filePtr->SetImageInfoProperty (PID_BackLight, TYP_BackLight, &aProp))
+-        *aProp = (uint32_t)(FPXBackLight)(thePerPictureGroup->back_light);
++        *aProp = (DWORD)(FPXBackLight)(thePerPictureGroup->back_light);
+ 
+     if (thePerPictureGroup->subject_location_valid)
+       if (filePtr->SetImageInfoProperty (PID_SubjectLocation, TYP_SubjectLocation, &aProp))
+@@ -588,7 +588,7 @@ FPXStatus FPX_GetPerPictureGroup (
+       thePerPictureGroup->f_number_valid = false;
+ 
+     if (filePtr->GetImageInfoProperty (PID_ExposureProgram, &aProp)) {
+-      thePerPictureGroup->exposure_program = (FPXExposureProgram)(uint32_t)(*aProp);
++      thePerPictureGroup->exposure_program = (FPXExposureProgram)(DWORD)(*aProp);
+       if (thePerPictureGroup->exposure_program > FPX_LANDSCAPE_MODE)
+         thePerPictureGroup->exposure_program = FPX_UNIDENTIFIED_EXPOSURE_PROGRAM;
+       thePerPictureGroup->exposure_program_valid = true;
+@@ -614,7 +614,7 @@ FPXStatus FPX_GetPerPictureGroup (
+       thePerPictureGroup->subject_distance_valid = false;
+ 
+     if (filePtr->GetImageInfoProperty (PID_MeteringMode, &aProp)) {
+-      thePerPictureGroup->metering_mode = (FPXMeteringMode)(uint32_t)(*aProp);
++      thePerPictureGroup->metering_mode = (FPXMeteringMode)(DWORD)(*aProp);
+       if (thePerPictureGroup->metering_mode > FPX_MULTI_SPOT)
+         thePerPictureGroup->metering_mode = FPX_UNIDENTIFED_METERING_MODE;
+       thePerPictureGroup->metering_mode_valid = true;
+@@ -622,7 +622,7 @@ FPXStatus FPX_GetPerPictureGroup (
+       thePerPictureGroup->metering_mode_valid = false;
+ 
+     if (filePtr->GetImageInfoProperty (PID_SceneIlluminant, &aProp)) {
+-      thePerPictureGroup->scene_illuminant = (FPXSceneIlluminant)(uint32_t)(*aProp);
++      thePerPictureGroup->scene_illuminant = (FPXSceneIlluminant)(DWORD)(*aProp);
+       if (thePerPictureGroup->scene_illuminant > FPX_D75_ILLUMINANT)
+         thePerPictureGroup->scene_illuminant = FPX_UNIDENTIFIED_SCENE_ILLUMINANT;
+       thePerPictureGroup->scene_illuminant_valid = true;
+@@ -642,7 +642,7 @@ FPXStatus FPX_GetPerPictureGroup (
+       thePerPictureGroup->maximum_aperature_value_valid = false;
+ 
+     if (filePtr->GetImageInfoProperty (PID_Flash, &aProp)) {
+-      thePerPictureGroup->flash = (FPXFlash)(uint32_t)(*aProp);
++      thePerPictureGroup->flash = (FPXFlash)(DWORD)(*aProp);
+       if (thePerPictureGroup->flash > FPX_FLASH_USED)
+         thePerPictureGroup->flash = FPX_FLASH_USE_UNKNOWN;
+       thePerPictureGroup->flash_valid = true;
+@@ -656,7 +656,7 @@ FPXStatus FPX_GetPerPictureGroup (
+       thePerPictureGroup->flash_energy_valid = false;
+ 
+     if (filePtr->GetImageInfoProperty (PID_FlashReturn, &aProp)) {
+-      thePerPictureGroup->flash_return = (FPXFlashReturn)(uint32_t)(*aProp);
++      thePerPictureGroup->flash_return = (FPXFlashReturn)(DWORD)(*aProp);
+       if (thePerPictureGroup->flash_return > FPX_SUBJECT_INSIDE_FLASH_RANGE)
+         thePerPictureGroup->flash_return = FPX_NOT_A_CAMERA_FEATURE_FLASH_RETURN;
+       thePerPictureGroup->flash_return_valid = true;
+@@ -664,7 +664,7 @@ FPXStatus FPX_GetPerPictureGroup (
+       thePerPictureGroup->flash_return_valid = false;
+ 
+     if (filePtr->GetImageInfoProperty (PID_BackLight, &aProp)) {
+-      thePerPictureGroup->back_light = (FPXBackLight)(uint32_t)(*aProp);
++      thePerPictureGroup->back_light = (FPXBackLight)(DWORD)(*aProp);
+       if (thePerPictureGroup->back_light > FPX_BACK_LIT2)
+         thePerPictureGroup->back_light = FPX_NOT_A_CAMERA_FEATURE_BACKLIGHT;
+       thePerPictureGroup->back_light_valid = true;
+@@ -718,7 +718,7 @@ FPXStatus FPX_SetDigitalCameraGroup (
+     
+     if (theDigitalCameraGroup->sensing_method_valid)
+       if (filePtr->SetImageInfoProperty (PID_SensingMethod, TYP_SensingMethod, &aProp))
+-        *aProp = (uint32_t)(FPXSensingMethod)(theDigitalCameraGroup->sensing_method);
++        *aProp = (DWORD)(FPXSensingMethod)(theDigitalCameraGroup->sensing_method);
+ 
+     if (theDigitalCameraGroup->focal_plane_x_resolution_valid)
+       if (filePtr->SetImageInfoProperty (PID_FocalXResolution, TYP_FocalXResolution, &aProp))
+@@ -730,7 +730,7 @@ FPXStatus FPX_SetDigitalCameraGroup (
+ 
+     if (theDigitalCameraGroup->focal_plane_resolution_unit_valid)
+       if (filePtr->SetImageInfoProperty (PID_FocalResolutionUnit, TYP_FocalResolutionUnit, &aProp))
+-        *aProp = (uint32_t)(FPXResolutionUnit)(theDigitalCameraGroup->focal_plane_resolution_unit);
++        *aProp = (DWORD)(FPXResolutionUnit)(theDigitalCameraGroup->focal_plane_resolution_unit);
+     
+     // PTCH_DCG - reinstated Spatial Frequency Response using OLEPROP.CPP conversions
+     if (theDigitalCameraGroup->spacial_frequency_valid)
+@@ -781,7 +781,7 @@ FPXStatus FPX_GetDigitalCameraGroup (
+     OLEProperty* aProp;
+     
+     if (filePtr->GetImageInfoProperty (PID_SensingMethod, &aProp)) {
+-      theDigitalCameraGroup->sensing_method = (FPXSensingMethod)(uint32_t)(*aProp);
++      theDigitalCameraGroup->sensing_method = (FPXSensingMethod)(DWORD)(*aProp);
+       if (theDigitalCameraGroup->sensing_method > FPX_COLOR_SEQUENCIAL_LINEAR_SENSOR)
+         theDigitalCameraGroup->sensing_method = FPX_UNDEFINED;
+       theDigitalCameraGroup->sensing_method_valid = true;
+@@ -801,7 +801,7 @@ FPXStatus FPX_GetDigitalCameraGroup (
+       theDigitalCameraGroup->focal_plane_y_resolution_valid = false;
+ 
+     if (filePtr->GetImageInfoProperty (PID_FocalResolutionUnit, &aProp)) {
+-      theDigitalCameraGroup->focal_plane_resolution_unit = (FPXResolutionUnit)(uint32_t)(*aProp);
++      theDigitalCameraGroup->focal_plane_resolution_unit = (FPXResolutionUnit)(DWORD)(*aProp);
+       theDigitalCameraGroup->focal_plane_resolution_unit_valid = true;
+     } else
+       theDigitalCameraGroup->focal_plane_resolution_unit_valid = false;
+@@ -868,7 +868,7 @@ FPXStatus FPX_SetFilmDescriptionGroup (
+ 
+     if (theFilmGroup->film_category_valid)
+       if (filePtr->SetImageInfoProperty (PID_FilmCategory, TYP_FilmCategory, &aProp))
+-        *aProp = (uint32_t)(FPXFilmCategory)(theFilmGroup->film_category);
++        *aProp = (DWORD)(FPXFilmCategory)(theFilmGroup->film_category);
+ 
+     if (theFilmGroup->film_size_valid)
+       if (filePtr->SetImageInfoProperty (PID_FilmSize, TYP_FilmSize, &aProp)) {
+@@ -920,7 +920,7 @@ FPXStatus FPX_GetFilmDescriptionGroup (
+       theFilmGroup->film_brand_valid = false;
+ 
+     if (filePtr->GetImageInfoProperty (PID_FilmCategory, &aProp)) {
+-      theFilmGroup->film_category = (FPXFilmCategory)(uint32_t)(*aProp);
++      theFilmGroup->film_category = (FPXFilmCategory)(DWORD)(*aProp);
+       if (theFilmGroup->film_category > FPX_INTERNEGATIVE_COLOR)
+         theFilmGroup->film_category = FPX_UNIDENTIFIED;
+       theFilmGroup->film_category_valid = true;
+@@ -1003,11 +1003,11 @@ FPXStatus FPX_SetOriginalDocDescriptionGroup (
+ 
+     if (theDocGroup->original_medium_valid)
+       if (filePtr->SetImageInfoProperty (PID_OriginalMedium, TYP_OriginalMedium, &aProp))
+-        *aProp = (uint32_t)(FPXOriginalMedium)(theDocGroup->original_medium);
++        *aProp = (DWORD)(FPXOriginalMedium)(theDocGroup->original_medium);
+ 
+     if (theDocGroup->type_of_reflection_original_valid)
+       if (filePtr->SetImageInfoProperty (PID_TypeOfOriginal, TYP_TypeOfOriginal, &aProp))
+-        *aProp = (uint32_t)(FPXTypeOfReflectionOriginal)(theDocGroup->type_of_reflection_original);
++        *aProp = (DWORD)(FPXTypeOfReflectionOriginal)(theDocGroup->type_of_reflection_original);
+ 
+     filePtr->Commit();
+   } else
+@@ -1048,7 +1048,7 @@ FPXStatus FPX_GetOriginalDocDescriptionGroup (
+       theDocGroup->original_document_size_valid = false;
+ 
+     if (filePtr->GetImageInfoProperty (PID_OriginalMedium, &aProp)) {
+-      theDocGroup->original_medium = (FPXOriginalMedium)(uint32_t)(*aProp);
++      theDocGroup->original_medium = (FPXOriginalMedium)(DWORD)(*aProp);
+       if (theDocGroup->original_medium > FPX_LINE_ART)
+         theDocGroup->original_medium = FPX_UNIDENTIFIED_ORIGINAL_MEDIUM;
+       theDocGroup->original_medium_valid = true;
+@@ -1056,7 +1056,7 @@ FPXStatus FPX_GetOriginalDocDescriptionGroup (
+       theDocGroup->original_medium_valid = false;
+ 
+     if (filePtr->GetImageInfoProperty (PID_TypeOfOriginal, &aProp)) {
+-      theDocGroup->type_of_reflection_original = (FPXTypeOfReflectionOriginal)(uint32_t)(*aProp);
++      theDocGroup->type_of_reflection_original = (FPXTypeOfReflectionOriginal)(DWORD)(*aProp);
+       if (theDocGroup->type_of_reflection_original > FPX_COLOR_DOCUMENT)
+         theDocGroup->type_of_reflection_original = FPX_UNIDENTIFIED_TYPE_OF_REFLECTION_ORIGINAL;
+       theDocGroup->type_of_reflection_original_valid = true;
+diff --git a/fpxlib.h b/fpxlib.h
+index c4179c1..6761e9f 100644
+--- a/fpxlib.h
++++ b/fpxlib.h
+@@ -13,7 +13,12 @@ extern "C" {
+ #endif
+ #include <inttypes.h>
+ #include <stddef.h>
++#if defined(WIN32) || defined(_WIN32)
++#include <windows.h>
++#include <objidl.h>
++#endif
+ 
++#if !defined(WIN32) && !defined(_WIN32)
+   typedef struct IStream IStream;
+   typedef struct IStorage IStorage;
+ 
+@@ -38,12 +43,16 @@ extern "C" {
+     uint8_t	__RPC_FAR *pClipData;
+   } CLIPDATA;
+ 
+-#if !defined(WCHAR) && !defined(__BORLANDC__)
+-  typedef uint16_t	WCHAR;
+-  typedef WCHAR	*LPWSTR;
+-#endif
++  #if !defined(WCHAR) && !defined(__BORLANDC__)
++    typedef uint16_t	WCHAR;
++    typedef WCHAR	*LPWSTR;
++  #endif
+   typedef uint16_t	WORD;
+   typedef uint32_t	DWORD;
++#else
++  /* Use system COM types; provide XGUID alias for compatibility */
++  typedef GUID XGUID;
++#endif
+ 
+ /***************************************************************************
+    TOOLKIT HANDLE
+diff --git a/jpeg/dscan.c b/jpeg/dscan.c
+index e5d45aa..2512a15 100644
+--- a/jpeg/dscan.c
++++ b/jpeg/dscan.c
+@@ -19,7 +19,12 @@
+ 
+ #include <stdlib.h>
+ #include <stdio.h>
++#if defined(_WIN32) || defined(_WIN64)
++#include <string.h>
++#define bzero(ptr, size) memset((ptr), 0, (size))
++#else
+ #include <strings.h>
++#endif
+ #include "jpegconf.h"
+ #include "decoder.h"
+ #include "dbuffer.h"
+diff --git a/ole/olecore.h b/ole/olecore.h
+index 47fd835..f22eb77 100644
+--- a/ole/olecore.h
++++ b/ole/olecore.h
+@@ -267,6 +267,9 @@ inline void  OLEBlob::SetPointer(long offset)   { bufPtr = ((bufPtr + offset) <
+   // This function deletes a dictionary 
+   void  DeleteDICTIONARY(DICTIONARY* pDict); 
+ 
++  // Returns the name string of a variant type (from olecore.cpp)
++  const char* VariantName(VARTYPE vtType);
++
+ //  ----------------------------------------------------------------------------
+   #endif // OLECore_h
+ //  ----------------------------------------------------------------------------
+diff --git a/ole/oleprop.cpp b/ole/oleprop.cpp
+index 4cd18da..ec9f8dc 100644
+--- a/ole/oleprop.cpp
++++ b/ole/oleprop.cpp
+@@ -251,7 +251,7 @@ OLEProperty::operator VECTOR*() const
+ 
+ short&    OLEProperty::operator=(const short& v)    { Clear(); V_I2(&val) = v; return V_I2(&val); }
+ WORD&   OLEProperty::operator=(const WORD& v)   { Clear(); V_I2(&val) = v; return (WORD&)V_I2(&val); }
+-int32_t&   OLEProperty::operator=(const int32_t& v)   { Clear(); V_I4(&val) = v; return V_I4(&val); }
++int32_t&   OLEProperty::operator=(const int32_t& v)   { Clear(); V_I4(&val) = v; return (int32_t&)V_I4(&val); }
+ DWORD&    OLEProperty::operator=(const DWORD& v)    { Clear(); V_I4(&val) = v; return (DWORD&)V_I4(&val); }
+ float&    OLEProperty::operator=(const float& v)    { Clear(); V_R4(&val) = v; return V_R4(&val); }
+ double&   OLEProperty::operator=(const double& v)   { Clear(); V_R8(&val) = v; return V_R8(&val); }
+@@ -1089,7 +1089,7 @@ FPXWideStr& LPWSTRToFPXWideStr( LPWSTR pwstr )
+   if (pwstr) {
+     // Allocate for FPXWideStr
+     fpxwstr->length   = wcslen(pwstr) + 1;
+-    fpxwstr->ptr    = (LPWSTR)new WCHAR[fpxwstr->length];
++    fpxwstr->ptr    = (uint16_t*)(LPWSTR)new WCHAR[fpxwstr->length];
+     if (fpxwstr->ptr == NULL) {
+       fpxwstr->length = 0;
+       return *fpxwstr;
+@@ -1266,7 +1266,7 @@ FPXWideStrArray& VectorToFPXWideStrArray( VECTOR* vec )
+ 
+     for ( DWORD i= 0; i < wa->length; i++ ) {
+       wa->ptr[i].length   = wcslen(vec->prgpwz[i]) + 1;
+-      wa->ptr[i].ptr    = new WCHAR[wa->ptr[i].length];
++      wa->ptr[i].ptr    = (uint16_t*)new WCHAR[wa->ptr[i].length];
+       if (wa->ptr[i].ptr == NULL) {
+         wa->ptr[i].length = 0;
+         return *wa;
+diff --git a/ole/oleprops.h b/ole/oleprops.h
+index 8f26d6d..35c1726 100644
+--- a/ole/oleprops.h
++++ b/ole/oleprops.h
+@@ -119,9 +119,9 @@
+ 
+     OLEPropertySet *    parPropSet;   // Parent property set
+     OLEProperty **      ppOLEProp;    // Array of properties
+-    uint32_t       numOfProp;    // Number of properties
+-    uint32_t     sectionOffset;  // Section offset in the property set stream
+-    uint32_t     sectionSize;  // Section size (in bytes)
++    DWORD       numOfProp;    // Number of properties
++    DWORD     sectionOffset;  // Section offset in the property set stream
++    DWORD     sectionSize;  // Section size (in bytes)
+     GUID          secID;      // Section Format Identifier
+ };
+ 
+diff --git a/ole/olestrm.cpp b/ole/olestrm.cpp
+index ca1c77d..8970c84 100644
+--- a/ole/olestrm.cpp
++++ b/ole/olestrm.cpp
+@@ -674,7 +674,7 @@ DWORD OLEStream::ReadVT_LPWSTR(WCHAR **ppwsz)
+ 
+   // Read the wide char. Here we don't use ReadVT_I2 since unicode is not padded to 32-bit
+   for ( DWORD i = 0; i < dwLength; i++ )  {
+-    if ( !ReadVT_I2_NoPad(&pwsz[i]) )
++    if ( !ReadVT_I2_NoPad((WORD*)&pwsz[i]) )
+       return FALSE;
+   }
+ 
+@@ -714,7 +714,7 @@ DWORD OLEStream::ReadVT_LPWSTR_NoPad(WCHAR **ppwsz)
+ 
+   // Read the wide char. Here we don't use ReadVT_I2 since unicode is not padded to 32-bit
+   for ( DWORD i = 0; i < dwLength; i++ )  {
+-    if ( !ReadVT_I2_NoPad(&pwsz[i]) )
++    if ( !ReadVT_I2_NoPad((WORD*)&pwsz[i]) )
+       return FALSE;
+   }
+ 
+@@ -1096,7 +1096,7 @@ DWORD OLEStream::ReadVT_VECTOR(DWORD dwType, VECTOR **ppVector)
+       for ( i= 0; i < pvector->cElements; i++ ) {
+ 
+         // Read the variant type first ( unsigned long )
+-        ReadVT_I4(&tmpType);
++        ReadVT_I4((DWORD*)&tmpType);
+         pvector->pvar[i].vt = tmpType;
+         //ReadVT_I4((DWORD *)&pvector->pvar[i].vt);
+         strLen += 4;
+@@ -1273,8 +1273,22 @@ DWORD OLEStream::WriteVT(VARIANT * variant)
+     case VT_LPSTR:
+ #ifdef _UNICODE
+       return WriteVT_LPSTR((LPSTR)V_UI1REF(variant));
++#else
++#ifdef _WIN32
++      {
++        BSTR b = V_BSTR(variant);
++        if (!b) return WriteVT_LPSTR((char*)NULL);
++        int n = WideCharToMultiByte(CP_ACP, 0, b, -1, NULL, 0, NULL, NULL);
++        char* p = (n > 0) ? new char[n] : NULL;
++        if (!p) return FALSE;
++        WideCharToMultiByte(CP_ACP, 0, b, -1, p, n, NULL, NULL);
++        DWORD r = WriteVT_LPSTR(p);
++        delete[] p;
++        return r;
++      }
+ #else
+       return WriteVT_LPSTR(V_BSTR(variant));
++#endif
+ #endif
+     case VT_LPWSTR:
+       return WriteVT_LPWSTR((WCHAR *)V_BYREF(variant));
+@@ -1564,7 +1578,7 @@ DWORD OLEStream::WriteVT_LPWSTR(WCHAR *pwsz)
+   for ( DWORD i = 0; i < wcount; i++ )  {
+ 
+     // Write the wide char
+-    if ( !WriteVT_I2_NoPad(&pwsz[i]))
++    if ( !WriteVT_I2_NoPad((WORD*)&pwsz[i]))
+       return FALSE;
+   }
+ 
+@@ -1602,7 +1616,7 @@ DWORD OLEStream::WriteVT_LPWSTR_NoPad(WCHAR *pwsz)
+   for ( DWORD i = 0; i < dwLength; i++ )  {
+ 
+     // Write the wide char
+-    if ( !WriteVT_I2_NoPad(&pwsz[i]))
++    if ( !WriteVT_I2_NoPad((WORD*)&pwsz[i]))
+       return FALSE;
+   }
+ 
+@@ -1916,7 +1930,7 @@ DWORD OLEStream::WriteVT_VECTOR(DWORD dwType, VECTOR *pvector)
+         // Write a variant type first ( unsigned long)
+         tmpVal = pvector->pvar[i].vt;
+         //WriteVT_I4((DWORD *)&pvector->pvar[i].vt);
+-        WriteVT_I4(&tmpVal);
++        WriteVT_I4((DWORD*)&tmpVal);
+         strLen += 4;
+ 
+         // Write the variant accordingly. The total bytes write to the stream is returned
+@@ -2262,6 +2276,28 @@ Boolean OLEStream::VTtoString(VARIANT *variant, char **ppsz)
+         *psz = 0;
+       }
+       break;
++#else
++#ifdef _WIN32
++      if ( V_BSTR(variant) )
++      {
++        int n = WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)V_BSTR(variant), -1, NULL, 0, NULL, NULL);
++        len = (n > 0) ? (DWORD)n : 1;
++        psz = new char [len];
++        if (psz==NULL) {
++          return FALSE;
++        }
++        WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)V_BSTR(variant), -1, psz, len, NULL, NULL);
++      }
++      else
++      {
++        len = 1;
++        psz = new char [len];
++        if (psz==NULL) {
++          return FALSE;
++        }
++        *psz = 0;
++      }
++      break;
+ #else
+       if ( V_BSTR(variant) )
+       {
+@@ -2270,7 +2306,6 @@ Boolean OLEStream::VTtoString(VARIANT *variant, char **ppsz)
+         if (psz==NULL) {
+           return FALSE;
+         }
+-
+         strcpy(psz, V_BSTR(variant));
+       }
+       else
+@@ -2280,11 +2315,10 @@ Boolean OLEStream::VTtoString(VARIANT *variant, char **ppsz)
+         if (psz==NULL) {
+           return FALSE;
+         }
+-
+         *psz = 0;
+       }
+       break;
+-
++#endif
+ #endif
+     case VT_BSTR:
+     case VT_LPWSTR:
+diff --git a/ole/str8_16.h b/ole/str8_16.h
+index f4765d1..4203f1a 100644
+--- a/ole/str8_16.h
++++ b/ole/str8_16.h
+@@ -143,7 +143,8 @@ inline String8::~String8(void) {
+ // of simply changing layout of string literal at
+ // compile-time).
+ 
+-#ifdef _UNICODE
++#if defined(_UNICODE) || defined(_WIN32)
++/* On Windows, OLE APIs expect OLECHAR* (WCHAR*); convert char* via String16 */
+ #define OLE_STR(x) String16(x)
+ #define ANSI_STR(x) String8(x)
+ #else
+diff --git a/oless/ascii.cxx b/oless/ascii.cxx
+index af4a950..7031175 100644
+--- a/oless/ascii.cxx
++++ b/oless/ascii.cxx
+@@ -77,7 +77,11 @@ static SNBW SNBToSNBW(SNB snbIn)
+     BYTE *pb;
+     
+     for (snb = snbIn; *snb; snb++, cItems++)
+-        cbStrings += (strlen(*snb)+1)*sizeof(WCHAR);
++#ifdef _WIN32
++        cbStrings += (wcslen((const WCHAR *)*snb)+1)*sizeof(WCHAR);
++#else
++        cbStrings += (_tcslen(*snb)+1)*sizeof(WCHAR);
++#endif
+     cItems++;
+     pb = new BYTE[(size_t)(cbStrings+sizeof(WCHAR *)*cItems)];
+     if (pb == NULL)
+@@ -87,8 +91,13 @@ static SNBW SNBToSNBW(SNB snbIn)
+     for (snb = snbIn, snbw = snbwOut; *snb; snb++, snbw++)
+     {
+         *snbw = pwcs;
+-        _tbstowcs(*snbw, *snb, strlen(*snb)+1);
++#ifdef _WIN32
++        wcscpy(pwcs, (const WCHAR *)*snb);
++        pwcs += wcslen(pwcs)+1;
++#else
++        _tbstowcs(*snbw, *snb, _tcslen(*snb)+1);
+         pwcs += wcslen(*snbw)+1;
++#endif
+     }
+     *snbw = NULL;
+     return snbwOut;
+@@ -142,10 +151,12 @@ STDMETHODIMP CExposedIterator::Next(ULONG celt,
+     olAssert(sizeof(STATSTG) == sizeof(STATSTGW));
+     
+     olChk(Next(celt, (STATSTGW *)rgelt, &cnt));
++#ifndef _WIN32
+     for (i = 0; i<cnt; i++)
+         if (rgelt[i].pwcsName)
+         _wcstotbs(rgelt[i].pwcsName, (WCHAR *)rgelt[i].pwcsName,
+         CWCSTORAGENAME);
++#endif
+     if (pceltFetched)
+         *pceltFetched = cnt;
+ EH_Err:
+@@ -168,9 +179,11 @@ STDMETHODIMP CExposedStream::Stat(STATSTG *pstatstg, DWORD grfStatFlag)
+     olAssert(sizeof(STATSTG) == sizeof(STATSTGW));
+     
+     olChk(Stat((STATSTGW *)pstatstg, grfStatFlag));
++#ifndef _WIN32
+     if (pstatstg->pwcsName)
+         _wcstotbs(pstatstg->pwcsName, (WCHAR *)pstatstg->pwcsName,
+         CWCSTORAGENAME);
++#endif
+ EH_Err:
+     return ResultFromScode(sc);
+ }
+@@ -189,11 +202,17 @@ STDMETHODIMP CExposedDocFile::Stat(STATSTG *pstatstg, DWORD grfStatFlag)
+     olAssert(sizeof(STATSTG) == sizeof(STATSTGW));
+     
+     // call the virtual (wide char) function
++#ifdef _WIN32
++    olChk(this->Stat(pstatstg, grfStatFlag));
++#else
+     olChk(this->Stat((STATSTGW *)pstatstg, grfStatFlag));
++#endif
+ 
++#ifndef _WIN32
+     if (pstatstg->pwcsName)
+         _wcstotbs(pstatstg->pwcsName, (WCHAR *)pstatstg->pwcsName,
+         _MAX_PATH);
++#endif
+ EH_Err:
+     return ResultFromScode(sc);
+ }
+@@ -388,17 +407,35 @@ EH_Err:
+ //
+ //---------------------------------------------------------------
+ 
+-STDMETHODIMP CExposedDocFile::MoveElementTo(TCHAR const *lpszName,
+-                                            IStorage *pstgDest,
+-                                            TCHAR const *lpszNewName,
+-                                            DWORD grfFlags)
++STDMETHODIMP CExposedDocFile::MoveElementTo(
++#ifdef _WIN32
++    const char *lpszName,
++#else
++    TCHAR const *lpszName,
++#endif
++    IStorage *pstgDest,
++#ifdef _WIN32
++    const char *lpszNewName,
++#else
++    TCHAR const *lpszNewName,
++#endif
++    DWORD grfFlags)
+ { 
+     SCODE sc;
+     WCHAR wcsName[CWCSTORAGENAME];
++#ifdef _WIN32
++    WCHAR wcsNewName[CWCSTORAGENAME];
++#endif
+     
+     olChk(CheckAName(lpszName));
++    olChk(CheckAName(lpszNewName));
+     _tbstowcs(wcsName, lpszName, CWCSTORAGENAME);
++#ifdef _WIN32
++    _tbstowcs(wcsNewName, lpszNewName, CWCSTORAGENAME);
++    sc = MoveElementTo(wcsName, pstgDest, wcsNewName, grfFlags);
++#else
+     sc = MoveElementTo(wcsName, pstgDest, lpszNewName, grfFlags);
++#endif
+     
+ EH_Err:
+     return ResultFromScode(sc);
+@@ -412,10 +449,15 @@ EH_Err:
+ //
+ //---------------------------------------------------------------
+ 
+-STDMETHODIMP CExposedDocFile::SetElementTimes(TCHAR const *lpszName,
+-                                              FILETIME const *pctime,
+-                                              FILETIME const *patime,
+-                                              FILETIME const *pmtime)
++STDMETHODIMP CExposedDocFile::SetElementTimes(
++#ifdef _WIN32
++    const char *lpszName,
++#else
++    TCHAR const *lpszName,
++#endif
++    FILETIME const *pctime,
++    FILETIME const *patime,
++    FILETIME const *pmtime)
+ {
+     SCODE sc;
+     WCHAR wcsName[CWCSTORAGENAME];
+diff --git a/oless/docfile.cxx b/oless/docfile.cxx
+index 1ee68a8..373fb40 100644
+--- a/oless/docfile.cxx
++++ b/oless/docfile.cxx
+@@ -90,6 +90,8 @@ EH_Err:
+ //
+ //---------------------------------------------------------------
+ 
++#ifndef _WIN32
++/* On Windows use system StgCreateDocfile from ole32 */
+ STDAPI StgCreateDocfile(TCHAR const *pszName,
+                         DWORD grfMode,
+                         DWORD reserved,
+@@ -136,6 +138,7 @@ EH_Err:
+                 ppstgOpen?(*ppstgOpen):NULL, sc));
+     return ResultFromScode(sc);
+ }
++#endif /* !_WIN32 */
+ 
+ 
+ 
+@@ -156,6 +159,7 @@ EH_Err:
+ //
+ //---------------------------------------------------------------
+ 
++#ifndef _WIN32
+ STDAPI StgCreateDocfileOnILockBytes(ILockBytes *plkbyt,
+                                     DWORD grfMode,
+                                     DWORD reserved,
+@@ -212,6 +216,7 @@ STDAPI StgCreateDocfileOnILockBytes(ILockBytes *plkbyt,
+     }
+     goto EH_Err;
+ }
++#endif /* !_WIN32 */
+ 
+ 
+ //+--------------------------------------------------------------
+diff --git a/oless/expdf.cxx b/oless/expdf.cxx
+index 46f6b36..84b7806 100644
+--- a/oless/expdf.cxx
++++ b/oless/expdf.cxx
+@@ -882,10 +882,17 @@ EH_Err:
+ //
+ //---------------------------------------------------------------
+ 
++#ifdef _WIN32
++STDMETHODIMP CExposedDocFile::MoveElementTo(const OLECHAR *pwcsName,
++                                             IStorage *pstgParent,
++                                             const OLECHAR *ptcsNewName,
++                                             DWORD grfFlags)
++#else
+ TSTDMETHODIMP CExposedDocFile::MoveElementTo(WCHAR const *pwcsName,
+                                              IStorage *pstgParent,
+                                              TCHAR const *ptcsNewName,
+                                              DWORD grfFlags)
++#endif
+ {
+     IUnknown *punksrc = NULL;
+     SCODE sc;
+@@ -1204,7 +1211,11 @@ EH_Err:
+ //
+ //---------------------------------------------------------------
+ 
++#ifdef _WIN32
++STDMETHODIMP CExposedDocFile::Stat(STATSTG *pstatstg, DWORD grfStatFlag)
++#else
+ TSTDMETHODIMP CExposedDocFile::Stat(STATSTGW *pstatstg, DWORD grfStatFlag)
++#endif
+ {
+     SCODE sc;
+ 
+@@ -1410,6 +1421,11 @@ SCODE CExposedDocFile::CopyDocFileToIStorage(CDocFile *pdfFrom,
+     TCHAR atcName[CWCSTORAGENAME];
+     CLSID clsid;
+     DWORD grfStateBits;
++#ifdef _WIN32
++#define FPX_PNAME (const OLECHAR *)atcName
++#else
++#define FPX_PNAME atcName
++#endif
+ 
+     olDebugOut((DEB_ITRACE, "In  CopyDocFileToIStorage:%p(%p, %p, %p, %lX)\n",
+                 this, pdfFrom, pstgTo, snbExclude, dwCopyFlags));
+@@ -1454,15 +1470,17 @@ SCODE CExposedDocFile::CopyDocFileToIStorage(CDocFile *pdfFrom,
+ 
+             //  Don't need to SetAccess0 here because pstgTo is an IStorage.
+ 
+-            sc = DfGetScode(pstgTo->CreateStorage(atcName, STGM_WRITE |
+-                                                  STGM_SHARE_EXCLUSIVE |
+-                                                  STGM_FAILIFTHERE,
+-                                                  0, 0, &pstgToChild));
++            sc = DfGetScode(pstgTo->CreateStorage(FPX_PNAME,
++                STGM_WRITE |
++                STGM_SHARE_EXCLUSIVE |
++                STGM_FAILIFTHERE,
++                0, 0, &pstgToChild));
+             if (sc == STG_E_FILEALREADYEXISTS)
+-                olHChkTo(EH_Get, pstgTo->OpenStorage(atcName, NULL,
+-                                                     STGM_WRITE |
+-                                                     STGM_SHARE_EXCLUSIVE,
+-                                                     NULL, 0, &pstgToChild));
++                olHChkTo(EH_Get, pstgTo->OpenStorage(FPX_PNAME,
++                NULL,
++                STGM_WRITE |
++                STGM_SHARE_EXCLUSIVE,
++                NULL, 0, &pstgToChild));
+             else if (FAILED(sc))
+                 olErr(EH_Get, sc);
+             olChkTo(EH_Create,
+@@ -1480,10 +1498,11 @@ SCODE CExposedDocFile::CopyDocFileToIStorage(CDocFile *pdfFrom,
+             //  Don't need to SetAccess0 here because pstgTo is an IStorage.
+ 
+             olHChkTo(EH_Get,
+-                     pstgTo->CreateStream(atcName, STGM_WRITE |
+-                                          STGM_SHARE_EXCLUSIVE |
+-                                          STGM_CREATE,
+-                                          0, 0, &pstTo));
++                     pstgTo->CreateStream(FPX_PNAME,
++                     STGM_WRITE |
++                     STGM_SHARE_EXCLUSIVE |
++                     STGM_CREATE,
++                     0, 0, &pstTo));
+             olChkTo(EH_Create, CopyDStreamToIStream(pstFrom, pstTo));
+             pstFrom->Release();
+             pstTo->Release();
+@@ -1504,7 +1523,8 @@ EH_Create:
+         pstgToChild->Release();
+     else
+         pstTo->Release();
+-    olVerSucc(pstgTo->DestroyElement(atcName));
++    olVerSucc(pstgTo->DestroyElement(FPX_PNAME));
++#undef FPX_PNAME
+ EH_Get:
+     if (ib.type == STGTY_STORAGE)
+         pdfFromChild->Release();
+@@ -1530,7 +1550,11 @@ EH_Err:
+ //----------------------------------------------------------------------------
+ 
+ 
++#ifdef _WIN32
++STDMETHODIMP CExposedDocFile::SwitchToFile(LPOLESTR ptcsFile)
++#else
+ STDMETHODIMP CExposedDocFile::SwitchToFile(TCHAR *ptcsFile)
++#endif
+ {
+     UNREFERENCED_PARM(ptcsFile);
+     olAssert(FALSE && aMsg("Unimplemented Function called!\n"));
+diff --git a/oless/expdf.hxx b/oless/expdf.hxx
+index 737f259..de5a291 100644
+--- a/oless/expdf.hxx
++++ b/oless/expdf.hxx
+@@ -102,7 +102,79 @@ public:
+     STDMETHOD(SetClass)(REFCLSID clsid);
+     STDMETHOD(SetStateBits)(DWORD grfStateBits, DWORD grfMask);
+ 
+-    // functions that uses char/wchar directly or indirectly   
++    // functions that uses char/wchar directly or indirectly
++#ifdef _WIN32
++    /* On Windows match IStorage/IRootStorage which use OLECHAR* and __stdcall */
++    STDMETHOD(CreateStream)(const OLECHAR *pwcsName,
++         DWORD grfMode,
++         DWORD reserved1,
++         DWORD reserved2,
++         IStream **ppstm);
++    STDMETHOD(OpenStream)(const OLECHAR *pwcsName,
++                          void *reserved1,
++                          DWORD grfMode,
++                          DWORD reserved2,
++                          IStream **ppstm);
++    STDMETHOD(CreateStorage)(const OLECHAR *pwcsName,
++                             DWORD grfMode,
++                             DWORD reserved1,
++                             DWORD reserved2,
++                             IStorage **ppstg);
++    STDMETHOD(OpenStorage)(const OLECHAR *pwcsName,
++                           IStorage *pstgPriority,
++                           DWORD grfMode,
++                           SNB snbExclude,
++                           DWORD reserved,
++                           IStorage **ppstg);
++    STDMETHOD(CopyTo)(DWORD ciidExclude,
++                      IID const *rgiidExclude,
++                      SNB snbExclude,
++                      IStorage *pstgDest);
++    STDMETHOD(MoveElementTo)(const OLECHAR *lpszName,
++                             IStorage *pstgDest,
++                             const OLECHAR *lpszNewName,
++                             DWORD grfFlags);
++    STDMETHOD(DestroyElement)(const OLECHAR *pwcsName);
++    STDMETHOD(RenameElement)(const OLECHAR *pwcsOldName,
++                             const OLECHAR *pwcsNewName);
++    STDMETHOD(SetElementTimes)(const OLECHAR *lpszName,
++                               FILETIME const *pctime,
++                               FILETIME const *patime,
++                               FILETIME const *pmtime);
++    /* ANSI wrappers in ascii.cxx - convert and call OLECHAR* above */
++    STDMETHOD(CreateStream)(const char *pszName,
++         DWORD grfMode,
++         DWORD reserved1,
++         DWORD reserved2,
++         IStream **ppstm);
++    STDMETHOD(OpenStream)(const char *pszName,
++                          void *reserved1,
++                          DWORD grfMode,
++                          DWORD reserved2,
++                          IStream **ppstm);
++    STDMETHOD(CreateStorage)(const char *pszName,
++                             DWORD grfMode,
++                             DWORD reserved1,
++                             DWORD reserved2,
++                             IStorage **ppstg);
++    STDMETHOD(OpenStorage)(const char *pszName,
++                           IStorage *pstgPriority,
++                           DWORD grfMode,
++                           SNB snbExclude,
++                           DWORD reserved,
++                           IStorage **ppstg);
++    STDMETHOD(DestroyElement)(const char *pwcsName);
++    STDMETHOD(RenameElement)(const char *pwcsOldName,
++                             const char *pwcsNewName);
++    STDMETHOD(MoveElementTo)(const char *lpszName,
++                             IStorage *pstgDest,
++                             const char *lpszNewName,
++                             DWORD grfFlags);
++    STDMETHOD(SetElementTimes)(const char *lpszName,
++                               FILETIME const *pctime,
++                               FILETIME const *patime,
++                               FILETIME const *pmtime);
++#else
+     STDMETHOD(CreateStream)(TCHAR const *pwcsName,
+          DWORD grfMode,
+          DWORD reserved1,
+@@ -139,6 +211,7 @@ public:
+                                FILETIME const *pctime,
+                                FILETIME const *patime,
+                                FILETIME const *pmtime);
++#endif
+     STDMETHOD(Stat)(STATSTG *pstatstg, DWORD grfStatFlag);
+ 
+ private: 
+@@ -160,6 +233,8 @@ private:
+ 
+ #ifndef _UNICODE                // the real code will map to the 
+                                 // block above if we are using UNICODE
++#ifndef _WIN32
++    /* On Windows OLECHAR==WCHAR; only public OLECHAR* methods declared above */
+ private:
+     // internal functions that uses wide character
+     SCODE CreateStream(WCHAR const *pwcsName,
+@@ -183,6 +258,7 @@ private:
+                       SNBW snbExclude,
+                       DWORD reserved,
+                       IStorage **ppstg);
++    /* On Windows SNB==SNBW so only public CopyTo is declared to avoid duplicate */
+     SCODE CopyTo(DWORD ciidExclude,
+                  IID const *rgiidExclude,
+                  SNBW snbExclude,
+@@ -199,11 +275,16 @@ private:
+                            FILETIME const *patime,
+                            FILETIME const *pmtime);
+     STDMETHOD(Stat)(STATSTGW *pstatstg, DWORD grfStatFlag);
++#endif // !_WIN32
+ #endif // !_UNICODE
+ 
+-public:    
++public:
+     // IRootStorage
++#ifdef _WIN32
++    STDMETHOD(SwitchToFile)(LPOLESTR ptcsFile);
++#else
+     STDMETHOD(SwitchToFile)(TCHAR *ptcsFile);
++#endif
+ 
+ #ifdef NEWPROPS
+     // IPrivateStorage
+diff --git a/oless/h/dfmsp.hxx b/oless/h/dfmsp.hxx
+index 305b5e3..430278d 100644
+--- a/oless/h/dfmsp.hxx
++++ b/oless/h/dfmsp.hxx
+@@ -232,12 +232,12 @@ inline void CDfName::Set(CDfName const *pdfn)
+ 
+ inline void CDfName::ByteSwap(void)
+ {
+-    // assume all names are wide characters, we swap each word
+-    WCHAR *awName = (WCHAR*) _ab;
+-    ::ByteSwap(&_cb);    
++    // assume all names are wide characters, we swap each word (WCHAR same size as WORD)
++    WORD *awName = (WORD *) _ab;
++    ::ByteSwap(&_cb);
+     for (unsigned int i=0; i<CBSTORAGENAME/sizeof(WCHAR); i++)
+     {
+-        ::ByteSwap(awName);        
++        ::ByteSwap(awName);
+         awName++;
+     }
+ }
+@@ -249,8 +249,13 @@ struct SIterBuffer
+     DWORD type;
+ };
+ 
+-//SID is a Stream Identifier
++//SID is a Stream Identifier (avoid conflict with Windows SID security struct on _WIN32)
++#ifdef _WIN32
++#define SID MSFSID
++typedef ULONG MSFSID;
++#else
+ typedef ULONG SID;
++#endif
+ 
+ // IsEntry entry information
+ struct SEntryBuffer
+diff --git a/oless/h/funcs.hxx b/oless/h/funcs.hxx
+index 5c04c24..0825ac1 100644
+--- a/oless/h/funcs.hxx
++++ b/oless/h/funcs.hxx
+@@ -14,6 +14,14 @@
+ 
+ #include "dfmsp.hxx"
+ 
++#ifndef _CRTAPI1
++#ifdef _MSC_VER
++#define _CRTAPI1 __cdecl
++#else
++#define _CRTAPI1
++#endif
++#endif
++
+ class CDirectStream;
+ 
+ SCODE VerifyPerms(DWORD grfMode);
+diff --git a/oless/h/owchar.h b/oless/h/owchar.h
+index d235930..2e6a97d 100644
+--- a/oless/h/owchar.h
++++ b/oless/h/owchar.h
+@@ -30,15 +30,30 @@
+ extern "C" {
+ #endif
+ 
+-#ifndef _MSC_VER
++#ifndef _CRTAPI1
++#ifdef _MSC_VER
++#define _CRTAPI1 __cdecl
++#else
+ #define _CRTAPI1
+ #endif
++#endif
+ 
++#ifndef _WIN32
+ typedef uint16_t WCHAR, *LPWSTR;
+ typedef const WCHAR* LPCWSTR;
++#endif
++
++#ifdef _WIN32
++/* On Windows use CRT/API names for code that calls fpx_* */
++#define fpx_wcslen wcslen
++#define fpx_wcscpy wcscpy
++#define fpx_wcsnicmp _wcsnicmp
++#endif
+ 
++#ifndef _WIN32
+ /* use an alias */
+ #define _wcsnicmp wcsnicmp
++#endif
+ 
+ /* Unicode Byte Order Mark (BOM) for Unicode text files */
+ #define BOM 0xFEFF
+@@ -47,7 +62,7 @@ typedef const WCHAR* LPCWSTR;
+ #define INTL_PADDING_VALUE 3
+ #define INTL_PADDING(cb) (INTL_PADDING_VALUE * (cb))
+ 
+-#if defined(HAVE_WCHAR_H)
++#if defined(HAVE_WCHAR_H) && !defined(_WIN32)
+ #  include <wchar.h>
+ #  define wcsatol  fpx_wcsatol
+ #  define wcsatoi  fpx_wcsatoi
+@@ -71,6 +86,8 @@ typedef const WCHAR* LPCWSTR;
+ #  define sbstowcs fpx_sbstowcs
+ #endif // HAVE_WCHAR_H
+ 
++#ifndef _WIN32
++/* On Windows these are provided by the CRT; avoid macro/declaration conflicts */
+ long     _CRTAPI1 wcsatol(const WCHAR *wsz);
+ int      _CRTAPI1 wcsatoi(const WCHAR *wsz);
+ WCHAR *  _CRTAPI1 wcscat(WCHAR *wsz1, const WCHAR *wsz2);
+@@ -91,6 +108,7 @@ WCHAR *  _CRTAPI1 wcsupr(WCHAR *wsz);
+ WCHAR *  _CRTAPI1 wcswcs(const WCHAR *wsz1, const WCHAR *wsz2);
+ size_t   _CRTAPI1 wcstosbs( char * s, const WCHAR * pwcs, size_t n);
+ size_t   _CRTAPI1 sbstowcs(WCHAR *wcstr, const char *mbstr, size_t count);
++#endif /* !_WIN32 */
+ 
+ #ifndef STDCALL
+ #ifdef _WIN32
+@@ -100,6 +118,8 @@ size_t   _CRTAPI1 sbstowcs(WCHAR *wcstr, const char *mbstr, size_t count);
+ #endif
+ #endif
+ 
++#ifndef _WIN32
++/* On Windows these are provided by the system (kernel32) */
+ extern int STDCALL MultiByteToWideChar(
+     unsigned int CodePage,              /* code page */
+     unsigned long dwFlags,              /* character-type options  */
+@@ -119,6 +139,7 @@ extern int STDCALL WideCharToMultiByte(
+     const char* lpDefaultChar,  /* addr of default for unmappable chars */
+     int* lpUsedDefaultChar  /* addr of flag set when default char. used */
+    );
++#endif
+ 
+ #ifdef __cplusplus
+ }
+diff --git a/oless/h/ref.hxx b/oless/h/ref.hxx
+index 80c9045..982aa24 100644
+--- a/oless/h/ref.hxx
++++ b/oless/h/ref.hxx
+@@ -23,6 +23,7 @@
+ #include <crtdbg.h>
+ #endif
+ 
++#ifndef _WIN32
+ #define FARSTRUCT
+ #define interface struct
+ #define DECLARE_INTERFACE(iface) interface iface
+@@ -30,6 +31,7 @@
+ 
+ typedef int32_t SCODE;
+ typedef int32_t HRESULT;
++#endif // !_WIN32
+ 
+ #define NOERROR 0
+ 
+@@ -55,6 +57,7 @@ typedef int32_t HRESULT;
+ 
+ #endif // _MSC_VER
+ 
++#ifndef _WIN32
+ #define STDMETHODIMP HRESULT STDCALL
+ #define STDMETHODIMP_(type) type STDCALL
+ #define STDMETHOD(method)        virtual HRESULT STDCALL method
+@@ -102,10 +105,8 @@ typedef const char *LPCSTR;
+ #define TRUE 1
+ #define FALSE 0
+ 
+-#ifndef _WIN32  // stuff declared in Windows but not in Unix
+ #define _HEAP_MAXREQ 0xFFFFFFE0
+-#define _MAX_PATH   1024 
+-#endif // _WIN32
++#define _MAX_PATH   1024
+ 
+ const ULONG MAX_ULONG = 0xFFFFFFFF;
+ //const USHORT USHRT_MAX = 0xFFFF; // FIXME: Sun Forte 6.0 does not like!
+@@ -134,10 +135,26 @@ DECLARE_INTERFACE(IUnknown)
+     STDMETHOD_(ULONG,AddRef) (THIS)  PURE;
+     STDMETHOD_(ULONG,Release) (THIS) PURE;
+ };
++#endif // !_WIN32
++
++#ifdef _WIN32
++#ifndef _MAX_PATH
++#define _MAX_PATH   1024
++#endif
++#ifndef MAX_PATH
++#define MAX_PATH _MAX_PATH
++#endif
++#ifndef MAX_ULONG
++#define MAX_ULONG (0xFFFFFFFFUL)
++#endif
++#ifndef MAXULONG
++#define MAXULONG MAX_ULONG
++#endif
++#endif
+ 
+ #include "storage.h"
+ 
+-#if !defined(_UNIX) // All error stuff should be coming out of error.hxx
++#if !defined(_UNIX) && !defined(_WIN32) // All error stuff should be coming out of error.hxx; on Windows use system headers
+ #undef S_OK
+ #define S_OK 0L
+ #define MAKE_SCODE(sev,fac,code) \
+@@ -171,10 +188,11 @@ DECLARE_INTERFACE(IUnknown)
+ //#define ResultFromScode(sc) ((HRESULT)((SCODE)(sc) & 0x800FFFFF))
+ #define ResultFromScode(sc) ((HRESULT) (sc))
+ #define GetScode(hr) ((SCODE) (hr))
+-#endif // (_UNIX)
++#endif // !_UNIX && !_WIN32
+ 
+ /************** GUID's **************************************************/
+ 
++#ifndef _WIN32
+ /* if INITGUID is defined, initialize the GUID, else declare it as extern
+   NOTE: every EXE/DLL needs to initialize at least (and preferrably) once */
+ #ifndef INITGUID
+@@ -228,9 +246,12 @@ DEFINE_GUID( FMTID_UserDefinedProperties,
+              0xd5cdd505, 0x2e9c, 0x101b,
+              0x93, 0x97, 0x08, 0x00, 0x2b, 0x2c, 0xf9, 0xae );
+ #define FMTID_NULL GUID_NULL
++#endif /* !_WIN32 */
+ 
+-/* Comparing GUIDs */
++/* Comparing GUIDs - use system declaration on Windows */
++#ifndef _WIN32
+ EXTERN_C STDAPI_(BOOL) IsEqualGUID(REFGUID rguid1, REFGUID rguid2);
++#endif
+ #define IsEqualIID(x, y) IsEqualGUID(x, y)
+ #define IsEqualCLSID(x, y) IsEqualGUID(x, y)
+ 
+diff --git a/oless/h/storage.h b/oless/h/storage.h
+index 7ecb189..092456a 100644
+--- a/oless/h/storage.h
++++ b/oless/h/storage.h
+@@ -59,6 +59,7 @@
+ #define STGM_CONVERT    0x00020000L
+ #define STGM_FAILIFTHERE  0x00000000L
+ 
++#ifndef _WIN32
+ /* Storage commit types */
+ typedef enum tagSTGC
+ {
+@@ -368,4 +369,13 @@ DECLARE_INTERFACE_(IMalloc, IUnknown)
+ 
+ #define MEMCTX_TASK 1  /* the only supported flag for CoGetMalloc */
+ 
++#endif /* !_WIN32 */
++
++#ifdef _WIN32
++/* On Windows, SNB is not in objidl.h - provide it for compatibility */
++#ifndef SNB
++typedef WCHAR FAR* FAR* SNB;
++#endif
++#endif
++
+ #endif /* ifndef _STORAGE_H_ */
+diff --git a/oless/h/tchar.h b/oless/h/tchar.h
+index b610600..05e30e4 100644
+--- a/oless/h/tchar.h
++++ b/oless/h/tchar.h
+@@ -14,6 +14,7 @@
+ #include "ref.hxx"
+ #include "owchar.h"
+ 
++#ifndef _WIN32
+ #ifdef _UNICODE
+ 
+ typedef WCHAR TCHAR;
+@@ -28,6 +29,16 @@ typedef char TCHAR;
+ 
+ typedef TCHAR * LPTSTR;
+ typedef TCHAR OLECHAR, *LPOLECHAR, *LPOLESTR;
++#else
++/* On Windows, TCHAR/LPTSTR/OLECHAR/LPOLESTR come from Windows headers via ref.hxx/fpxlib.h */
++#ifndef OLESTR
++#ifdef _UNICODE
++#define OLESTR(str) L##str
++#else
++#define OLESTR(str) str
++#endif
++#endif
++#endif /* !_WIN32 */
+ 
+ /* Define some macros to handle declaration of strings with literals */
+ /* Since we stray from the default 4 byte wchar_t in UNIX, we have to
+diff --git a/oless/mem.cxx b/oless/mem.cxx
+index c95e20b..bc08993 100644
+--- a/oless/mem.cxx
++++ b/oless/mem.cxx
+@@ -42,6 +42,8 @@ static CAllocator theAllocator;  // global allocator
+ //
+ //---------------------------------------------------------------
+ 
++#ifndef _WIN32
++/* On Windows use system CoGetMalloc, CoTaskMem* from combase */
+ STDAPI 
+ CoGetMalloc( DWORD dwMemContext, LPMALLOC * ppMalloc )
+ {
+@@ -123,6 +125,7 @@ CoTaskMemRealloc( LPVOID pv, ULONG cb )
+ {
+     return theAllocator.Realloc(pv, cb);
+ }
++#endif /* !_WIN32 */
+ 
+ //+---------------------------------------------------------------------------
+ //
+diff --git a/oless/refilb.cxx b/oless/refilb.cxx
+index 209a9dc..13102b9 100644
+--- a/oless/refilb.cxx
++++ b/oless/refilb.cxx
+@@ -278,8 +278,17 @@ STDMETHODIMP CFileILB::Stat(STATSTG FAR *pstatstg, DWORD grfStatFlag)
+     {
+          char pchTemp[_MAX_PATH+1];
+         _fullpath(pchTemp, _pszName, _MAX_PATH+1);
++#ifdef _WIN32
++        {
++            size_t len = strlen(pchTemp) + 1;
++            pstatstg->pwcsName = (LPOLESTR)CoTaskMemAlloc((ULONG)(len * sizeof(WCHAR)));
++            if (pstatstg->pwcsName)
++                MultiByteToWideChar(CP_ACP, 0, pchTemp, (int)len, pstatstg->pwcsName, (int)len);
++        }
++#else
+         pstatstg->pwcsName = new TCHAR[strlen(pchTemp)+1];
+         STOT(pchTemp, pstatstg->pwcsName, strlen(pchTemp)+1);
++#endif
+     }
+ 
+     pstatstg->type = STGTY_LOCKBYTES;
+@@ -310,7 +319,9 @@ STDMETHODIMP CFileILB::Stat(STATSTG FAR *pstatstg, DWORD grfStatFlag)
+     return NOERROR;
+ }
+ 
++#ifndef _WIN32
+ EXTERN_C STDAPI_(BOOL) IsEqualGUID(REFGUID rguid1, REFGUID rguid2)
+ {
+     return (memcmp(&rguid1, &rguid2, sizeof(GUID)) == 0);
+ }
++#endif /* !_WIN32 */
+diff --git a/oless/rexpdf.cxx b/oless/rexpdf.cxx
+index 6642ef8..3305cdf 100644
+--- a/oless/rexpdf.cxx
++++ b/oless/rexpdf.cxx
+@@ -209,9 +209,15 @@ SCODE CRootExposedDocFile::Stat(STATSTGW *pstatstgw, DWORD grfStatFlag)
+         // pilbBase returns either wide or ansi names depending on
+         // system type, so we have to convert to ANSI char if neccessay
+         WCHAR *pwcs;
++#ifdef _WIN32
++        size_t len = wcslen((const WCHAR *)pstatstg->pwcsName) + 1;
++        olChkTo(EH_pwcsName, DfAllocWC((ULONG)len, &pwcs));
++        wcscpy(pwcs, (const WCHAR *)pstatstg->pwcsName);
++#else
+         olChkTo(EH_pwcsName,
+                 DfAllocWC(_tcslen(pstatstg->pwcsName)+1, &pwcs));
+         TTOW(pstatstg->pwcsName, pwcs, _tcslen(pstatstg->pwcsName)+1);
++#endif
+         delete[] pstatstg->pwcsName;
+         pstatstgw->pwcsName = pwcs;
+     }
+diff --git a/oless/storage.cxx b/oless/storage.cxx
+index ec2b511..fcd7521 100644
+--- a/oless/storage.cxx
++++ b/oless/storage.cxx
+@@ -45,6 +45,7 @@
+ //
+ //---------------------------------------------------------------
+ 
++#ifndef _WIN32
+ STDAPI StgOpenStorage(TCHAR const *pwcsName,
+           IStorage *pstgPriority,
+           DWORD grfMode,
+@@ -80,6 +81,7 @@ EH_Err:
+         (ppstgOpen)?(*ppstgOpen) : NULL, sc));
+     return ResultFromScode(sc);
+ }
++#endif /* !_WIN32 */
+ 
+ //+--------------------------------------------------------------
+ //
+@@ -102,6 +104,7 @@ EH_Err:
+ //
+ //---------------------------------------------------------------
+ 
++#ifndef _WIN32
+ STDAPI StgOpenStorageOnILockBytes(ILockBytes *plkbyt,
+           IStorage *pstgPriority,
+           DWORD grfMode,
+@@ -120,6 +123,7 @@ STDAPI StgOpenStorageOnILockBytes(ILockBytes *plkbyt,
+                                      &cid);
+ #endif
+ }
++#endif /* !_WIN32 */
+ 
+ //+--------------------------------------------------------------
+ //
+@@ -137,6 +141,7 @@ STDAPI StgOpenStorageOnILockBytes(ILockBytes *plkbyt,
+ const BYTE SIGSTG_B2[] = {0x0e, 0x11, 0xfc, 0x0d, 0xd0, 0xcf, 0x11, 0xe0};
+ const BYTE CBSIGSTG_B2 = sizeof(SIGSTG_B2);
+ 
++#ifndef _WIN32
+ STDAPI StgIsStorageFile(TCHAR const *pwcsName)
+ {
+     SCODE sc;
+@@ -158,6 +163,7 @@ EH_Err:
+     olDebugOut((DEB_TRACE, "Out StgIsStorageFile: ret=> %lx\n", sc));
+     return ResultFromScode(sc);
+ }
++#endif /* !_WIN32 */
+ 
+ //+--------------------------------------------------------------
+ //
+@@ -171,6 +177,7 @@ EH_Err:
+ //
+ //---------------------------------------------------------------
+ 
++#ifndef _WIN32
+ STDAPI StgIsStorageILockBytes(ILockBytes *plkbyt)
+ {
+     HRESULT hr;
+@@ -196,3 +203,4 @@ STDAPI StgIsStorageILockBytes(ILockBytes *plkbyt)
+     }
+     return ResultFromScode(S_FALSE);
+ }
++#endif /* !_WIN32 */
+diff --git a/oless/time.hxx b/oless/time.hxx
+index 2cf86b5..ebaed04 100644
+--- a/oless/time.hxx
++++ b/oless/time.hxx
+@@ -21,6 +21,7 @@ typedef FILETIME TIME_T;
+ STDAPI_(void) FileTimeToTimeT(const FILETIME *pft, time_t *ptt);
+ STDAPI_(void) TimeTToFileTime(const time_t *ptt, FILETIME *pft);
+ 
++#ifndef _WIN32
+ inline SCODE CoFileTimeNow(TIME_T *pft)
+ {
+     time_t tt;
+@@ -28,5 +29,14 @@ inline SCODE CoFileTimeNow(TIME_T *pft)
+     TimeTToFileTime(&tt, pft);
+     return S_OK;
+ }
++#else
++/* On Windows use system CoFileTimeNow (returns void); wrapper returns SCODE for caller compatibility */
++inline SCODE OLE_CoFileTimeNow(TIME_T *pft)
++{
++    ::CoFileTimeNow(pft);
++    return S_OK;
++}
++#define CoFileTimeNow OLE_CoFileTimeNow
++#endif
+ 
+ #endif
+diff --git a/oless/wchar.c b/oless/wchar.c
+index 0b9c61b..c8ef4c5 100644
+--- a/oless/wchar.c
++++ b/oless/wchar.c
+@@ -5,6 +5,9 @@
+  * 
+  */
+ 
++#ifndef _WIN32
++/* On Windows use CRT wide-char functions; this file not compiled */
++
+ #include "h/owchar.h"
+ #include <errno.h>
+ #include <string.h>
+@@ -471,6 +474,7 @@ int STDCALL MultiByteToWideChar(
+       return nConverted;
+     }
+ }
++#endif /* !_WIN32 */
+  
+ 
+ 
+-- 
+2.52.0.windows.1
+

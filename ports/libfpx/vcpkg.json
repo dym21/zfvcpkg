@@ -1,0 +1,8 @@
+{
+    "name": "libfpx",
+    "version": "1.3.0",
+    "description": "FlashPix (FPX) image library used by ImageMagick.",
+    "homepage": "https://github.com/ImageMagick/libfpx",
+    "license": "LGPL-2.0-or-later",
+    "supports": "!uwp"
+}
