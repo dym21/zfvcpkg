@@ -1,3 +1,3 @@
-set(qtquicktimeline_HASH "61ebd7dcd4964fffb077e5de88b0281e0a10d170a6a70442d23abbf6a8e1ba36f6976890ba0182fb93b62f69f4c019836d45173d764d4c96581fc2c89d05145f")
-set(qtquicktimeline_URL "https://download.qt.io/archive/qt/6.9/6.9.3/submodules/qtquicktimeline-everywhere-src-6.9.3.tar.xz;https://mirrors.ocf.berkeley.edu/qt/archive/qt/6.9/6.9.3/submodules/qtquicktimeline-everywhere-src-6.9.3.tar.xz")
-set(qtquicktimeline_FILENAME "qtquicktimeline-everywhere-src-6.9.3.tar.xz")
+set(qtquicktimeline_HASH "d4334ad5bf9ab79b1e1903f4f8cab81a0b01491c782de220b9f837ce76b7473c7f2c0229e774ba796dac97ae443ecfa4859d53704195f6b0ae20a709d14cf6b7")
+set(qtquicktimeline_URL "https://download.qt.io/archive/qt/6.10/6.10.1/submodules/qtquicktimeline-everywhere-src-6.10.1.tar.xz;https://mirrors.ocf.berkeley.edu/qt/archive/qt/6.10/6.10.1/submodules/qtquicktimeline-everywhere-src-6.10.1.tar.xz")
+set(qtquicktimeline_FILENAME "qtquicktimeline-everywhere-src-6.10.1.tar.xz")

@@ -1,5 +1,3 @@
-vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
-
 set(LIB_VERSION 20211114)
 set(LIB_FILENAME libpff-alpha-${LIB_VERSION}.tar.gz)
 

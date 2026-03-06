@@ -2,7 +2,7 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO tukaani-project/xz
     REF "v${VERSION}"
-    SHA512 2f51fb316adb2962e0f2ef6ccc8b544cdc45087b9ad26dcd33f2025784be56578ab937c618e5826b2220b49b79b8581dcb8c6d43cd50ded7ad9de9fe61610f46
+    SHA512 "a14c9d0a118c611d1156cd9a605269c706b976a752c048db7f2eea956e2bf717ce595f46186d951a6c4493e35658e08fa3fe4b256898c6ca08e3695c0ee7b0e5"
     HEAD_REF master
     PATCHES
         build-tools.patch
@@ -12,6 +12,12 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
         tools BUILD_TOOLS
 )
+
+if("tools" IN_LIST FEATURES)
+    set(XZ_SANDBOX "auto")
+else()
+    set(XZ_SANDBOX "no")
+endif()
 
 if(VCPKG_TARGET_ARCHITECTURE STREQUAL "wasm32")
     set(WASM_OPTIONS -DCMAKE_C_BYTE_ORDER=LITTLE_ENDIAN -DCMAKE_CXX_BYTE_ORDER=LITTLE_ENDIAN)
@@ -27,9 +33,10 @@ vcpkg_cmake_configure(
         -DCREATE_LZMA_SYMLINKS=OFF
         -DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT=   # using flags from (vcpkg) toolchain
         -DENABLE_NLS=OFF # nls is not supported by this port, yet
-	-DALLOW_ARM64_CRC32=OFF
+		-DALLOW_ARM64_CRC32=OFF
         -DXZ_NLS=OFF
         -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+        -DXZ_SANDBOX:STRING=${XZ_SANDBOX}
     MAYBE_UNUSED_VARIABLES
         CMAKE_MSVC_DEBUG_INFORMATION_FORMAT
         CREATE_XZ_SYMLINKS

@@ -1,8 +1,9 @@
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO jwsung91/unilink
-    REF v0.1.9
-    SHA512 0c159181c2fc5ca3ec0dd913770ab771f659ccf71e16cb3ddb84030c37e24ce187f0141ac073d8c1514c20795f6da145ecd7a14663711b0a9ce3edf178a1251c)
+    REF v${VERSION}
+    SHA512 a00df618de9303c13a6a74b7d7600bd1332b77faefc23971d1041d2f1f6d8174061f88978d28750b7634270bff60fc40b1c1cf0d432878d6010dd6eb0d568168
+)
 
 string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" UNILINK_BUILD_SHARED)
 
@@ -18,6 +19,7 @@ vcpkg_cmake_configure(
 vcpkg_cmake_install()
 
 vcpkg_cmake_config_fixup(
+    PACKAGE_NAME unilink
     CONFIG_PATH "lib/cmake/unilink"
 )
 
