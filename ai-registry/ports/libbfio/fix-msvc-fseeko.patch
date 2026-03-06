@@ -1,0 +1,5 @@
+--- a/configure
++++ b/configure
+@@
+ ac_cv_func_fseeko=yes
+ ac_cv_func_fseeko64=yes

@@ -1,0 +1,45 @@
+From 0d328059de42ce9ff07a8c381c2aa8edff40c3cf Mon Sep 17 00:00:00 2001
+From: dym21 <dym21@163.com>
+Date: Fri, 6 Mar 2026 10:11:39 +0800
+Subject: [PATCH] fix_msvc_error
+
+---
+ include/ctranslate2/bfloat16.h | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/include/ctranslate2/bfloat16.h b/include/ctranslate2/bfloat16.h
+index f7a5e0c..7c2a135 100644
+--- a/include/ctranslate2/bfloat16.h
++++ b/include/ctranslate2/bfloat16.h
+@@ -24,7 +24,7 @@ namespace ctranslate2 {
+     }
+ 
+     bfloat16_t& operator=(float f) {
+-      auto iraw = ctranslate2::bit_cast<std::array<uint16_t, 2>>(f);
++      auto iraw = bit_cast<std::array<uint16_t, 2>>(f);
+       switch (std::fpclassify(f)) {
+       case FP_SUBNORMAL:
+       case FP_ZERO:
+@@ -43,8 +43,8 @@ namespace ctranslate2 {
+       case FP_NORMAL:
+         // round to nearest even and truncate
+         const uint32_t rounding_bias = 0x00007FFF + (iraw[1] & 0x1);
+-        const uint32_t int_raw = ctranslate2::bit_cast<uint32_t>(f) + rounding_bias;
+-        iraw = ctranslate2::bit_cast<std::array<uint16_t, 2>>(int_raw);
++        const uint32_t int_raw = bit_cast<uint32_t>(f) + rounding_bias;
++        iraw = bit_cast<std::array<uint16_t, 2>>(int_raw);
+         _bits = iraw[1];
+         break;
+       }
+@@ -54,7 +54,7 @@ namespace ctranslate2 {
+ 
+     operator float() const {
+       std::array<uint16_t, 2> iraw = {{0, _bits}};
+-      return ctranslate2::bit_cast<float>(iraw);
++      return bit_cast<float>(iraw);
+     }
+ 
+   private:
+-- 
+2.52.0.windows.1
+
