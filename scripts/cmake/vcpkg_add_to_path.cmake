@@ -1,7 +1,7 @@
 function(vcpkg_add_to_path)
     cmake_parse_arguments(PARSE_ARGV 0 "arg" "PREPEND" "" "")
     if(arg_PREPEND)
-        set(operation APPEND)
+        set(operation PREPEND)
     else()
         set(operation APPEND)
     endif()

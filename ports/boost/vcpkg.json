@@ -77,14 +77,6 @@
       "version>=": "1.90.0"
     },
     {
-<<<<<<< HEAD
-=======
-      "name": "boost-cobalt",
-      "platform": "!uwp",
-      "version>=": "1.90.0"
-    },
-    {
->>>>>>> upstream/master
       "name": "boost-compat",
       "version>=": "1.90.0"
     },
