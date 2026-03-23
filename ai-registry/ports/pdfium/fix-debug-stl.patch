@@ -1,0 +1,19 @@
+diff --git a/core/fxcrt/fx_memory_wrappers.h b/core/fxcrt/fx_memory_wrappers.h
+index 1234567..abcdefg 100644
+--- a/core/fxcrt/fx_memory_wrappers.h
++++ b/core/fxcrt/fx_memory_wrappers.h
+@@ -33,8 +33,13 @@ struct IsFXDataPartitionException : std::false_type {};
+ template <class T, void* Alloc(size_t, size_t), void Free(void*)>
+ struct FxPartitionAllocAllocator {
+  public:
++  // Allow non-arithmetic types in Debug mode with iterator debugging enabled
++  // because MSVC STL uses internal proxy types like std::_Container_proxy
++#if defined(_ITERATOR_DEBUG_LEVEL) && _ITERATOR_DEBUG_LEVEL > 0 && defined(_MSC_VER)
++#else
+   static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value ||
+                     IsFXDataPartitionException<T>::value,
+                 "Only numeric types allowed in this partition");
++#endif
+ 
+   using value_type = T;
+   using pointer = T*;

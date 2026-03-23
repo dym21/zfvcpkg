@@ -1,37 +1,35 @@
-diff --git a/cmake/onnxruntime_framework.cmake b/cmake/onnxruntime_framework.cmake
-index 15f3105..af6609b 100644
---- a/cmake/onnxruntime_framework.cmake
-+++ b/cmake/onnxruntime_framework.cmake
-@@ -122,5 +122,5 @@ else()
-             ARCHIVE   DESTINATION ${CMAKE_INSTALL_LIBDIR}
-             LIBRARY   DESTINATION ${CMAKE_INSTALL_LIBDIR}
-             RUNTIME   DESTINATION ${CMAKE_INSTALL_BINDIR}
--            FRAMEWORK DESTINATION ${CMAKE_INSTALL_BINDIR})
-+            FRAMEWORK DESTINATION ${CMAKE_INSTALL_LIBDIR})
- endif()
-diff --git a/cmake/external/abseil-cpp.cmake b/cmake/external/abseil-cpp.cmake
-index eede60a..07f5f77 100644
---- a/cmake/external/abseil-cpp.cmake
-+++ b/cmake/external/abseil-cpp.cmake
-@@ -122,7 +122,7 @@ absl::absl_check
- absl::hash_function_defaults
- absl::function_ref
- absl::city
--absl::low_level_hash
-+# absl::low_level_hash # abseil 20250814.1+
- absl::fixed_array
- absl::variant
- absl::meta
-diff --git a/cmake/onnxruntime_webassembly.cmake b/cmake/onnxruntime_webassembly.cmake
-index ffe8661..a3e9b4f 100644
---- a/cmake/onnxruntime_webassembly.cmake
-+++ b/cmake/onnxruntime_webassembly.cmake
-@@ -94,7 +94,7 @@ if (NOT onnxruntime_ENABLE_WEBASSEMBLY_THREADS)
-   )
+--- a/cmake/onnxruntime.cmake
++++ b/cmake/onnxruntime.cmake
+@@ -1,6 +1,10 @@
+ # Copyright (c) Microsoft Corporation. All rights reserved.
+ # Licensed under the MIT License.
  
-   # Override re2 compiler options to remove -pthread
--  set_property(TARGET re2 PROPERTY COMPILE_OPTIONS )
-+  # set_property(TARGET re2 PROPERTY COMPILE_OPTIONS )
++# Fix for vcpkg integration
++set(CMAKE_POSITION_INDEPENDENT_CODE ON)
++set(BUILD_SHARED_LIBS OFF)
++
+ # ONNX Runtime CMake configuration
+ # This file is included from the top-level CMakeLists.txt
+ 
+ # Disable unnecessary build options
+ option(onnxruntime_BUILD_UNIT_TESTS "Build unit tests" OFF)
+ option(onnxruntime_BUILD_SHARED_LIBS "Build shared libraries" OFF)
+ option(onnxruntime_ENABLE_CPUINFO "Enable cpuinfo" ON)
+ option(onnxruntime_USE_FULL_PROTOBUF "Use full protobuf" ON)
+ 
++# Ensure proper C++ standard
++set(CMAKE_CXX_STANDARD 17 CACHE STRING "C++ standard")
++set(CMAKE_CXX_STANDARD_REQUIRED ON)
++
+ # Disable Microsoft-specific internal features for non-Windows builds
+ if(NOT WIN32)
+   option(onnxruntime_ENABLE_MICROSOFT_INTERNAL "Enable Microsoft internal features" OFF)
  endif()
  
- if (NOT onnxruntime_USE_VCPKG)
++# Fix include directories for vcpkg
++include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
++include_directories(${CMAKE_CURRENT_SOURCE_DIR}/onnxruntime/core/session)
++
+ # Set default build type if not specified
+ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+   message(STATUS "Setting build type to 'Release' as none was specified.")

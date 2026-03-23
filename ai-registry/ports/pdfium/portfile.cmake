@@ -2,7 +2,7 @@ vcpkg_from_git(
     OUT_SOURCE_PATH SOURCE_PATH
     URL https://pdfium.googlesource.com/pdfium.git
     REF c1efd963d2f714b1b63ba30ab4d01150fbe1d5d8
-	PATCHES msvc-build.patch macos-build.patch public_headers.patch
+	PATCHES msvc-build.patch macos-build.patch public_headers.patch fix-debug-stl.patch
 )
 
 vcpkg_from_git(
@@ -38,4 +38,9 @@ vcpkg_cmake_configure(
 vcpkg_cmake_install()
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
+
+# Remove DLLs from static build - pdfium builds as DLL but we want static linkage
+if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
+    file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/bin" "${CURRENT_PACKAGES_DIR}/bin")
+endif()
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")

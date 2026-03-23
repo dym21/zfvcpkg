@@ -292,7 +292,6 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         "COMPILER_MSVC"
         "NOMINMAX"
         "WIN32_LEAN_AND_MEAN"
-        "_HAS_ITERATOR_DEBUGGING=0"
         "_UNICODE"
         "UNICODE"
     )

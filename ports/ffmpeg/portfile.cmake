@@ -15,9 +15,7 @@ vcpkg_from_github(
         0020-fix-aarch64-libswscale.patch
         0024-fix-osx-host-c11.patch
         0040-ffmpeg-add-av_stream_get_first_dts-for-chromium.patch # Do not remove this patch. It is required by chromium
-		0041-add-const-for-opengl-definition.patch
-        0043-fix-miss-head.patch
-		0001-fix-c11-flag.patch
+	#	0001-fix-c11-flag.patch
 		0001-fix-aarch64-error.patch
         0044-fix-vulkan-debug-callback-abi.patch
         0045-use-prebuilt-bin2c.patch
