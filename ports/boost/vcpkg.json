@@ -385,7 +385,7 @@
     },
     {
       "name": "boost-parameter-python",
-      "platform": "!uwp & !emscripten & !ios & !android",
+      "platform": "!uwp & !emscripten & !ios & !android & !mingw",
       "version>=": "1.90.0"
     },
     {
@@ -447,7 +447,7 @@
     },
     {
       "name": "boost-python",
-      "platform": "!uwp & !emscripten & !ios & !android",
+      "platform": "!uwp & !emscripten & !ios & !android & !mingw",
       "version>=": "1.90.0"
     },
     {

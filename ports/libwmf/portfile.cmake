@@ -26,33 +26,6 @@ if(NOT EXISTS "${CURRENT_INSTALLED_DIR}/include/freetype2")
     endif()
 endif()
 
-# # Set up environment variables for dependencies
-# if(VCPKG_TARGET_IS_WINDOWS)
-#     # Windows-specific library names and paths
-#     set(ENV{FREETYPE_CFLAGS} "-I${CURRENT_INSTALLED_DIR}/include -I${CURRENT_INSTALLED_DIR}/include/freetype2")
-#     set(ENV{FREETYPE_LIBS} "-L${CURRENT_INSTALLED_DIR}/lib -lfreetype")
-#     set(ENV{PNG_CFLAGS} "-I${CURRENT_INSTALLED_DIR}/include")
-#     set(ENV{PNG_LIBS} "-L${CURRENT_INSTALLED_DIR}/lib -llibpng16")
-#     set(ENV{ZLIB_CFLAGS} "-I${CURRENT_INSTALLED_DIR}/include")
-#     set(ENV{ZLIB_LIBS} "-L${CURRENT_INSTALLED_DIR}/lib -lzlib")
-#     # Generic autotools flags to aid detection
-#     set(ENV{CPPFLAGS} "-I${CURRENT_INSTALLED_DIR}/include -I${CURRENT_INSTALLED_DIR}/include/freetype2")
-#     set(ENV{LDFLAGS} "-L${CURRENT_INSTALLED_DIR}/lib")
-#     set(ENV{LIBS} "-lzlib -llibpng16 -lfreetype")
-# else()
-#     # Unix-style flags
-#     set(ENV{FREETYPE_CFLAGS} "-I${CURRENT_INSTALLED_DIR}/include -I${CURRENT_INSTALLED_DIR}/include/freetype2")
-#     set(ENV{FREETYPE_LIBS} "-L${CURRENT_INSTALLED_DIR}/lib -lfreetype")
-#     set(ENV{PNG_CFLAGS} "-I${CURRENT_INSTALLED_DIR}/include")
-#     set(ENV{PNG_LIBS} "-L${CURRENT_INSTALLED_DIR}/lib -lpng16")
-#     set(ENV{ZLIB_CFLAGS} "-I${CURRENT_INSTALLED_DIR}/include")
-#     set(ENV{ZLIB_LIBS} "-L${CURRENT_INSTALLED_DIR}/lib -lzlib")
-#     # Generic autotools flags to aid detection
-#     set(ENV{CPPFLAGS} "-I${CURRENT_INSTALLED_DIR}/include -I${CURRENT_INSTALLED_DIR}/include/freetype2")
-#     set(ENV{LDFLAGS} "-L${CURRENT_INSTALLED_DIR}/lib")
-#     set(ENV{LIBS} "-lzlib -lpng16 -lfreetype")
-# endif()
-
 # libwmf uses autotools for configuration
 vcpkg_configure_make(
     SOURCE_PATH "${SOURCE_PATH}"
@@ -81,6 +54,12 @@ endif()
 # Remove debug includes and unnecessary files
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/share")
+
+# Fix fontmap paths - fonts are installed to share/libwmf/libwmf/fonts but fontmap references share/libwmf/fonts
+if(EXISTS "${CURRENT_PACKAGES_DIR}/share/${PORT}/libwmf/fonts/fontmap")
+    # Create symlink to fix path reference
+    file(CREATE_LINK "${CURRENT_PACKAGES_DIR}/share/${PORT}/libwmf/fonts" "${CURRENT_PACKAGES_DIR}/share/${PORT}/fonts" SYMBOLIC)
+endif()
 
 # Install usage file
 file(INSTALL "${CMAKE_CURRENT_LIST_DIR}/usage" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}")

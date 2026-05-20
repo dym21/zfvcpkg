@@ -4,8 +4,9 @@ vcpkg_from_github(
     REF master
     SHA512
         568a8328208da64ee425217b3c63da662763c9dd8047e7b0af97b69d8735b2ae850be536daf5343af0d8d26f554e2567c0113880c3a0a454e91cba75c14b9061
-	PATCHES	
+	PATCHES
 		0001-fix_msvc_error.patch
+		0002-fix_fpx_closeimage_crash.patch
 )
 
 

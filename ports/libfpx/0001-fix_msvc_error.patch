@@ -490,23 +490,13 @@ index ca1c77d..8970c84 100644
          pvector->pvar[i].vt = tmpType;
          //ReadVT_I4((DWORD *)&pvector->pvar[i].vt);
          strLen += 4;
-@@ -1273,8 +1273,22 @@ DWORD OLEStream::WriteVT(VARIANT * variant)
+@@ -1273,8 +1273,14 @@ DWORD OLEStream::WriteVT(VARIANT * variant)
      case VT_LPSTR:
  #ifdef _UNICODE
        return WriteVT_LPSTR((LPSTR)V_UI1REF(variant));
 +#else
 +#ifdef _WIN32
-+      {
-+        BSTR b = V_BSTR(variant);
-+        if (!b) return WriteVT_LPSTR((char*)NULL);
-+        int n = WideCharToMultiByte(CP_ACP, 0, b, -1, NULL, 0, NULL, NULL);
-+        char* p = (n > 0) ? new char[n] : NULL;
-+        if (!p) return FALSE;
-+        WideCharToMultiByte(CP_ACP, 0, b, -1, p, n, NULL, NULL);
-+        DWORD r = WriteVT_LPSTR(p);
-+        delete[] p;
-+        return r;
-+      }
++      return WriteVT_LPSTR((char *)V_UI1REF(variant));
  #else
        return WriteVT_LPSTR(V_BSTR(variant));
 +#endif
@@ -546,15 +536,14 @@ index ca1c77d..8970c84 100644
        break;
 +#else
 +#ifdef _WIN32
-+      if ( V_BSTR(variant) )
++      if ( V_UI1REF(variant) )
 +      {
-+        int n = WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)V_BSTR(variant), -1, NULL, 0, NULL, NULL);
-+        len = (n > 0) ? (DWORD)n : 1;
++        len = strlen((char *)V_UI1REF(variant)) + 1;
 +        psz = new char [len];
 +        if (psz==NULL) {
 +          return FALSE;
 +        }
-+        WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)V_BSTR(variant), -1, psz, len, NULL, NULL);
++        strcpy(psz, (char *)V_UI1REF(variant));
 +      }
 +      else
 +      {

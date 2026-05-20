@@ -105,12 +105,10 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
  "ipp"        WITH_IPP
  "ipp"        BUILD_IPP_IW
  "openjpeg"   WITH_OPENJPEG
- "openmp"     WITH_OPENMP
  "jpeg"       WITH_JPEG
  "jpegxl"     WITH_JPEGXL
  "msmf"       WITH_MSMF
  "nonfree"    OPENCV_ENABLE_NONFREE
- "thread"     OPENCV_ENABLE_THREAD_SUPPORT
  "opencl"     WITH_OPENCL
  "openvino"   WITH_OPENVINO
  "openexr"    WITH_OPENEXR
@@ -124,7 +122,6 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
  "quirc"      WITH_QUIRC
  "rgbd"       BUILD_opencv_rgbd
  "sfm"        BUILD_opencv_sfm
- "tbb"        WITH_TBB
  "text"       BUILD_opencv_text
  "text"       WITH_TESSERACT
  "tiff"       WITH_TIFF
@@ -469,6 +466,10 @@ vcpkg_cmake_configure(
         -DWITH_OPENCL_D3D11_NV=OFF
         -DWITH_OPENCLAMDBLAS=OFF
         -DWITH_OPENCLAMDFFT=OFF
+        -DWITH_OPENMP=OFF
+        -DOPENCV_ENABLE_THREAD_SUPPORT=OFF
+        -DWITH_TBB=OFF
+        -DWITH_PTHREADS_PF=OFF
         -DWITH_QT=${WITH_QT}
         -DWITH_SPNG=OFF #spng is mutually exclusive with png, which has been chosen since it's more widely used
         -DWITH_VA=OFF
@@ -547,9 +548,6 @@ if("hdf" IN_LIST FEATURES)
 enable_language(C)
 find_dependency(HDF5)")
 endif()
-if("omp" IN_LIST FEATURES)
-  string(APPEND DEPS_STRING "\nfind_dependency(OpenMP)")
-endif()
 if("opencl" IN_LIST FEATURES)
   string(APPEND DEPS_STRING "\nfind_dependency(OpenCL CONFIG)")
 endif()
@@ -584,9 +582,6 @@ endif()
 if("sfm" IN_LIST FEATURES)
   string(APPEND DEPS_STRING "\nfind_dependency(gflags CONFIG)\nfind_dependency(Ceres CONFIG)")
 endif()
-if("tbb" IN_LIST FEATURES)
-  string(APPEND DEPS_STRING "\nfind_dependency(TBB)")
-endif()
 if("text" IN_LIST FEATURES)
   string(APPEND DEPS_STRING "\nfind_dependency(Tesseract)")
 endif()
@@ -602,13 +597,6 @@ endif()
 
 string(REPLACE "set(CMAKE_IMPORT_FILE_VERSION 1)"
                "set(CMAKE_IMPORT_FILE_VERSION 1)\n${DEPS_STRING}" OPENCV_MODULES "${OPENCV_MODULES}")
-
-if("openmp" IN_LIST FEATURES)
-  string(REPLACE "set_target_properties(opencv_core PROPERTIES
-INTERFACE_LINK_LIBRARIES \""
-                 "set_target_properties(opencv_core PROPERTIES
-INTERFACE_LINK_LIBRARIES \"\$<LINK_ONLY:OpenMP::OpenMP_CXX>;" OPENCV_MODULES "${OPENCV_MODULES}")
-endif()
 
 if("ovis" IN_LIST FEATURES)
   string(REPLACE "OgreGLSupportStatic"

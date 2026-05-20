@@ -74,8 +74,18 @@ function(append_dependencies out)
             # first look in ${path} specifically to ensure we find the right release/debug variant
             find_library(FFMPEG_DEPENDENCY_${lib_name}_${config} NAMES "${lib_name}" PATHS "${path}" NO_DEFAULT_PATH)
             # if not found there, must be a system dependency, so look elsewhere
-            find_library(FFMPEG_DEPENDENCY_${lib_name}_${config} NAMES "${lib_name}" REQUIRED)
-            list(APPEND ${out} "${FFMPEG_DEPENDENCY_${lib_name}_${config}}")
+            if("${lib_name}" STREQUAL "ncrypt")
+                # Some Windows SDK/VS installs may not ship the ncrypt import library.
+                # Treat it as optional to avoid failing the whole configure step.
+                find_library(FFMPEG_DEPENDENCY_${lib_name}_${config} NAMES "${lib_name}")
+                if(NOT FFMPEG_DEPENDENCY_${lib_name}_${config} STREQUAL
+                        "FFMPEG_DEPENDENCY_${lib_name}_${config}-NOTFOUND")
+                    list(APPEND ${out} "${FFMPEG_DEPENDENCY_${lib_name}_${config}}")
+                endif()
+            else()
+                find_library(FFMPEG_DEPENDENCY_${lib_name}_${config} NAMES "${lib_name}" REQUIRED)
+                list(APPEND ${out} "${FFMPEG_DEPENDENCY_${lib_name}_${config}}")
+            endif()
         endif()
     endforeach()
     set("${out}" "${${out}}" PARENT_SCOPE)

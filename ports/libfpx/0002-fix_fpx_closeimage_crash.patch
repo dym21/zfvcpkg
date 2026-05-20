@@ -1,0 +1,72 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Tue, 13 May 2026 17:30:00 +0800
+Subject: [PATCH] fix_fpx_closeimage_crash
+
+Fix heap corruption crash in FPX_CloseImage destructor chain.
+
+Root cause: List::Release() in olecore.cpp uses `delete (LPSTREAM *)ptr`
+on a COM IStream* pointer stored by OLEStorage::OpenPropertySet(). COM
+interfaces must be released via Release(), not C++ delete. This causes
+heap corruption that manifests as a crash in FPX_CloseImage.
+
+Additionally, OLEStorage::Release() did not null out member pointers after
+cleanup, risking double-free if called multiple times.
+
+---
+ ole/olecore.cpp  |  7 ++++---
+ ole/olestorg.cpp | 11 +++++++++--
+ 2 files changed, 13 insertions(+), 5 deletions(-)
+
+diff --git a/ole/olecore.cpp b/ole/olecore.cpp
+index 1234567..abcdef0 100644
+--- a/ole/olecore.cpp
++++ b/ole/olecore.cpp
+@@ -1052,9 +1052,10 @@ void List::Release()
+      * XXX further, the assumption is likely to break...
+      *
+      *	-mi, Oct 9, 2007
+      */
+-    if (freeme)
+-      delete (LPSTREAM *)ptr;
+-    ptr  = NULL;
++    if (freeme && ptr) {
++      // ptr is an IStream* (COM interface) stored by OLEStorage::OpenPropertySet.
++      // Must call Release(), not delete — COM interfaces are ref-counted, not new-allocated.
++      ((IStream*)ptr)->Release();
++    }
++    ptr = NULL;
+     userCount = 0;
+   }
+diff --git a/ole/olestorg.cpp b/ole/olestorg.cpp
+index 1234567..abcdef0 100644
+--- a/ole/olestorg.cpp
++++ b/ole/olestorg.cpp
+@@ -225,14 +225,19 @@ void OLEStorage::Release()
+ {
+   if (customLink) {
+     delete customLink;
+     customLink = NULL;
+   }
+-  else if (oleStorage)
++  else if (oleStorage) {
+     oleStorage->Release();
++    oleStorage = NULL;
++  }
+
+   OLECore::Release();
+-  if (openOLEObjList->GetUserCount() <= 1)
++  if (openOLEObjList) {
++    if (openOLEObjList->GetUserCount() <= 1)
+        delete openOLEObjList; /* we created it */
+-  else
+-    openOLEObjList->Release();
++    else
++       openOLEObjList->Release();
++    openOLEObjList = NULL;
++  }
+ }
+
+--
+2.52.0.windows.1
+
