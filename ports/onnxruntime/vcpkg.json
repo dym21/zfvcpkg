@@ -1,7 +1,8 @@
 {
   "name": "onnxruntime",
-  "version": "1.20.1",
-  "description": "ONNX Runtime is a cross-platform inference and training machine-learning accelerator",
+  "version-semver": "1.23.2",
+  "port-version": 1,
+  "description": "ONNX Runtime: cross-platform, high performance ML inferencing and training accelerator",
   "homepage": "https://github.com/microsoft/onnxruntime",
   "license": "MIT",
   "supports": "!uwp",
@@ -16,8 +17,40 @@
   ],
   "features": {
     "cuda": {
-      "description": "Enable CUDA execution provider",
-      "dependencies": ["cuda", "cudnn", "cudnn-frontend"]
+      "description": "Build with CUDA support",
+      "supports": "(x64 & windows & !static) | (x64 & linux)",
+      "dependencies": [
+        "cuda",
+        "cudnn",
+        "cudnn-frontend",
+        "nvidia-cutlass"
+      ]
+    },
+    "framework": {
+      "description": "Build a macOS/iOS framework, Objective-C library",
+      "supports": "osx | ios"
+    },
+    "kleidiai": {
+      "description": "Build kleidiai support",
+      "supports": "arm64",
+      "dependencies": [
+        "kleidiai"
+      ]
+    },
+    "openvino": {
+      "description": "Build with OpenVINO support",
+      "supports": "!(osx | ios | android | emscripten) & !static",
+      "dependencies": [
+        {
+          "name": "openvino",
+          "default-features": false,
+          "features": [
+            "cpu",
+            "gpu",
+            "onnx"
+          ]
+        }
+      ]
     },
     "tensorrt": {
       "description": "Enable TensorRT execution provider",

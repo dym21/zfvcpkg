@@ -2,10 +2,10 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO harfbuzz/harfbuzz
     REF ${VERSION}
-    SHA512 d2333fbc73f45db57a8b1d198d31de4b43e5819a578f52f4c5b99a01833b315e18090ee9d74052ff5a993827fadf99323d7bd9786bb826d0354b3a2a9de682f3
+    SHA512 b7642a81eb021bf96cf8c91c5ebdde7f4fdfd40c76db722f00cf001125f4b81b954d08485774d2b23318d49b1e954fa0189ba8f10db56d148f33f9d90891d0cb
     HEAD_REF master
     PATCHES
-        fix-win32-build.patch
+        ${ANDROID_LOCALECONV_L_PATCH}
 )
 
 if("icu" IN_LIST FEATURES)
@@ -53,6 +53,18 @@ else()
 endif()
 if("gdi" IN_LIST FEATURES)
     list(APPEND FEATURE_OPTIONS -Dgdi=enabled) # enable gdi helpers and uniscribe shaper backend (windows only)
+else()
+    list(APPEND FEATURE_OPTIONS -Dgdi=disabled)
+endif()
+if("png" IN_LIST FEATURES)
+    list(APPEND FEATURE_OPTIONS -Dpng=enabled)
+else()
+    list(APPEND FEATURE_OPTIONS -Dpng=disabled)
+endif()
+if("zlib" IN_LIST FEATURES)
+    list(APPEND FEATURE_OPTIONS -Dzlib=enabled)
+else()
+    list(APPEND FEATURE_OPTIONS -Dzlib=disabled)
 endif()
 
 if("introspection" IN_LIST FEATURES)
@@ -61,6 +73,13 @@ if("introspection" IN_LIST FEATURES)
     vcpkg_get_gobject_introspection_programs(PYTHON3 GIR_COMPILER GIR_SCANNER)
 else()
     list(APPEND OPTIONS -Dintrospection=disabled)
+endif()
+
+# This option switches the link language to C++,
+# matching the C++ sources. This is necessary
+# for android-dynamic and maybe more platforms.
+if(VCPKG_TARGET_IS_ANDROID)
+    list(APPEND OPTIONS -Dwith_libstdcxx=true)
 endif()
 
 set(cxx_link_libraries "")
@@ -72,36 +91,37 @@ if(VCPKG_LIBRARY_LINKAGE STREQUAL "static" AND NOT VCPKG_TARGET_IS_WINDOWS)
         
         # 1. 从 CXX 库中移除 C 库（避免重复）
         list(REMOVE_ITEM VCPKG_DETECTED_CMAKE_CXX_IMPLICIT_LINK_LIBRARIES ${VCPKG_DETECTED_CMAKE_C_IMPLICIT_LINK_LIBRARIES})
-
-        # 2. 【关键修正】先过滤掉绝对路径（只保留逻辑库名），再统一添加前缀
-        # 这一步只保留不包含 "/" 的项（即排除 /usr/lib/libm.so 这种，只留 m, stdc++ 这种）
-        list(FILTER VCPKG_DETECTED_CMAKE_CXX_IMPLICIT_LINK_LIBRARIES INCLUDE REGEX "^[^/]+$")
-        
-        # 3. 统一添加 -l 前缀 (只做这一次！)
-        # 注意：这里加了一个检查，防止已经是 -l 开头的库被重复添加
-        list(TRANSFORM VCPKG_DETECTED_CMAKE_CXX_IMPLICIT_LINK_LIBRARIES REPLACE "^([^-].*)" "-l\\1")
-
-        # 4. 手动追加 stdc++ 和 m (以防探测遗漏，且 list(REMOVE_ITEM) 会自动去重，所以不用担心重复)
-        # 注意：因为前面已经加了 -l，这里手动追加时也要带 -l
-        if(NOT "-lstdc++" IN_LIST VCPKG_DETECTED_CMAKE_CXX_IMPLICIT_LINK_LIBRARIES)
-             list(APPEND VCPKG_DETECTED_CMAKE_CXX_IMPLICIT_LINK_LIBRARIES "-lstdc++")
-        endif()
-        if(NOT "-lm" IN_LIST VCPKG_DETECTED_CMAKE_CXX_IMPLICIT_LINK_LIBRARIES)
-             list(APPEND VCPKG_DETECTED_CMAKE_CXX_IMPLICIT_LINK_LIBRARIES "-lm")
-        endif()
-
-        string(JOIN " " cxx_link_libraries ${VCPKG_DETECTED_CMAKE_CXX_IMPLICIT_LINK_LIBRARIES})
+        # Some toolchains (e.g. mingw-w64 cross gcc) report C++ implicit link
+        # libraries as resolved absolute archive paths. Those are already valid
+        # linker input and must be passed through verbatim; only bare library
+        # names get the "-l" prefix. Prepending "-l" to an absolute path produces
+        # a malformed "-l/abs/path/libfoo.a" token that downstream `ld` rejects.
+        set(cxx_link_flags "")
+        foreach(lib IN LISTS VCPKG_DETECTED_CMAKE_CXX_IMPLICIT_LINK_LIBRARIES)
+            if(IS_ABSOLUTE "${lib}")
+                list(APPEND cxx_link_flags "${lib}")
+            else()
+                list(APPEND cxx_link_flags "-l${lib}")
+            endif()
+        endforeach()
+        string(JOIN " " cxx_link_libraries ${cxx_link_flags})
     endblock()
 endif()
 
+set(LANGUAGES C CXX)
+if(VCPKG_TARGET_IS_APPLE)
+    list(APPEND LANGUAGES OBJC OBJCXX)
+endif()
 
 vcpkg_configure_meson(
     SOURCE_PATH "${SOURCE_PATH}"
+    LANGUAGES ${LANGUAGES}
     OPTIONS
         ${FEATURE_OPTIONS}
         -Ddocs=disabled          # Generate documentation with gtk-doc
         -Dtests=disabled
         -Dbenchmark=disabled
+        -Dgpu_demo=disabled
         ${OPTIONS}
     OPTIONS_DEBUG
         ${OPTIONS_DEBUG}
@@ -155,7 +175,7 @@ configure_file("${CMAKE_CURRENT_LIST_DIR}/harfbuzzConfig.cmake.in"
 
 vcpkg_list(SET TOOL_NAMES)
 if("glib" IN_LIST FEATURES)
-    vcpkg_list(APPEND TOOL_NAMES hb-subset hb-shape hb-info)
+    vcpkg_list(APPEND TOOL_NAMES hb-subset hb-shape hb-info hb-vector hb-raster)
     if("cairo" IN_LIST FEATURES)
         vcpkg_list(APPEND TOOL_NAMES hb-view)
     endif()
@@ -169,5 +189,3 @@ if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
 endif()
 
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/COPYING")
-
-file(INSTALL "${CMAKE_CURRENT_LIST_DIR}/usage" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}")
