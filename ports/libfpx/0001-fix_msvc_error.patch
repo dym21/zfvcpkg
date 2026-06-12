@@ -490,7 +490,7 @@ index ca1c77d..8970c84 100644
          pvector->pvar[i].vt = tmpType;
          //ReadVT_I4((DWORD *)&pvector->pvar[i].vt);
          strLen += 4;
-@@ -1273,8 +1273,14 @@ DWORD OLEStream::WriteVT(VARIANT * variant)
+@@ -1273,8 +1273,12 @@ DWORD OLEStream::WriteVT(VARIANT * variant)
      case VT_LPSTR:
  #ifdef _UNICODE
        return WriteVT_LPSTR((LPSTR)V_UI1REF(variant));
@@ -503,7 +503,7 @@ index ca1c77d..8970c84 100644
  #endif
      case VT_LPWSTR:
        return WriteVT_LPWSTR((WCHAR *)V_BYREF(variant));
-@@ -1564,7 +1578,7 @@ DWORD OLEStream::WriteVT_LPWSTR(WCHAR *pwsz)
+@@ -1564,7 +1568,7 @@ DWORD OLEStream::WriteVT_LPWSTR(WCHAR *pwsz)
    for ( DWORD i = 0; i < wcount; i++ )  {
  
      // Write the wide char
@@ -512,7 +512,7 @@ index ca1c77d..8970c84 100644
        return FALSE;
    }
  
-@@ -1602,7 +1616,7 @@ DWORD OLEStream::WriteVT_LPWSTR_NoPad(WCHAR *pwsz)
+@@ -1602,7 +1606,7 @@ DWORD OLEStream::WriteVT_LPWSTR_NoPad(WCHAR *pwsz)
    for ( DWORD i = 0; i < dwLength; i++ )  {
  
      // Write the wide char
@@ -521,7 +521,7 @@ index ca1c77d..8970c84 100644
        return FALSE;
    }
  
-@@ -1916,7 +1930,7 @@ DWORD OLEStream::WriteVT_VECTOR(DWORD dwType, VECTOR *pvector)
+@@ -1916,7 +1920,7 @@ DWORD OLEStream::WriteVT_VECTOR(DWORD dwType, VECTOR *pvector)
          // Write a variant type first ( unsigned long)
          tmpVal = pvector->pvar[i].vt;
          //WriteVT_I4((DWORD *)&pvector->pvar[i].vt);
@@ -530,7 +530,7 @@ index ca1c77d..8970c84 100644
          strLen += 4;
  
          // Write the variant accordingly. The total bytes write to the stream is returned
-@@ -2262,6 +2276,28 @@ Boolean OLEStream::VTtoString(VARIANT *variant, char **ppsz)
+@@ -2262,6 +2266,27 @@ Boolean OLEStream::VTtoString(VARIANT *variant, char **ppsz)
          *psz = 0;
        }
        break;
@@ -558,7 +558,7 @@ index ca1c77d..8970c84 100644
  #else
        if ( V_BSTR(variant) )
        {
-@@ -2270,7 +2306,6 @@ Boolean OLEStream::VTtoString(VARIANT *variant, char **ppsz)
+@@ -2270,7 +2295,6 @@ Boolean OLEStream::VTtoString(VARIANT *variant, char **ppsz)
          if (psz==NULL) {
            return FALSE;
          }
@@ -566,7 +566,7 @@ index ca1c77d..8970c84 100644
          strcpy(psz, V_BSTR(variant));
        }
        else
-@@ -2280,11 +2315,10 @@ Boolean OLEStream::VTtoString(VARIANT *variant, char **ppsz)
+@@ -2280,11 +2304,10 @@ Boolean OLEStream::VTtoString(VARIANT *variant, char **ppsz)
          if (psz==NULL) {
            return FALSE;
          }

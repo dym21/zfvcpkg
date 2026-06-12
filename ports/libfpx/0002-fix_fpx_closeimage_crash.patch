@@ -22,7 +22,7 @@ diff --git a/ole/olecore.cpp b/ole/olecore.cpp
 index 1234567..abcdef0 100644
 --- a/ole/olecore.cpp
 +++ b/ole/olecore.cpp
-@@ -1052,9 +1052,10 @@ void List::Release()
+@@ -1052,9 +1052,12 @@ void List::Release()
       * XXX further, the assumption is likely to break...
       *
       *	-mi, Oct 9, 2007
