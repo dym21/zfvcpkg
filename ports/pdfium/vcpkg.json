@@ -1,0 +1,25 @@
+{
+  "name": "pdfium",
+  "version": "6723",
+  "description": "PDFium - a library for rendering PDF documents (built from source)",
+  "homepage": "https://pdfium.googlesource.com/pdfium",
+  "license": "Apache-2.0",
+  "supports": "windows & !uwp",
+  "dependencies": [
+    {
+      "name": "vcpkg-gn",
+      "host": true
+    },
+    {
+      "name": "vcpkg-tool-ninja",
+      "host": true
+    },
+    "freetype",
+    "libjpeg-turbo",
+    "libpng",
+    "zlib",
+    "icu",
+    "openjpeg",
+    "abseil"
+  ]
+}
