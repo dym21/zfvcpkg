@@ -1,0 +1,13 @@
+diff --git a/c/common/platform.h b/c/common/platform.h
+index 1234567..abcdefg 100644
+--- a/c/common/platform.h
++++ b/c/common/platform.h
+@@ -665,7 +665,7 @@ extern "C" {
+ #undef BROTLI_TEST
+ #endif
+ 
+-#if BROTLI_GNUC_HAS_ATTRIBUTE(model, 3, 0, 3)
++#if BROTLI_GNUC_HAS_ATTRIBUTE(model, 3, 0, 3) && !defined(__loongarch__)
+ #define BROTLI_MODEL(M) __attribute__((model(M)))
+ #else
+ #define BROTLI_MODEL(M) /* M */

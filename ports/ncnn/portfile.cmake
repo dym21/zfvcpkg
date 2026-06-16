@@ -4,6 +4,8 @@ vcpkg_from_github(
     REF "${VERSION}"
     SHA512 515c6b6adda0b57b84427314c75375312e2e1f8a7c47900ca1419735cbf956b1dab14cd3caad008bda7269578e01cae2dda8b49565c6e0eceff724bbc11f6c55
     HEAD_REF master
+    PATCHES
+        add-mips64-march-for-msa.patch
 )
 
 string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
@@ -25,6 +27,7 @@ vcpkg_cmake_configure(
         -DNCNN_BUILD_TOOLS=OFF
         -DNCNN_BUILD_EXAMPLES=OFF
         -DNCNN_BUILD_BENCHMARK=OFF
+		-DNCNN_OPENMP=OFF
         -DNCNN_SHARED_LIB=${BUILD_SHARED}
         -DNCNN_VERSION=${VERSION}
 )

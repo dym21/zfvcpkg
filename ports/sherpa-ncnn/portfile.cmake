@@ -9,6 +9,13 @@ vcpkg_from_github(
 		0001-fix-gcc14-mingw-stdint.patch
 )
 
+# Fix kaldi-native-fbank missing <cstdint> include on GCC 15 / LoongArch
+vcpkg_replace_string(
+    "${SOURCE_PATH}/cmake/kaldi-native-fbank.cmake"
+    "    FetchContent_Populate(kaldi_native_fbank)"
+    "    FetchContent_Populate(kaldi_native_fbank)\n\n    # GCC 15 no longer transitively includes <cstdint> from <memory>\n    file(READ \"\${kaldi_native_fbank_SOURCE_DIR}/kaldi-native-fbank/csrc/rfft.h\" _rfft_h)\n    string(REPLACE \"#include <memory>\" \"#include <memory>\\n#include <cstdint>\" _rfft_h \"\${_rfft_h}\")\n    file(WRITE \"\${kaldi_native_fbank_SOURCE_DIR}/kaldi-native-fbank/csrc/rfft.h\" \"\${_rfft_h}\")"
+)
+
 string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
 
 vcpkg_configure_cmake(

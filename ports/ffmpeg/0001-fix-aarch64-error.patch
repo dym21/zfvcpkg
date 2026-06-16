@@ -11,18 +11,18 @@ diff --git a/libavutil/aarch64/cpu.c b/libavutil/aarch64/cpu.c
 index 7631d13..c9a672e 100644
 --- a/libavutil/aarch64/cpu.c
 +++ b/libavutil/aarch64/cpu.c
-@@ -32,7 +32,11 @@ static int detect_flags(void)
+@@ -39,7 +39,11 @@ static int detect_flags(void)
      int flags = 0;
- 
+
      unsigned long hwcap = ff_getauxval(AT_HWCAP);
 +#ifdef AT_HWCAP2
      unsigned long hwcap2 = ff_getauxval(AT_HWCAP2);
 +#else
 +    unsigned long hwcap2 = 0;
 +#endif
- 
-     if (hwcap & HWCAP_AARCH64_ASIMDDP)
-         flags |= AV_CPU_FLAG_DOTPROD;
--- 
+
+     if (hwcap & HWCAP_AARCH64_CRC32)
+         flags |= AV_CPU_FLAG_ARM_CRC;
+--
 2.45.1.windows.1
 

@@ -1,0 +1,116 @@
+diff --git a/heifio/decoder_raw.cc b/heifio/decoder_raw.cc
+index a2ed77a..f9b2bf8 100644
+--- a/heifio/decoder_raw.cc
++++ b/heifio/decoder_raw.cc
+@@ -27,7 +27,11 @@
+ #include "decoder_raw.h"
+ #include <libheif/heif.h>
+ #include <libheif/heif_uncompressed.h>
++#if __has_include(<bit>)
+ #include <bit>
++#else
++#include <type_traits>
++#endif
+ #include <cstdio>
+ #include <cstring>
+ #include <vector>
+diff --git a/libheif/bitstream.cc b/libheif/bitstream.cc
+index be29548..d155d2f 100644
+--- a/libheif/bitstream.cc
++++ b/libheif/bitstream.cc
+@@ -26,10 +26,10 @@
+ 
+ #include "common_utils.h"
+ 
+-#if !defined(HAVE_BIT)
+-#include <type_traits>
+-#else
++#if __has_include(<bit>)
+ #include <bit>
++#else
++#include <type_traits>
+ #endif
+ 
+ #define MAX_UVLC_LEADING_ZEROS 20
+diff --git a/libheif/codecs/uncompressed/unc_decoder_block_component_interleave.cc b/libheif/codecs/uncompressed/unc_decoder_block_component_interleave.cc
+index fd2f7f7..2b6a8e5 100644
+--- a/libheif/codecs/uncompressed/unc_decoder_block_component_interleave.cc
++++ b/libheif/codecs/uncompressed/unc_decoder_block_component_interleave.cc
+@@ -24,7 +24,11 @@
+ #include "unc_types.h"
+ #include "error.h"
+ 
++#if __has_include(<bit>)
+ #include <bit>
++#else
++#include <type_traits>
++#endif
+ #include <cassert>
+ #include <cstring>
+ #include <vector>
+diff --git a/libheif/codecs/uncompressed/unc_decoder_block_pixel_interleave.cc b/libheif/codecs/uncompressed/unc_decoder_block_pixel_interleave.cc
+index 9ad9b00..be2767f 100644
+--- a/libheif/codecs/uncompressed/unc_decoder_block_pixel_interleave.cc
++++ b/libheif/codecs/uncompressed/unc_decoder_block_pixel_interleave.cc
+@@ -24,7 +24,11 @@
+ #include "unc_types.h"
+ #include "error.h"
+ 
++#if __has_include(<bit>)
+ #include <bit>
++#else
++#include <type_traits>
++#endif
+ #include <cassert>
+ #include <cstring>
+ #include <vector>
+diff --git a/libheif/codecs/uncompressed/unc_decoder_bytealign_component_interleave.cc b/libheif/codecs/uncompressed/unc_decoder_bytealign_component_interleave.cc
+index 7c55770..76abdb8 100644
+--- a/libheif/codecs/uncompressed/unc_decoder_bytealign_component_interleave.cc
++++ b/libheif/codecs/uncompressed/unc_decoder_bytealign_component_interleave.cc
+@@ -24,7 +24,11 @@
+ #include "unc_types.h"
+ #include "error.h"
+ 
++#if __has_include(<bit>)
+ #include <bit>
++#else
++#include <type_traits>
++#endif
+ #include <cassert>
+ #include <cstring>
+ #include <vector>
+diff --git a/libheif/codecs/uncompressed/unc_decoder_legacybase.cc b/libheif/codecs/uncompressed/unc_decoder_legacybase.cc
+index 8458bec..d2ee553 100644
+--- a/libheif/codecs/uncompressed/unc_decoder_legacybase.cc
++++ b/libheif/codecs/uncompressed/unc_decoder_legacybase.cc
+@@ -24,10 +24,10 @@
+ #include <cassert>
+ #include <utility>
+ 
+-#if ((defined(__GNUC__) && !defined(__clang__) && !defined(__INTEL_COMPILER) && !defined(__PGI)) && __GNUC__ < 9) || (defined(__clang__) && __clang_major__ < 10)
+-#include <type_traits>
+-#else
++#if __has_include(<bit>)
+ #include <bit>
++#else
++#include <type_traits>
+ #endif
+ 
+ #include "common_utils.h"
+diff --git a/libheif/codecs/uncompressed/unc_encoder_component_interleave.cc b/libheif/codecs/uncompressed/unc_encoder_component_interleave.cc
+index 4c88d71..47bd832 100644
+--- a/libheif/codecs/uncompressed/unc_encoder_component_interleave.cc
++++ b/libheif/codecs/uncompressed/unc_encoder_component_interleave.cc
+@@ -20,7 +20,11 @@
+ 
+ #include "unc_encoder_component_interleave.h"
+ 
++#if __has_include(<bit>)
+ #include <bit>
++#else
++#include <type_traits>
++#endif
+ #include <cstring>
+ 
+ #include "image/pixelimage.h"

@@ -9,6 +9,10 @@ vcpkg_from_github(
         find-modules.diff
         gdk-pixbuf.patch
         symbol-exports.diff
+        fix-gcc8-defaulted-comparison.patch
+        fix-gcc8-set-contains.patch
+        fix-gcc8-std-ranges.patch
+        fix-gcc8-bit-endian.patch
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS

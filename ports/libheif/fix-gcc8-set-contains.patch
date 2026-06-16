@@ -1,0 +1,106 @@
+diff --git a/libheif/codecs/avc_boxes.cc b/libheif/codecs/avc_boxes.cc
+index 8d7d82e..e5e8f91 100644
+--- a/libheif/codecs/avc_boxes.cc
++++ b/libheif/codecs/avc_boxes.cc
+@@ -371,7 +371,8 @@ Error parse_sps_for_avcC_configuration(const uint8_t* sps, size_t size,
+   uint32_t value;
+   if (!reader.get_uvlc(&value)) { return invalidUVLC; } // SPS ID
+ 
+-  if (std::set<int>{100, 110, 122, 244, 44, 83, 86}.contains(config->AVCProfileIndication)) {
++  static const std::set<int> valid_avc_profiles{100, 110, 122, 244, 44, 83, 86};
++  if (valid_avc_profiles.find(config->AVCProfileIndication) != valid_avc_profiles.end()) {
+     if (!reader.get_uvlc(&value)) {
+       return invalidUVLC;
+     }
+diff --git a/libheif/context.cc b/libheif/context.cc
+index eb22f64..513cdd9 100644
+--- a/libheif/context.cc
++++ b/libheif/context.cc
+@@ -342,7 +342,7 @@ std::shared_ptr<const ImageItem> HeifContext::get_primary_image(bool return_erro
+ 
+ bool HeifContext::is_image(heif_item_id ID) const
+ {
+-  return m_all_images.contains(ID);
++  return m_all_images.find(ID) != m_all_images.end();
+ }
+ 
+ 
+@@ -1396,7 +1396,7 @@ Result<heif_item_id> HeifContext::find_first_coded_image_id(heif_item_id id) con
+       id = image_references[0];
+     }
+     else {
+-      if (!m_all_images.contains(id)) {
++      if (m_all_images.find(id) == m_all_images.end()) {
+         std::stringstream sstr;
+         sstr << "Image item " << id << " referenced, but it does not exist\n";
+ 
+@@ -1422,7 +1422,7 @@ Result<std::shared_ptr<HeifPixelImage>> HeifContext::decode_image(heif_item_id I
+                                                                   std::set<heif_item_id> processed_ids) const
+ {
+   std::shared_ptr<ImageItem> imgitem;
+-  if (m_all_images.contains(ID)) {
++  if (m_all_images.find(ID) != m_all_images.end()) {
+     imgitem = m_all_images.find(ID)->second;
+   }
+ 
+diff --git a/libheif/image-items/grid.cc b/libheif/image-items/grid.cc
+index 048b768..b9ed2b7 100644
+--- a/libheif/image-items/grid.cc
++++ b/libheif/image-items/grid.cc
+@@ -211,7 +211,7 @@ Result<std::shared_ptr<HeifPixelImage>> ImageItem_Grid::decode_compressed_image(
+                                                                                 bool decode_tile_only, uint32_t tile_x0, uint32_t tile_y0,
+                                                                                 std::set<heif_item_id> processed_ids) const
+ {
+-  if (processed_ids.contains(get_id())) {
++  if (processed_ids.find(get_id()) != processed_ids.end()) {
+     return Error{heif_error_Invalid_input,
+                  heif_suberror_Unspecified,
+                  "'iref' has cyclic references"};
+diff --git a/libheif/image-items/iden.cc b/libheif/image-items/iden.cc
+index 8050af2..5ed4e53 100644
+--- a/libheif/image-items/iden.cc
++++ b/libheif/image-items/iden.cc
+@@ -39,7 +39,7 @@ Result<std::shared_ptr<HeifPixelImage>> ImageItem_iden::decode_compressed_image(
+                                                                                 bool decode_tile_only, uint32_t tile_x0, uint32_t tile_y0,
+                                                                                 std::set<heif_item_id> processed_ids) const
+ {
+-  if (processed_ids.contains(get_id())) {
++  if (processed_ids.find(get_id()) != processed_ids.end()) {
+     return Error{heif_error_Invalid_input,
+                  heif_suberror_Unspecified,
+                  "'iref' has cyclic references"};
+diff --git a/libheif/image-items/image_item.cc b/libheif/image-items/image_item.cc
+index ef81353..f97f7ba 100644
+--- a/libheif/image-items/image_item.cc
++++ b/libheif/image-items/image_item.cc
+@@ -889,7 +889,7 @@ Result<std::shared_ptr<HeifPixelImage>> ImageItem::decode_image(const heif_decod
+   // The matching insert lives inside decode_compressed_image() of derived
+   // items (grid/overlay/iden), so the current item is in processed_ids only
+   // when called from one of its own descendants.
+-  if (processed_ids.contains(m_id)) {
++  if (processed_ids.find(m_id) != processed_ids.end()) {
+     return Error{heif_error_Invalid_input,
+                  heif_suberror_Unspecified,
+                  "'iref' has cyclic references"};
+@@ -1244,7 +1244,7 @@ Result<std::shared_ptr<HeifPixelImage>> ImageItem::decode_compressed_image(const
+                                                                            bool decode_tile_only, uint32_t tile_x0, uint32_t tile_y0,
+                                                                            std::set<heif_item_id> processed_ids) const
+ {
+-  if (processed_ids.contains(m_id)) {
++  if (processed_ids.find(m_id) != processed_ids.end()) {
+     return Error{heif_error_Invalid_input,
+                  heif_suberror_Unspecified,
+                  "'iref' has cyclic references"};
+diff --git a/libheif/image-items/overlay.cc b/libheif/image-items/overlay.cc
+index 0368ecb..3b3a275 100644
+--- a/libheif/image-items/overlay.cc
++++ b/libheif/image-items/overlay.cc
+@@ -290,7 +290,7 @@ Result<std::shared_ptr<HeifPixelImage>> ImageItem_Overlay::decode_compressed_ima
+ Result<std::shared_ptr<HeifPixelImage>> ImageItem_Overlay::decode_overlay_image(const heif_decoding_options& options,
+                                                                                 std::set<heif_item_id> processed_ids) const
+ {
+-  if (processed_ids.contains(get_id())) {
++  if (processed_ids.find(get_id()) != processed_ids.end()) {
+     return Error{heif_error_Invalid_input,
+                  heif_suberror_Unspecified,
+                  "'iref' has cyclic references"};

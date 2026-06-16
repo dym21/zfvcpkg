@@ -13,9 +13,8 @@ vcpkg_from_github(
         0013-define-WINVER.patch
         0024-fix-osx-host-c11.patch
         0040-ffmpeg-add-av_stream_get_first_dts-for-chromium.patch # Do not remove this patch. It is required by chromium
-	#	0001-fix-c11-flag.patch
+		0001-fix-c11-flag.patch
 		0001-fix-aarch64-error.patch
-        0044-fix-vulkan-debug-callback-abi.patch
         0045-use-prebuilt-bin2c.patch
         0046-fix-msvc-detection.patch
         0047-fix-msvc-utf8.patch
@@ -58,6 +57,9 @@ elseif(VCPKG_CMAKE_SYSTEM_NAME STREQUAL "Android")
 elseif(VCPKG_CMAKE_SYSTEM_NAME STREQUAL "QNX")
     string(APPEND OPTIONS " --target-os=qnx")
 endif()
+
+# Disable gfxcapture filter - requires C++17 which conflicts with C11 flag handling
+string(APPEND OPTIONS " --disable-filter=gfxcapture")
 
 if(VCPKG_TARGET_ARCHITECTURE STREQUAL "mips64")
 	string(APPEND OPTIONS " --disable-inline-asm --disable-asm")

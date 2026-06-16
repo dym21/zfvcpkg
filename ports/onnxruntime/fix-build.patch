@@ -1,0 +1,64 @@
+--- a/cmake/CMakeLists.txt
++++ b/cmake/CMakeLists.txt
+@@ -500,6 +500,12 @@ if(onnxruntime_USE_CUDA)
+   endif()
+ endif()
+
++# Use preinstalled dependencies from vcpkg
++if(onnxruntime_USE_PREINSTALLED_ABSEIL)
++  find_package(absl REQUIRED)
++  set(abseil_cpp_FOUND TRUE)
++endif()
++
+ # Dependencies
+ include(external/onnxruntime_external_deps.cmake)
+
+--- a/cmake/external/onnxruntime_external_deps.cmake
++++ b/cmake/external/onnxruntime_external_deps.cmake
+@@ -30,6 +30,12 @@ include(FetchContent)
+ include(external/helper_functions.cmake)
+
+ # abseil
++if(onnxruntime_USE_PREINSTALLED_ABSEIL)
++  find_package(absl REQUIRED)
++  message(STATUS "Using preinstalled abseil from vcpkg")
++  set(abseil_cpp_FOUND TRUE)
++endif()
++
+ if(NOT abseil_cpp_FOUND)
+   FetchContent_Declare(
+     abseil_cpp
+@@ -40,6 +46,7 @@ if(NOT abseil_cpp_FOUND)
+   )
+ endif()
+
++# Only define targets if not already defined by find_package
+ if(NOT TARGET absl::base)
+   if(abseil_cpp_POPULATED)
+     add_subdirectory(${abseil_cpp_SOURCE_DIR} ${abseil_cpp_BINARY_DIR} EXCLUDE_FROM_ALL)
+@@ -50,6 +57,12 @@ endif()
+ include(absl_headers.cmake)
+
+ # date
++if(onnxruntime_USE_PREINSTALLED_DATE)
++  find_package(date REQUIRED)
++  message(STATUS "Using preinstalled date from vcpkg")
++  set(date_FOUND TRUE)
++endif()
++
+ if(NOT date_FOUND)
+   FetchContent_Declare(
+     date
+@@ -80,6 +93,12 @@ if(onnxruntime_USE_PREINSTALLED_PROTOBUF)
+   set(Protobuf_FOUND TRUE)
+ endif()
+
++# flatbuffers
++if(onnxruntime_USE_PREINSTALLED_FLATBUFFERS)
++  find_package(flatbuffers REQUIRED)
++  message(STATUS "Using preinstalled flatbuffers from vcpkg")
++endif()
++
+ if(NOT Protobuf_FOUND)
+   FetchContent_Declare(
+     protobuf

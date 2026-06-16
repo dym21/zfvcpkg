@@ -1,0 +1,13 @@
+diff --git a/cmake/ncnn_add_layer.cmake b/cmake/ncnn_add_layer.cmake
+index 1234567..abcdefg 100644
+--- a/cmake/ncnn_add_layer.cmake
++++ b/cmake/ncnn_add_layer.cmake
+@@ -399,7 +399,7 @@ function(ncnn_add_layer class)
+ 
+     if(NCNN_TARGET_ARCH STREQUAL "mips")
+         if(NCNN_RUNTIME_CPU AND NCNN_MSA)
+-            ncnn_add_arch_opt_layer(${class} msa "-mmsa")
++            ncnn_add_arch_opt_layer(${class} msa "-march=mips64 -mmsa")
+         endif()
+         if(NCNN_RUNTIME_CPU AND NCNN_MMI)
+             ncnn_add_arch_opt_source(${class} mmi "-mloongson-mmi")

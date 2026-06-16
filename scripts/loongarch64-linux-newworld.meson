@@ -1,0 +1,13 @@
+[binaries]
+c = '/opt/zftoolchain/loongarch64-zftoolchain-linux-gnu-x86_64/bin/loongarch64-zftoolchain-linux-gnu-gcc'
+cpp = '/opt/zftoolchain/loongarch64-zftoolchain-linux-gnu-x86_64/bin/loongarch64-zftoolchain-linux-gnu-g++'
+ar = '/opt/zftoolchain/loongarch64-zftoolchain-linux-gnu-x86_64/bin/loongarch64-zftoolchain-linux-gnu-ar'
+ranlib = '/opt/zftoolchain/loongarch64-zftoolchain-linux-gnu-x86_64/bin/loongarch64-zftoolchain-linux-gnu-ranlib'
+strip = '/opt/zftoolchain/loongarch64-zftoolchain-linux-gnu-x86_64/bin/loongarch64-zftoolchain-linux-gnu-strip'
+pkg-config = 'pkg-config'
+
+[host_machine]
+system = 'linux'
+cpu_family = 'loongarch64'
+cpu = 'loongarch64'
+endian = 'little'

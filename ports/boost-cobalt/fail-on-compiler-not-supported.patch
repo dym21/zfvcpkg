@@ -1,13 +1,23 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 5a51d5285c..8374f911a6 100644
+index 45dfa4b..910fe33 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -14,7 +14,7 @@ project(boost_cobalt VERSION "${BOOST_COBALT_VERSION}" LANGUAGES CXX)
+@@ -14,6 +14,18 @@ project(boost_cobalt VERSION "${BOOST_COBALT_VERSION}" LANGUAGES CXX)
  
  include(cmake/CheckRequirements.cmake)
  if (NOT BOOST_COBALT_REQUIREMENTS_MATCHED)
--    return()
-+    message(FATAL_ERROR "The current compiler is not supported.")
++    message(STATUS "Boost.Cobalt: compiler does not support C++20 coroutines; building a stub library.")
++
++    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/boost_cobalt_stub.cpp" "")
++
++    add_library(boost_cobalt "${CMAKE_CURRENT_BINARY_DIR}/boost_cobalt_stub.cpp")
++    add_library(Boost::cobalt ALIAS boost_cobalt)
++    target_include_directories(boost_cobalt PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
++
++    add_library(boost_cobalt_io "${CMAKE_CURRENT_BINARY_DIR}/boost_cobalt_stub.cpp")
++    add_library(Boost::cobalt::io ALIAS boost_cobalt_io)
++    target_link_libraries(boost_cobalt_io PUBLIC boost_cobalt)
++
+     return()
  endif()
  
- set(BOOST_COBALT_IS_ROOT OFF)

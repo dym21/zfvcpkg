@@ -7,6 +7,7 @@ vcpkg_from_github(
     PATCHES
         install.patch
         pkgconfig.patch
+        loongarch-no-model-attr.patch
 )
 
 vcpkg_cmake_configure(
