@@ -1,0 +1,85 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Kimi <noreply@kimi.com>
+Date: Mon, 22 Jun 2026 13:30:00 +0800
+Subject: [PATCH] fix IMalloc interface mismatch on Windows SDK
+
+Newer Windows SDKs (10.0.26100.0+) define IMalloc::Alloc/Realloc
+parameters and IMalloc::GetSize return type as SIZE_T. On x64,
+ULONG (32-bit) does not match SIZE_T (64-bit), so CAllocator
+becomes an abstract class and fails to compile.
+
+Update the CAllocator signatures to use SIZE_T on Windows while
+keeping ULONG for the non-Windows reference implementation.
+---
+ oless/h/mem.hxx | 10 ++++++++++
+ oless/mem.cxx   | 18 ++++++++++++++++++
+ 2 files changed, 28 insertions(+)
+
+diff --git a/oless/h/mem.hxx b/oless/h/mem.hxx
+index c4179c1..6761e9f 100644
+--- a/oless/h/mem.hxx
++++ b/oless/h/mem.hxx
+@@ -28,11 +28,18 @@ public:
+     STDMETHOD_(ULONG,AddRef)    ( void );
+     STDMETHOD_(ULONG,Release)   ( void );
+     STDMETHOD(QueryInterface)   ( REFIID riid, void ** ppv );
+ 
++#ifdef _WIN32
++    STDMETHOD_(void*,Alloc)     ( SIZE_T cb );
++    STDMETHOD_(void *,Realloc)  ( void *pv, SIZE_T cb );
++    STDMETHOD_(void,Free)       ( void *pv );
++    STDMETHOD_(SIZE_T,GetSize)  ( void * pv );
++#else
+     STDMETHOD_(void*,Alloc)     ( ULONG cb );
+     STDMETHOD_(void *,Realloc)  ( void *pv, ULONG cb );
+     STDMETHOD_(void,Free)       ( void *pv );
+     STDMETHOD_(ULONG,GetSize)   ( void * pv );
++#endif
+     STDMETHOD_(void,HeapMinimize) ( void );
+     STDMETHOD_(int,DidAlloc)    ( void * pv );
+ };
+
+diff --git a/oless/mem.cxx b/oless/mem.cxx
+index c4179c1..6761e9f 100644
+--- a/oless/mem.cxx
++++ b/oless/mem.cxx
+@@ -199,7 +199,11 @@ STDMETHODIMP_(ULONG) CAllocator::Release(void)
+ //
+ //----------------------------------------------------------------------------
+ 
++#ifdef _WIN32
++STDMETHODIMP_(void *) CAllocator::Alloc ( SIZE_T cb )
++#else
+ STDMETHODIMP_(void *) CAllocator::Alloc ( ULONG cb )
++#endif
+ {
+     // make sure the retuned value is 8 byte aligned
+     return (void *) new LONGLONG[ (cb+7)/sizeof(LONGLONG) ];
+@@ -223,9 +227,14 @@ CAllocator::Realloc( void *pv, ULONG cb )
+ //              memory boundary.
+ //----------------------------------------------------------------------------
+ 
++#ifdef _WIN32
++STDMETHODIMP_(void *) 
++CAllocator::Realloc( void *pv, SIZE_T cb )
++#else
+ STDMETHODIMP_(void *) 
+ CAllocator::Realloc( void *pv, ULONG cb )
++#endif
+ {
+   void* pvNew=NULL;
+   if (!pv)                    
+     pvNew = Alloc(cb);         
+@@ -271,7 +281,11 @@ STDMETHODIMP_(ULONG) CAllocator::GetSize(void * pv)
+ //              (now) 0
+ //----------------------------------------------------------------------------
+ 
++#ifdef _WIN32
++STDMETHODIMP_(SIZE_T) CAllocator::GetSize(void * pv)
++#else
+ STDMETHODIMP_(ULONG) CAllocator::GetSize(void * pv)
++#endif
+ {
+     UNREFERENCED_PARM(pv);
+     return 0;
+}

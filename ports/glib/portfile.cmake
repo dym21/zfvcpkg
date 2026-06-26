@@ -139,6 +139,26 @@ if(NOT VCPKG_BUILD_TYPE)
     vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/debug/lib/pkgconfig/glib-2.0.pc" "\${bindir}" "\${prefix}/../tools/${PORT}")
 endif()
 
+# On static MinGW, libatomic is only available as a static archive (libatomic.a),
+# but -latomic defaults to looking for libatomic.dll.a. Provide a copy of the
+# static archive in GLib's lib directory so that downstream autotools/libtool
+# builds (which search for libatomic.a) can resolve -latomic successfully.
+if(VCPKG_TARGET_IS_MINGW AND VCPKG_LIBRARY_LINKAGE STREQUAL "static")
+    execute_process(
+        COMMAND "${VCPKG_DETECTED_CMAKE_C_COMPILER}" -print-file-name=libatomic.a
+        OUTPUT_VARIABLE GLIB_LIBATOMIC_PATH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+    if(EXISTS "${GLIB_LIBATOMIC_PATH}")
+        file(COPY "${GLIB_LIBATOMIC_PATH}" DESTINATION "${CURRENT_PACKAGES_DIR}/lib")
+        if(NOT VCPKG_BUILD_TYPE)
+            file(COPY "${GLIB_LIBATOMIC_PATH}" DESTINATION "${CURRENT_PACKAGES_DIR}/debug/lib")
+        endif()
+    endif()
+    unset(GLIB_LIBATOMIC_PATH)
+endif()
+
 # Fix python scripts
 set(_file "${CURRENT_PACKAGES_DIR}/tools/${PORT}/gdbus-codegen")
 file(READ "${_file}" _contents)

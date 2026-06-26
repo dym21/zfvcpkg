@@ -4,7 +4,15 @@ vcpkg_from_git(
     REF 9e4737f2293c0d127bda92e5b01896df10571424
     FETCH_REF v0.2.13
     HEAD_REF master
+    PATCHES
+        0001-vcpkg-lib-names.patch
 )
+
+# MSVC lacks unistd.h; avoid it on Windows.
+vcpkg_replace_string("${SOURCE_PATH}/src/extra/gd/gdft.c" "#ifndef MSWIN32" "#ifndef _WIN32")
+vcpkg_replace_string("${SOURCE_PATH}/src/font.c" "#include <unistd.h>" "#ifndef _WIN32\n#include <unistd.h>\n#endif")
+vcpkg_replace_string("${SOURCE_PATH}/src/ipa/ipa.c" "#include <unistd.h>" "#ifndef _WIN32\n#include <unistd.h>\n#endif")
+vcpkg_replace_string("${SOURCE_PATH}/src/player.c" "#include <unistd.h>" "#ifndef _WIN32\n#include <unistd.h>\n#endif")
 
 # Configure based on library linkage
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")

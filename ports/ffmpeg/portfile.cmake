@@ -160,6 +160,7 @@ endif()
 if(VCPKG_HOST_IS_WINDOWS)
     vcpkg_acquire_msys(MSYS_ROOT PACKAGES automake)
     set(SHELL "${MSYS_ROOT}/usr/bin/bash.exe")
+    set(MAKE_BINARY "${MSYS_ROOT}/usr/bin/make.exe")
     vcpkg_execute_required_process(
         COMMAND "${SHELL}" -c "'/usr/bin/automake' --print-lib"
         OUTPUT_VARIABLE automake_lib
@@ -170,6 +171,7 @@ if(VCPKG_HOST_IS_WINDOWS)
     list(APPEND prog_env "${MSYS_ROOT}/usr/bin" "${MSYS_ROOT}${automake_lib}")
 else()
     find_program(SHELL bash)
+    set(MAKE_BINARY "")
 endif()
 
 list(REMOVE_DUPLICATES prog_env)

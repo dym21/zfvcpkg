@@ -93,14 +93,17 @@ else
     OPTIONS_x86_64="${OPTIONS_x86}"
 fi
 
-case "@VCPKG_CMAKE_SYSTEM_NAME@" in
-    *BSD)
-        MAKE_BINARY="gmake"
-        ;;
-    *)
-        MAKE_BINARY="make"
-        ;;
-esac
+MAKE_BINARY="@MAKE_BINARY@"
+if [ -z "$MAKE_BINARY" ]; then
+    case "@VCPKG_CMAKE_SYSTEM_NAME@" in
+        *BSD)
+            MAKE_BINARY="gmake"
+            ;;
+        *)
+            MAKE_BINARY="make"
+            ;;
+    esac
+fi
 
 build_ffmpeg() {
     # extract build architecture

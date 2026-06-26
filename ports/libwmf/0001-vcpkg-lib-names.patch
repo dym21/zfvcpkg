@@ -1,0 +1,112 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Kimi <noreply@kimi.com>
+Date: Mon, 22 Jun 2026 14:00:00 +0800
+Subject: [PATCH] vcpkg: use vcpkg library names for zlib and libpng
+
+vcpkg names static zlib/libpng libraries differently on Windows
+(zs/zsd and libpng16/libpng16d). Make configure.ac check for these
+names first, and use WMF_*_LDFLAGS in the gd check instead of
+hardcoded -lz/-lpng.
+---
+ configure.ac | 108 ++++++++++++++++++++++++++++++++++-----------------
+ 1 file changed, 71 insertions(+), 37 deletions(-)
+
+--- a/configure.ac
++++ b/configure.ac
+@@ -454,23 +454,41 @@
+ dnl WMF_Z_CFLAGS are required later on when testing for png, etc.
+ 
+ AC_CHECK_HEADER(zlib.h,[
+-	AC_CHECK_LIB(z,gzputs,[
++	AC_CHECK_LIB(zs,gzputs,[
+ 		if [ test "x$ZLIB_DIR" != "x" ]; then
+ 			WMF_Z_CONFIG_CFLAGS="-I$ZLIB_DIR/include"
+ 			WMF_Z_CFLAGS="-I$ZLIB_DIR/include"
+-			WMF_Z_LDFLAGS="-L$ZLIB_DIR/lib -lz"
++			WMF_Z_LDFLAGS="-L$ZLIB_DIR/lib -lzs"
+ 		else
+-			WMF_Z_LDFLAGS="-lz"
+-		fi
+-	],[	AC_CHECK_LIB(gz,gzputs,[
++			WMF_Z_LDFLAGS="-lzs"
++		fi
++	],[	AC_CHECK_LIB(zsd,gzputs,[
+ 			if [ test "x$ZLIB_DIR" != "x" ]; then
+ 				WMF_Z_CONFIG_CFLAGS="-I$ZLIB_DIR/include"
+ 				WMF_Z_CFLAGS="-I$ZLIB_DIR/include"
+-				WMF_Z_LDFLAGS="-L$ZLIB_DIR/lib -lgz"
++				WMF_Z_LDFLAGS="-L$ZLIB_DIR/lib -lzsd"
+ 			else
+-				WMF_Z_LDFLAGS="-lgz"
++				WMF_Z_LDFLAGS="-lzsd"
+ 			fi
+-		],[	AC_MSG_ERROR(* * * unable to find libz which is required by libwmf * * *)
++		],[	AC_CHECK_LIB(z,gzputs,[
++				if [ test "x$ZLIB_DIR" != "x" ]; then
++					WMF_Z_CONFIG_CFLAGS="-I$ZLIB_DIR/include"
++					WMF_Z_CFLAGS="-I$ZLIB_DIR/include"
++					WMF_Z_LDFLAGS="-L$ZLIB_DIR/lib -lz"
++				else
++					WMF_Z_LDFLAGS="-lz"
++				fi
++			],[	AC_CHECK_LIB(gz,gzputs,[
++					if [ test "x$ZLIB_DIR" != "x" ]; then
++						WMF_Z_CONFIG_CFLAGS="-I$ZLIB_DIR/include"
++						WMF_Z_CFLAGS="-I$ZLIB_DIR/include"
++						WMF_Z_LDFLAGS="-L$ZLIB_DIR/lib -lgz"
++					else
++						WMF_Z_LDFLAGS="-lgz"
++					fi
++				],[	AC_MSG_ERROR(* * * unable to find libz which is required by libwmf * * *)
++				])
++			])
+ 		])
+ 	])
+ ],[	AC_MSG_ERROR(* * * unable to find "zlib.h" which is required by libwmf * * *)
+@@ -507,15 +525,31 @@
+ CPPFLAGS="$CPPFLAGS $WMF_Z_CFLAGS"
+ 
+ AC_CHECK_HEADER(png.h,[
+-	AC_CHECK_LIB(png,png_write_image,[
++	AC_CHECK_LIB(libpng16,png_write_image,[
+ 		if [ test "x$PNG_DIR" != "x" ]; then
+ 			WMF_PNG_CFLAGS="-I$PNG_DIR/include"
+-			WMF_PNG_LDFLAGS="-L$PNG_DIR/lib -lpng"
++			WMF_PNG_LDFLAGS="-L$PNG_DIR/lib -llibpng16"
+ 		else
+-			WMF_PNG_LDFLAGS="-lpng"
+-		fi
+-	],[	AC_MSG_ERROR(* * * unable to find libpng which is required by libwmf * * *)
+-	],-lz -lm)
++			WMF_PNG_LDFLAGS="-llibpng16"
++		fi
++	],[	AC_CHECK_LIB(libpng16d,png_write_image,[
++			if [ test "x$PNG_DIR" != "x" ]; then
++				WMF_PNG_CFLAGS="-I$PNG_DIR/include"
++				WMF_PNG_LDFLAGS="-L$PNG_DIR/lib -llibpng16d"
++			else
++				WMF_PNG_LDFLAGS="-llibpng16d"
++			fi
++		],[	AC_CHECK_LIB(png,png_write_image,[
++				if [ test "x$PNG_DIR" != "x" ]; then
++					WMF_PNG_CFLAGS="-I$PNG_DIR/include"
++					WMF_PNG_LDFLAGS="-L$PNG_DIR/lib -lpng"
++				else
++					WMF_PNG_LDFLAGS="-lpng"
++				fi
++			],[	AC_MSG_ERROR(* * * unable to find libpng which is required by libwmf * * *)
++			],$WMF_Z_LDFLAGS $SYS_LIBM)
++		],$WMF_Z_LDFLAGS $SYS_LIBM)
++	],$WMF_Z_LDFLAGS $SYS_LIBM)
+ ],[	AC_MSG_ERROR(* * * unable to find "png.h" which is required by libwmf * * *)
+ ])
+ 
+@@ -632,7 +666,7 @@
+ 
+ 	CPPFLAGS="$CPPFLAGS $WMF_FT_CFLAGS $WMF_PNG_CFLAGS $WMF_Z_CFLAGS"
+ 	LDFLAGS="$LDFLAGS $WMF_FT_LDFLAGS $WMF_PNG_LDFLAGS $WMF_Z_LDFLAGS"
+-	other_libs="$other_libs -lfreetype -lpng -lz -lm"
++	other_libs="$other_libs $WMF_FT_LDFLAGS $WMF_PNG_LDFLAGS $WMF_Z_LDFLAGS $SYS_LIBM"
+ 
+ 	AC_CHECK_HEADER(gd.h,[
+ 		AC_CHECK_LIB(gd,gdClipSetAdd,[

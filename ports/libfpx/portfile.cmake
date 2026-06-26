@@ -7,6 +7,8 @@ vcpkg_from_github(
 	PATCHES
 		0001-fix_msvc_error.patch
 		0002-fix_fpx_closeimage_crash.patch
+		0003-fix-imalloc-interface.patch
+		0004-fix-mingw-build.patch
 )
 
 
@@ -16,6 +18,11 @@ set(VCPKG_POLICY_SKIP_COPYRIGHT_CHECK enabled)
 
 file(COPY "${CURRENT_PORT_DIR}/configure" DESTINATION "${SOURCE_PATH}")
 file(COPY "${CURRENT_PORT_DIR}/configure.ac" DESTINATION "${SOURCE_PATH}")
+
+# MinGW defines _WINDOWS as an empty macro, so `#elif _WINDOWS` becomes an
+# `#elif` with no expression. Use `defined(_WINDOWS)` to keep it valid.
+vcpkg_replace_string("${SOURCE_PATH}/fpx/fpxformt.cpp" "#elif _WINDOWS" "#elif defined(_WINDOWS)")
+vcpkg_replace_string("${SOURCE_PATH}/fpx/f_fpxvw.cpp" "#elif _WINDOWS" "#elif defined(_WINDOWS)")
 
 vcpkg_configure_make(
     SOURCE_PATH ${SOURCE_PATH}

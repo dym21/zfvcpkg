@@ -1,0 +1,57 @@
+diff --git a/oless/h/ref.hxx b/oless/h/ref.hxx
+index 982aa24..3f0c82c 100644
+--- a/oless/h/ref.hxx
++++ b/oless/h/ref.hxx
+@@ -49,6 +49,13 @@ typedef int32_t HRESULT;
+ #define STDMETHODCALLTYPE __stdcall
+ #define EXPORTDLL _declspec(dllexport)
+ 
++#elif defined(__MINGW32__)
++/* MinGW provides STDMETHODCALLTYPE via Windows headers; keep STDCALL so that
++ * libfpx's own macros match the system ABI. */
++#define STDCALL __stdcall
++#define EXPORTDLL
++/* Do NOT redefine STDMETHODCALLTYPE - let MinGW keep __stdcall. */
++
+ #else // _MSC_VER
+ 
+ #define STDCALL 
+diff --git a/oless/h/tchar.h b/oless/h/tchar.h
+index 05e30e4..9cb464a 100644
+--- a/oless/h/tchar.h
++++ b/oless/h/tchar.h
+@@ -115,13 +115,13 @@ typedef TCHAR OLECHAR, *LPOLECHAR, *LPOLESTR;
+ #endif /* _MSC_VER */
+ 
+ /* copying wchar/char and TCHAR */
+-#ifdef _MSC_VER
+-#define WTOT(T, W, count) wcstombs(T, W, count) 
++#ifdef _WIN32
++#define WTOT(T, W, count) wcstombs(T, W, count)
+ #define TTOW(T, W, count) mbstowcs(W, T, count)
+-#else /* _MSC_VER */
++#else /* _WIN32 */
+ #define WTOT(T, W, count) wcstosbs(T, W, count)
+ #define TTOW(T, W, count) sbstowcs(W, T, count)
+-#endif /* _MSC_VER */
++#endif /* _WIN32 */
+ 
+ #define STOT(S, T, count) strcpy(T, S)
+ #define TTOS(T, S, count) strcpy(S, T)
+@@ -174,14 +174,14 @@ typedef TCHAR OLECHAR, *LPOLECHAR, *LPOLESTR;
+ #define _wcstotbs wcstombs 
+ #endif /* _WIN32 */
+ 
+-#ifndef _MSC_VER
++#if !defined(_MSC_VER) && !defined(__MINGW32__)
+ #include <assert.h>   
+ inline void  _itoa(int v, char* string, int radix)
+ {
+   if (radix!=10) assert(FALSE);  /* only handle base 10 */
+   sprintf(string, "%d", v);
+ }
+-#endif /* _MSC_VER */
++#endif /* !_MSC_VER && !__MINGW32__ */
+ 
+ #endif  /* #ifndef __TCHAR_DEFINED */
+ 

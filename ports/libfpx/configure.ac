@@ -97,4 +97,12 @@ AC_SUBST(LIBTOOL_DEPS)
 AC_LANG_CPLUSPLUS
 AC_PROG_CXX
 
+# MinGW toolchains default to C++17 or later, whose std::byte conflicts with
+# the Windows headers used by the OLE/FPX code.  Force C++14 for this port.
+case "$host_os" in
+  *mingw*)
+    CXXFLAGS="$CXXFLAGS -std=gnu++14"
+    ;;
+esac
+
 AC_OUTPUT()
