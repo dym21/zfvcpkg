@@ -1,0 +1,25 @@
+diff --git a/thirdparty/lz4/CMakeLists.txt b/thirdparty/lz4/CMakeLists.txt
+index d7d4bab..c056694 100644
+--- a/thirdparty/lz4/CMakeLists.txt
++++ b/thirdparty/lz4/CMakeLists.txt
+@@ -87,6 +87,9 @@ else()
+   list(APPEND _lz4_env "CFLAGS=-fPIC")
+ endif()
+ 
++set(_lz4_cmake_make_program "${CMAKE_MAKE_PROGRAM}")
++string(REPLACE "\\" "/" _lz4_cmake_make_program "${_lz4_cmake_make_program}")
++
+ if(MSVC)
+     ExternalProject_Add(
+             Lz4.BUILD
+             PREFIX lz4
+             URL "${CMAKE_CURRENT_SOURCE_DIR}/lz4-1.9.4"
+             SOURCE_SUBDIR build/cmake
+             CMAKE_ARGS
+             -DCMAKE_INSTALL_PREFIX=${EXTERNAL_BINARY_DIR}/usr/local
+             -DCMAKE_INSTALL_LIBDIR=lib
++            -DCMAKE_MAKE_PROGRAM=${_lz4_cmake_make_program}
++            -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+             -DCMAKE_MSVC_RUNTIME_LIBRARY=${CMAKE_MSVC_RUNTIME_LIBRARY}
+             -DBUILD_SHARED_LIBS=OFF
+             -DBUILD_STATIC_LIBS=ON

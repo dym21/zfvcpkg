@@ -7,13 +7,51 @@
   "license": "MIT",
   "supports": "!uwp",
   "dependencies": [
-    "protobuf",
-    "flatbuffers",
-    "abseil",
-    "eigen3",
-    "re2",
-    "nlohmann-json",
+    {
+      "name": "abseil",
+      "version>=": "20250512.1"
+    },
+    {
+      "name": "boost-config",
+      "version>=": "1.82.0"
+    },
+    {
+      "name": "boost-mp11",
+      "version>=": "1.82.0"
+    },
     "cpuinfo",
+    "cxxopts",
+    "date",
+    "dlpack",
+    "eigen3",
+    {
+      "name": "flatbuffers",
+      "host": true,
+      "version>=": "23.5.26"
+    },
+    {
+      "name": "flatbuffers",
+      "version>=": "23.5.26"
+    },
+    "ms-gsl",
+    "nlohmann-json",
+    {
+      "name": "onnx",
+      "version>=": "1.19.0"
+    },
+    "optional-lite",
+    {
+      "name": "protobuf",
+      "version>=": "3.21.12"
+    },
+    {
+      "name": "protobuf",
+      "host": true,
+      "version>=": "3.21.12"
+    },
+    "re2",
+    "safeint",
+    "utf8-range",
     {
       "name": "vcpkg-cmake",
       "host": true
@@ -21,6 +59,10 @@
     {
       "name": "vcpkg-cmake-config",
       "host": true
+    },
+    {
+      "name": "wil",
+      "platform": "windows"
     }
   ],
   "features": {
@@ -61,17 +103,16 @@
       ]
     },
     "tensorrt": {
-      "description": "Enable TensorRT execution provider",
-      "dependencies": ["tensorrt", "cuda"]
-    },
-    "directml": {
-      "description": "Enable DirectML execution provider for Windows",
-      "supports": "windows",
-      "dependencies": ["directx12-agility"]
-    },
-    "webassembly": {
-      "description": "Enable WebAssembly support",
-      "dependencies": ["pthreadpool"]
+      "description": "Build with TensorRT support",
+      "dependencies": [
+        {
+          "name": "onnxruntime",
+          "default-features": false,
+          "features": [
+            "cuda"
+          ]
+        }
+      ]
     }
   }
 }

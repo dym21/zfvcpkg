@@ -1,0 +1,14 @@
+diff --git a/cpp/cmake_modules/ThirdpartyToolchain.cmake b/cpp/cmake_modules/ThirdpartyToolchain.cmake
+index a67972e..4b6ec0a 100644
+--- a/cpp/cmake_modules/ThirdpartyToolchain.cmake
++++ b/cpp/cmake_modules/ThirdpartyToolchain.cmake
+@@ -953,6 +953,9 @@ set(EP_COMMON_CMAKE_ARGS
+     -DCMAKE_INSTALL_LIBDIR=lib
+     -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
+     -DCMAKE_VERBOSE_MAKEFILE=${CMAKE_VERBOSE_MAKEFILE}
++    # Work around MSBuild FileTracker failures caused by long paths under
++    # C:/sourcecode/chk-infrastructure/zfvcpkg/buildtrees/zvec/... on Windows.
++    -DCMAKE_VS_GLOBALS=TrackFileAccess=false
+     # We set CMAKE_POLICY_VERSION_MINIMUM temporarily due to failures with CMake 4
+     # We should remove it once we have updated the dependencies:
+     # https://github.com/apache/arrow/issues/45985

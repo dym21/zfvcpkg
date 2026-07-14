@@ -16,6 +16,16 @@ vcpkg_replace_string(
     "    FetchContent_Populate(kaldi_native_fbank)\n\n    # GCC 15 no longer transitively includes <cstdint> from <memory>\n    file(READ \"\${kaldi_native_fbank_SOURCE_DIR}/kaldi-native-fbank/csrc/rfft.h\" _rfft_h)\n    string(REPLACE \"#include <memory>\" \"#include <memory>\\n#include <cstdint>\" _rfft_h \"\${_rfft_h}\")\n    file(WRITE \"\${kaldi_native_fbank_SOURCE_DIR}/kaldi-native-fbank/csrc/rfft.h\" \"\${_rfft_h}\")"
 )
 
+# Fix missing <cstdint> includes on GCC 15 (transitive includes no longer available)
+file(GLOB SHERPA_NCNN_HEADERS "${SOURCE_PATH}/sherpa-ncnn/csrc/*.h")
+foreach(HEADER IN LISTS SHERPA_NCNN_HEADERS)
+    file(READ "${HEADER}" _header_content)
+    if(NOT _header_content MATCHES "#include <cstdint>")
+        string(REPLACE "#include" "#include <cstdint>\n#include" _header_content "${_header_content}")
+        file(WRITE "${HEADER}" "${_header_content}")
+    endif()
+endforeach()
+
 string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
 
 vcpkg_configure_cmake(

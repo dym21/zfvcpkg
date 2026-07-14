@@ -1,0 +1,8 @@
+zvec provides the CMake target:
+
+    find_package(Zvec CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE Zvec::zvec)
+
+Include the public C++ API, for example:
+
+    #include <zvec/db/collection.h>

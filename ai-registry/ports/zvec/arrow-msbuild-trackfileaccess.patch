@@ -1,0 +1,12 @@
+diff --git a/thirdparty/arrow/CMakeLists.txt b/thirdparty/arrow/CMakeLists.txt
+index a20fa88..b604512 100644
+--- a/thirdparty/arrow/CMakeLists.txt
++++ b/thirdparty/arrow/CMakeLists.txt
+@@ -118,6 +118,7 @@ elseif (MSVC)
+         "-DCMAKE_CXX_FLAGS=${_ARROW_CRT_FLAG}"
+         -DARROW_USE_STATIC_CRT=${ZVEC_USE_STATIC_CRT}
+         "-DCMAKE_MSVC_RUNTIME_LIBRARY=${_ARROW_MSVC_RUNTIME}"
++        "-DCMAKE_VS_GLOBALS=TrackFileAccess=false"
+     )
+         ExternalProject_Add(
+                 ARROW.BUILD PREFIX arrow

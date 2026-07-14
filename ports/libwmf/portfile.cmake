@@ -10,6 +10,7 @@ vcpkg_from_git(
 
 # MSVC lacks unistd.h; avoid it on Windows.
 vcpkg_replace_string("${SOURCE_PATH}/src/extra/gd/gdft.c" "#ifndef MSWIN32" "#ifndef _WIN32")
+vcpkg_replace_string("${SOURCE_PATH}/src/extra/gd/gdft.c" "#define R_OK 2" "#include <io.h>\n#define R_OK 2")
 vcpkg_replace_string("${SOURCE_PATH}/src/font.c" "#include <unistd.h>" "#ifndef _WIN32\n#include <unistd.h>\n#endif")
 vcpkg_replace_string("${SOURCE_PATH}/src/ipa/ipa.c" "#include <unistd.h>" "#ifndef _WIN32\n#include <unistd.h>\n#endif")
 vcpkg_replace_string("${SOURCE_PATH}/src/player.c" "#include <unistd.h>" "#ifndef _WIN32\n#include <unistd.h>\n#endif")

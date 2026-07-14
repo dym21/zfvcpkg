@@ -1,0 +1,40 @@
+diff --git a/cmake/bazel.cmake b/cmake/bazel.cmake
+index fc3562e..a743133 100644
+--- a/cmake/bazel.cmake
++++ b/cmake/bazel.cmake
+@@ -613,7 +613,7 @@ function(_absolute_paths _RESULT)
+ endfunction()
+ 
+ ## Add both shared and static library
+-macro(_add_library _NAME _OPTION)
++macro(_zvec_add_library _NAME _OPTION)
+   add_library(${_NAME}_objects OBJECT ${_OPTION} ${ARGN})
+   add_library(
+       ${_NAME}_static STATIC ${_OPTION} $<TARGET_OBJECTS:${_NAME}_objects>
+@@ -959,7 +959,7 @@ function(cc_library)
+   endif()
+ 
+   if(CC_ARGS_SHARED AND CC_ARGS_STATIC)
+-    _add_library(${CC_ARGS_NAME} "${EXCLUDE_OPTION}" ${SOURCE_FILES})
++    _zvec_add_library(${CC_ARGS_NAME} "${EXCLUDE_OPTION}" ${SOURCE_FILES})
+   elseif(CC_ARGS_SHARED)
+     add_library(${CC_ARGS_NAME} SHARED ${EXCLUDE_OPTION} ${SOURCE_FILES})
+   elseif(CC_ARGS_STATIC)
+@@ -1558,7 +1558,7 @@ function(cc_proto_library)
+ 
+   # Compile C++ sources
+   if(CC_ARGS_SHARED AND CC_ARGS_STATIC)
+-    _add_library(${CC_ARGS_NAME} "${EXCLUDE_OPTION}" "${CC_SRCS}")
++    _zvec_add_library(${CC_ARGS_NAME} "${EXCLUDE_OPTION}" "${CC_SRCS}")
+   elseif(CC_ARGS_SHARED)
+     add_library(${CC_ARGS_NAME} SHARED ${EXCLUDE_OPTION} ${CC_SRCS})
+   elseif(CC_ARGS_STATIC)
+@@ -1794,7 +1794,7 @@ function(cuda_library)
+   endif()
+ 
+   if(CUDA_ARGS_SHARED AND CUDA_ARGS_STATIC)
+-    _add_library(${CUDA_ARGS_NAME} "${EXCLUDE_OPTION}" "${CUDA_ARGS_SRCS}")
++    _zvec_add_library(${CUDA_ARGS_NAME} "${EXCLUDE_OPTION}" "${CUDA_ARGS_SRCS}")
+   elseif(CUDA_ARGS_SHARED)
+     add_library(${CUDA_ARGS_NAME} SHARED ${EXCLUDE_OPTION} ${CUDA_ARGS_SRCS})
+   elseif(CUDA_ARGS_STATIC)

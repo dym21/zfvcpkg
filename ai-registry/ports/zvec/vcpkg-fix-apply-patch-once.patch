@@ -1,0 +1,67 @@
+diff --git a/cmake/utils.cmake b/cmake/utils.cmake
+index 30195c6..861013e 100644
+--- a/cmake/utils.cmake
++++ b/cmake/utils.cmake
+@@ -29,9 +29,34 @@ function(apply_patch_once patch_name target_dir patch_file)
+         message(FATAL_ERROR "Patch file '${patch_file}' not found!")
+     endif()
+ 
+-    #message(STATUS "Applying patch '${patch_name}' to ${target_dir} ...")
++    # vcpkg extracts third-party submodules as plain directories inside the main
++    # source tree. Running 'git apply' there makes git walk up to the outer vcpkg
++    # repository and skip all untracked files. Initialize a local git repository in
++    # the target directory so git apply treats the files as tracked.
++    find_program(GIT NAMES git git.cmd REQUIRED)
++
++    execute_process(
++        COMMAND "${GIT}" init -q
++        WORKING_DIRECTORY "${target_dir}"
++        RESULT_VARIABLE init_result
++        ERROR_VARIABLE init_stderr
++    )
++    if(NOT init_result EQUAL 0)
++        message(FATAL_ERROR "Failed to initialize git repo in ${target_dir} for patch '${patch_name}': ${init_stderr}")
++    endif()
++
+     execute_process(
+-        COMMAND git apply --ignore-space-change --ignore-whitespace "${patch_file}"
++        COMMAND "${GIT}" -c core.autocrlf=false -c core.filemode=true add .
++        WORKING_DIRECTORY "${target_dir}"
++        RESULT_VARIABLE add_result
++        ERROR_VARIABLE add_stderr
++    )
++    if(NOT add_result EQUAL 0)
++        message(FATAL_ERROR "Failed to stage files in ${target_dir} for patch '${patch_name}': ${add_stderr}")
++    endif()
++
++    execute_process(
++        COMMAND "${GIT}" -c core.longpaths=true -c core.autocrlf=false -c core.filemode=true apply --ignore-whitespace --whitespace=nowarn "${patch_file}"
+         WORKING_DIRECTORY "${target_dir}"
+         RESULT_VARIABLE patch_result
+         OUTPUT_VARIABLE patch_stdout
+@@ -40,8 +65,7 @@ function(apply_patch_once patch_name target_dir patch_file)
+ 
+     if(NOT patch_result EQUAL 0)
+         message(FATAL_ERROR "Failed to apply patch '${patch_name}' to ${target_dir}:\n${patch_stderr}")
+-    else()
+-        #message(STATUS "Patch '${patch_name}' applied successfully:\n${patch_stdout}")
+-        file(WRITE "${mark_file}" "patched")
+     endif()
++
++    file(WRITE "${mark_file}" "patched")
+ endfunction()
+diff --git a/thirdparty/sparsehash/CMakeLists.txt b/thirdparty/sparsehash/CMakeLists.txt
+index a588e0e..ad48c89 100644
+--- a/thirdparty/sparsehash/CMakeLists.txt
++++ b/thirdparty/sparsehash/CMakeLists.txt
+@@ -6,8 +6,9 @@ if(NOT EXISTS "${SPARSE_DST}")
+ endif()
+ 
+ if(MSVC)
++    set(SPARSEHASH_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/sparsehash-2.0.4)
+     set(SPARSEHASH_WINDOWS_PATCH ${CMAKE_CURRENT_SOURCE_DIR}/sparsehash.windows.patch)
+-    apply_patch_once("sparsehash.windows.patch" "${DESTINATION_DIR}" "${SPARSEHASH_WINDOWS_PATCH}")
++    apply_patch_once("sparsehash.windows.patch" "${SPARSEHASH_SRC_DIR}" "${SPARSEHASH_WINDOWS_PATCH}")
+ endif()
+ 
+ add_library(sparsehash INTERFACE)
