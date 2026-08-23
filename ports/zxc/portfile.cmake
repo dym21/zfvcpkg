@@ -2,7 +2,7 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO hellobertrand/zxc
     REF v${VERSION}
-    SHA512 4ceb737bd6c703da5883c58f04a12801353841a1e4423a7df4cca55291131cf69c2e1a9d9f86de7e9511d9dd30016f226b179a054adba2250e5dbf160c3bc0a5
+    SHA512 8324bd91ad0c501d659e784fdb2c3960a9adf91d4a1fdb4db5502f280f1c99dbf5d0dfd97249f5ea7e57b89b7119dca2a6c6de8ab026165e45b4dcddd730d5ad
     HEAD_REF main
 )
 
@@ -19,6 +19,7 @@ vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS
         ${FEATURE_OPTIONS}
+        -DZXC_USE_SYSTEM_RAPIDHASH=ON
         -DZXC_NATIVE_ARCH=OFF
         -DZXC_ENABLE_LTO=OFF
         -DZXC_BUILD_TESTS=OFF
