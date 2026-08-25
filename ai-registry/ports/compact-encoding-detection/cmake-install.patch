@@ -1,0 +1,83 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index a8b7146..849e814 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -23,6 +23,10 @@ if (WIN32)
+ endif()
+ 
+ project(CED CXX)
++
++include(CTest)
++include(GNUInstallDirs)
++include(CMakePackageConfigHelpers)
+ set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS 1 CACHE INTERNAL "No dev warnings")
+ 
+ option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
+@@ -67,11 +71,15 @@ set(CED_LIBRARY_SOURCES
+ 
+ add_library(ced ${CED_LIBRARY_SOURCES})
+ 
+-target_include_directories(ced PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
++target_include_directories(ced PUBLIC
++  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
++  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
++)
+ 
+ # Uncomment to put CED into WHATWG-compliant mode.
+ #add_definitions(-DHTML5_MODE)
+ 
++if(BUILD_TESTING)
+ set(GTEST_INCLUDE_DIR "gtest/googletest/include")
+ set(GTEST_LIB_DIR "${CMAKE_SOURCE_DIR}/gtest/lib")
+ 
+@@ -101,3 +109,41 @@ else()
+                         ${EXTRA_TARGET_LINK_LIBRARIES}
+                         )
+ endif()
++endif()
++
++set(CED_CMAKE_INSTALL_DIR
++    "${CMAKE_INSTALL_LIBDIR}/cmake/compact-encoding-detection")
++
++configure_package_config_file(
++  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/compact-encoding-detection-config.cmake.in"
++  "${CMAKE_CURRENT_BINARY_DIR}/compact-encoding-detection-config.cmake"
++  INSTALL_DESTINATION "${CED_CMAKE_INSTALL_DIR}"
++  NO_SET_AND_CHECK_MACRO
++  NO_CHECK_REQUIRED_COMPONENTS_MACRO
++)
++write_basic_package_version_file(
++  "${CMAKE_CURRENT_BINARY_DIR}/compact-encoding-detection-config-version.cmake"
++  VERSION 1.0.0
++  COMPATIBILITY SameMajorVersion
++)
++
++install(TARGETS ced
++  EXPORT compact-encoding-detection-targets
++  ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
++  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
++  RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
++)
++install(DIRECTORY compact_enc_det util
++  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
++  FILES_MATCHING PATTERN "*.h" PATTERN "*.inc"
++)
++install(EXPORT compact-encoding-detection-targets
++  FILE compact-encoding-detection-targets.cmake
++  NAMESPACE compact_encoding_detection::
++  DESTINATION "${CED_CMAKE_INSTALL_DIR}"
++)
++install(FILES
++  "${CMAKE_CURRENT_BINARY_DIR}/compact-encoding-detection-config.cmake"
++  "${CMAKE_CURRENT_BINARY_DIR}/compact-encoding-detection-config-version.cmake"
++  DESTINATION "${CED_CMAKE_INSTALL_DIR}"
++)
+diff --git a/cmake/compact-encoding-detection-config.cmake.in b/cmake/compact-encoding-detection-config.cmake.in
+new file mode 100644
+index 0000000..9741d12
+--- /dev/null
++++ b/cmake/compact-encoding-detection-config.cmake.in
+@@ -0,0 +1,3 @@
++@PACKAGE_INIT@
++
++include("${CMAKE_CURRENT_LIST_DIR}/compact-encoding-detection-targets.cmake")

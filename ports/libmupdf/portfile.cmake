@@ -20,6 +20,11 @@ vcpkg_download_distfile(BIN2COFF_C
 )
 file(COPY_FILE "${BIN2COFF_C}" "${SOURCE_PATH}/scripts/bin2coff.c")
 
+if(VCPKG_TARGET_IS_OHOS AND VCPKG_HOST_IS_WINDOWS)
+    vcpkg_acquire_msys(_mupdf_msys_root PACKAGES bash)
+    vcpkg_add_to_path(PREPEND "${_mupdf_msys_root}/usr/bin")
+endif()
+
 vcpkg_check_features(
     OUT_FEATURE_OPTIONS OPTIONS
     FEATURES

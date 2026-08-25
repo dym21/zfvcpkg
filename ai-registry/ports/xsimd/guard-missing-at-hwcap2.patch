@@ -1,0 +1,13 @@
+diff --git a/include/xsimd/config/xsimd_getauxval.hpp b/include/xsimd/config/xsimd_getauxval.hpp
+index d18b3aa..3549be3 100644
+--- a/include/xsimd/config/xsimd_getauxval.hpp
++++ b/include/xsimd/config/xsimd_getauxval.hpp
+@@ -147,7 +147,7 @@ namespace xsimd
+     {
+         if (!m_status.bit_is_set<status::hwcap2_valid>())
+         {
+-#if XSIMD_HAVE_LINUX_GETAUXVAL
++#if XSIMD_HAVE_LINUX_GETAUXVAL && defined(AT_HWCAP2)
+             m_hwcap2 = linux_auxval::read(AT_HWCAP2);
+ #endif
+             m_status.set_bit<status::hwcap2_valid>();

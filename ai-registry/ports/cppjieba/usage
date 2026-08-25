@@ -1,0 +1,4 @@
+cppjieba provides CMake targets and installs its dictionaries under share/cppjieba/dict:
+
+    find_package(cppjieba CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE cppjieba::cppjieba)

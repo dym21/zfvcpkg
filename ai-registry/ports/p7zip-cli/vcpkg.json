@@ -1,0 +1,13 @@
+{
+  "name": "p7zip-cli",
+  "version-string": "17.05",
+  "description": "p7zip command-line program and runtime modules",
+  "homepage": "https://github.com/p7zip-project/p7zip",
+  "license": "LGPL-2.1-or-later",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake-get-vars",
+      "host": true
+    }
+  ]
+}

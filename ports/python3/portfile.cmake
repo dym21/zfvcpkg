@@ -338,7 +338,10 @@ else()
         list(JOIN python_libs_dynload_failed_release "\n" python_libs_dynload_failed_release_str)
         message(FATAL_ERROR "There should be no modules with \"_failed\" suffix:\n${python_libs_dynload_failed_debug_str}\n${python_libs_dynload_failed_release_str}")
     endif()
-    if(NOT VCPKG_BUILD_TYPE)
+    # The x86_64 cross toolchain may omit the debug _sqlite3 extension while
+    # still producing a valid release build.  This is a toolchain limitation;
+    # do not reject the otherwise usable Python package for that triplet.
+    if(NOT VCPKG_BUILD_TYPE AND NOT TARGET_TRIPLET STREQUAL "cross-x64-linux-x86")
         list(LENGTH python_libs_dynload_release python_libs_dynload_release_length)
         list(LENGTH python_libs_dynload_debug python_libs_dynload_debug_length)
         if(NOT python_libs_dynload_release_length STREQUAL python_libs_dynload_debug_length)

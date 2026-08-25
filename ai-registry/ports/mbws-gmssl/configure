@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+set -e
+
+declare -a out_options
+interpreter=perl
+last_seen=
+copy_options=no
+
+for option; do
+  case "${option},${copy_options}" in
+  */Configure,no)
+    out_options+=("${option}")
+    interpreter="${last_seen}"
+    copy_options=yes
+    ;;
+  --prefix=*|--openssldir=*|--libdir=*|--cross-compile-prefix=*|--debug,*)
+    out_options+=("${option}")
+    ;;
+  -*|*=*)
+    ;;
+  *,yes)
+    out_options+=("${option}")
+    ;;
+  esac
+  last_seen="${option}"
+done
+
+set -x
+"${interpreter}" "${out_options[@]}"

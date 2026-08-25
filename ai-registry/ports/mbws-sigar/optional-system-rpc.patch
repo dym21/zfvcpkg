@@ -1,0 +1,49 @@
+diff --git a/src/sigar_util.c b/src/sigar_util.c
+index f49036d..9ca2a25 100644
+--- a/src/sigar_util.c
++++ b/src/sigar_util.c
+@@ -29,4 +29,5 @@
+ 
+ #include <dirent.h>
+ #include <sys/stat.h>
++#include <sys/time.h>
+ 
+@@ -740,2 +740,12 @@ int sigar_cpu_mhz_from_model(char *model)
++#if !defined(WIN32) && !defined(NETWARE)
++#if defined(__has_include)
++#if __has_include(<rpc/rpc.h>)
++#define SIGAR_HAS_SYSTEM_RPC 1
++#endif
++#else
++#define SIGAR_HAS_SYSTEM_RPC 1
++#endif
++#endif
++
+-#if !defined(WIN32) && !defined(NETWARE)
++#if !defined(WIN32) && !defined(NETWARE) && defined(SIGAR_HAS_SYSTEM_RPC)
+ #include <netdb.h>
+@@ -828,5 +838,24 @@ SIGAR_DECLARE(int) sigar_rpc_ping(char *host,
+     return rpc_stat;
+ }
++#elif !defined(WIN32) && !defined(NETWARE)
++
++char *sigar_rpc_strerror(int err)
++{
++    (void)err;
++    return (char *)"RPC support unavailable";
++}
++
++SIGAR_DECLARE(int) sigar_rpc_ping(char *host,
++                                  int protocol,
++                                  unsigned long program,
++                                  unsigned long version)
++{
++    (void)host;
++    (void)protocol;
++    (void)program;
++    (void)version;
++    return ENOSYS;
++}
+ #endif
+ 
+ int sigar_file2str(const char *fname, char *buffer, int buflen)

@@ -1,0 +1,17 @@
+{
+  "name": "compact-encoding-detection",
+  "version-date": "2024-02-12",
+  "description": "Google Compact Encoding Detection library",
+  "homepage": "https://github.com/google/compact_enc_det",
+  "license": "Apache-2.0",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ]
+}

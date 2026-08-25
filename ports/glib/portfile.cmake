@@ -13,11 +13,19 @@ vcpkg_download_distfile(GLIB_ARCHIVE
     SHA512 9e2b4985d5e4e06c6897a33cf8c100b9303528ebd72152c10e4cb734fa62fc011c84b816b20f686a3b2aac9a4a5a46f33e7517b4c4c7f3c25c75ac3ddc11f844
 )
 
+set(_glib_patches
+    use-libiconv-on-windows.patch
+    libintl.patch
+)
+if(VCPKG_TARGET_IS_OHOS)
+    list(APPEND _glib_patches
+        "${CMAKE_CURRENT_LIST_DIR}/ohos-linux-source-path.patch"
+    )
+endif()
+
 vcpkg_extract_source_archive(SOURCE_PATH
     ARCHIVE "${GLIB_ARCHIVE}"
-    PATCHES
-        use-libiconv-on-windows.patch
-        libintl.patch
+    PATCHES ${_glib_patches}
 )
 
 set(LANGUAGES C CXX)

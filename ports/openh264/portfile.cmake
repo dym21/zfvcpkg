@@ -6,7 +6,15 @@ vcpkg_from_github(
     PATCHES
         fix-mips64-support.patch
         001-add-bsds-to-meson.patch
+        disable-unsupported-loongarch-simd.patch
 )
+
+set(meson_options -Dtests=disabled)
+if(TARGET_TRIPLET STREQUAL "cross-x64-linux-x86")
+    # vcpkg_configure_meson does not forward CMake C/CXX flags to Meson.
+    # Pass them explicitly so the x86_64 SDK linker can consume the archives.
+    list(APPEND meson_options -Dc_args=-gz=none -Dcpp_args=-gz=none)
+endif()
 
 set(cxx_link_libraries "")
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "static" AND (NOT VCPKG_TARGET_IS_WINDOWS OR VCPKG_TARGET_IS_MINGW))
@@ -52,8 +60,7 @@ endif()
 
 vcpkg_configure_meson(
     SOURCE_PATH "${SOURCE_PATH}"
-    OPTIONS
-        -Dtests=disabled
+    OPTIONS ${meson_options}
     ADDITIONAL_BINARIES
         ${additional_binaries}
 )

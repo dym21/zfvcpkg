@@ -1,0 +1,58 @@
+diff --git a/sm2/sm2.c b/sm2/sm2.c
+index 0318cf4..5afe941 100644
+--- a/sm2/sm2.c
++++ b/sm2/sm2.c
+@@ -1980,12 +1980,14 @@ int SM2_MakeKey(
+ 	if(NULL!=PrivateKey)
+ 	{
+-		if (*PrivateKeyLen<i)
++		if (*PrivateKeyLen<(unsigned int)keysize)
+ 		{
+-			*PrivateKeyLen = i; 
++			*PrivateKeyLen = (unsigned int)keysize;
+ 			err = CRYPT_MEM ;
+ 			goto done;
+ 		}
+-		memcpy(PrivateKey,pucTemp,i);
++		memcpy(PrivateKey+keysize-i,pucTemp,i);
++		memset(PrivateKey,0,keysize-i);
++		i = keysize;
+ 		*PrivateKeyLen = i; 
+ 	}else
+ 	{
+@@ -2007,12 +2009,14 @@ int SM2_MakeKey(
+ 	if(NULL!=Px)
+ 	{
+-		if (*PxLen<i)
++		if (*PxLen<(unsigned int)keysize)
+ 		{
+-			*PxLen = i; 
++			*PxLen = (unsigned int)keysize;
+ 			err = CRYPT_MEM ;
+ 			goto done;
+ 		}
+-		memcpy(Px,pucTemp,i);
++		memcpy(Px+keysize-i,pucTemp,i);
++		memset(Px,0,keysize-i);
++		i = keysize;
+ 		*PxLen = i; 
+ 	}else
+ 	{
+@@ -2037,12 +2041,14 @@ int SM2_MakeKey(
+ 	if(NULL!=Py)
+ 	{
+-		if (*PyLen<i)
++		if (*PyLen<(unsigned int)keysize)
+ 		{
+-			*PyLen = i; 
++			*PyLen = (unsigned int)keysize;
+ 			err = CRYPT_MEM ;
+ 			goto done;
+ 		}
+-		memcpy(Py,pucTemp,i);
++		memcpy(Py+keysize-i,pucTemp,i);
++		memset(Py,0,keysize-i);
++		i = keysize;
+ 		*PyLen = i; 
+ 	}else
+ 	{

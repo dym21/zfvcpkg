@@ -5,19 +5,26 @@ vcpkg_download_distfile(
     SHA512 04A49455E1489030C520A4BFD2664FA2171E7938D08F2ACDBBCB1FDA976639FD8B1F0704F2EEC89BA59A7B6D118CEAAB6EC5A096E40D9085A0895D91CE225245
 )
 
+set(_icu_patches
+    disable-static-prefix.patch
+    fix_bsd_and_solaris.patch
+    fix_parallel_build_on_windows.patch
+    fix-python-path-with-spaces.patch
+    mh-darwin.patch
+    mh-mingw.patch
+    mh-msys-msvc.patch
+    subdirs.patch
+    vcpkg-cross-data.patch
+)
+if(VCPKG_TARGET_IS_OHOS)
+    list(APPEND _icu_patches
+        "${CMAKE_CURRENT_LIST_DIR}/ohos-static-data-install.patch"
+    )
+endif()
+
 vcpkg_extract_source_archive(SOURCE_PATH
     ARCHIVE "${ARCHIVE}"
-    PATCHES
-        disable-static-prefix.patch # https://gitlab.kitware.com/cmake/cmake/-/issues/16617; also mingw.
-        fix_bsd_and_solaris.patch
-        fix_parallel_build_on_windows.patch
-        fix-python-path-with-spaces.patch
-        fix-using-install-sh.diff
-        mh-darwin.patch
-        mh-mingw.patch
-        mh-msys-msvc.patch
-        subdirs.patch
-        vcpkg-cross-data.patch
+    PATCHES ${_icu_patches}
 )
 
 vcpkg_find_acquire_program(PYTHON3)

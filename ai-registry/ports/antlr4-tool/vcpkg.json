@@ -1,0 +1,7 @@
+{
+  "name": "antlr4-tool",
+  "version-semver": "4.13.2",
+  "description": "ANTLR 4 parser generator tool JAR",
+  "homepage": "https://www.antlr.org/",
+  "license": "BSD-3-Clause"
+}

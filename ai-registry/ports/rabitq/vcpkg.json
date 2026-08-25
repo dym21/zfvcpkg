@@ -1,0 +1,7 @@
+{
+  "name": "rabitq",
+  "version-string": "540242e",
+  "description": "RaBitQ vector quantization library headers from the current upstream main branch",
+  "homepage": "https://github.com/VectorDB-NTU/RaBitQ-Library",
+  "license": "MIT"
+}

@@ -10,6 +10,8 @@ vcpkg_download_distfile(ARCHIVE
 vcpkg_extract_source_archive(
     SOURCE_PATH
     ARCHIVE "${ARCHIVE}"
+    PATCHES
+        disable-csslint.patch
 )
 
 #fix loongarch64 build

@@ -1,3 +1,11 @@
+if(VCPKG_TARGET_IS_OHOS)
+    if(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
+        set(VCPKG_MAKE_BUILD_TRIPLET "--host=aarch64-unknown-linux-gnu")
+    else()
+        set(VCPKG_MAKE_BUILD_TRIPLET "--host=x86_64-unknown-linux-gnu")
+    endif()
+endif()
+
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO ImageMagick/libfpx

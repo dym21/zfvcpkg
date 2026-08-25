@@ -1,3 +1,12 @@
+if(VCPKG_TARGET_IS_OHOS)
+    set(VCPKG_POLICY_EMPTY_PACKAGE enabled)
+    file(WRITE "${CURRENT_PACKAGES_DIR}/share/${PORT}/copyright" [[
+The Vulkan loader is supplied by the HarmonyOS SDK and device system image.
+Vulkan headers are provided by the separate vulkan-headers package.
+]])
+    return()
+endif()
+
 set(VCPKG_LIBRARY_LINKAGE dynamic)
 
 vcpkg_from_github(

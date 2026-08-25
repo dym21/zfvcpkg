@@ -5,6 +5,19 @@
   "homepage": "https://github.com/kakwa/libemf2svg",
   "license": "GPL-2.0-only",
   "dependencies": [
+    "expat",
+    "fontconfig",
+    {
+      "name": "freetype",
+      "features": [
+        "brotli",
+        "bzip2",
+        "error-strings",
+        "png",
+        "zlib"
+      ]
+    },
+    "libpng",
     {
       "name": "vcpkg-cmake",
       "host": true
@@ -13,13 +26,6 @@
       "name": "vcpkg-cmake-config",
       "host": true
     },
-    "libpng",
-    {
-      "name": "freetype",
-      "features": ["brotli", "bzip2", "png", "zlib", "error-strings"]
-    },
-    "fontconfig",
-    "zlib",
-    "expat"
+    "zlib"
   ]
 }

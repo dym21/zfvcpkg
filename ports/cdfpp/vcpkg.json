@@ -1,0 +1,11 @@
+{
+  "name": "cdfpp",
+  "version": "0.11.0",
+  "description": "A modern C++ header-only library for NASA CDF files",
+  "homepage": "https://github.com/SciQLop/CDFpp",
+  "license": "MIT",
+  "dependencies": [
+    "fmt",
+    "libdeflate"
+  ]
+}

@@ -1,0 +1,98 @@
+diff --git a/undbx.c b/undbx.c
+index db26c06..0a2e2ff 100644
+--- a/undbx.c
++++ b/undbx.c
+@@ -150,14 +150,16 @@ static dbx_save_status_t _maybe_save_message(dbx_t *dbx, int imessage, char *di
+   unsigned long long int size = 0;
+   unsigned int message_size = 0;
+   char *message = NULL;
+-
++  static int filename_index = 1;
++  char filename[125]="";
++  snprintf(filename,sizeof(filename),"extract_%d.eml",filename_index++);
+   if (!force) 
+     size = sys_filesize(dir, info->filename);
+   
+   if (force || (info->valid & DBX_MASK_MSGSIZE) == 0 || size != info->message_size) {
+     message = dbx_message(dbx, imessage, &message_size);
+     if (force || (size != message_size)) {
+-      status = _save_message(dir, info->filename, message, message_size);
++      status = _save_message(dir, filename, message, message_size);
+       switch (status) {
+       case DBX_SAVE_ERROR:
+         dbx_progress_update(dbx->progress_handle, DBX_STATUS_ERROR, imessage, "%s", info->filename);
+@@ -380,7 +382,7 @@ static void _recover_eml(char *out_dir)
+   sys_glob_free(eml_files);
+ }
+ 
+-static int _undbx(char *dbx_dir, char *out_dir, char *dbx_file, dbx_options_t *options)
++static int _undbx(char *dbx_dir, char *out_dir, char *dbx_file, dbx_options_t *options,void *out_info)
+ {
+   int deleted = 0; 
+   int saved = 0;
+@@ -442,6 +444,10 @@ static int _undbx(char *dbx_dir, char *out_dir, char *dbx_file, dbx_options_t *
+   else
+     _extract(dbx, out_dir, eml_dir, &saved, &deleted, &errors);
+ 
++  if(out_info!= NULL)
++  {
++	  /* subject   send recv*/
++  }
+  UNDBX_DONE:  
+   free(eml_dir);
+   eml_dir = NULL;
+@@ -520,7 +526,7 @@ static void _gui(char *prog)
+ }
+ #endif
+ 
+-int main(int argc, char *argv[])
++int main_testst1111(int argc, char *argv[])
+ {
+   int n = 0;
+   int fail = 0;
+@@ -531,7 +537,7 @@ int main(int argc, char *argv[])
+   dbx_options_t options = { 0 };
+   int c = -1;
+ 
+-  printf("UnDBX v" DBX_VERSION " (" __DATE__ ")\n");
++  /* printf("UnDBX v" DBX_VERSION " (" __DATE__ ")\n"); */
+   fflush(stdout);
+ 
+   if (argc == 1) {
+@@ -608,7 +614,35 @@ int main(int argc, char *argv[])
+ 
+   dbx_files = _get_files(&dbx_dir, &num_dbx_files);
+   for(n = 0; n < num_dbx_files; n++) {
+-    if (_undbx(dbx_dir, out_dir, dbx_files[n], &options))
++    if (_undbx(dbx_dir, out_dir, dbx_files[n], &options,NULL))
++      fail++;
++  }
++
++  if (num_dbx_files > 0)
++    dbx_progress_message(NULL, DBX_STATUS_OK, "Extracted %d out of %d DBX files", n - fail, n);
++  else
++    dbx_progress_message(NULL, DBX_STATUS_WARNING, "can't find DBX files in \"%s\"", dbx_dir);
++  
++  sys_glob_free(dbx_files);
++  free(dbx_dir);
++
++  return EXIT_SUCCESS;
++}
++int extract_dbx(const char *file,char *out_path,void *out_info)
++{
++  int n = 0;
++  int fail = 0;
++  char **dbx_files = NULL;
++  char *dbx_dir = NULL;
++  char *out_dir = NULL;
++  int num_dbx_files = 0;
++  dbx_options_t options = { 0 };
++  dbx_dir = strdup(file);
++  out_dir = out_path;
++
++  dbx_files = _get_files(&dbx_dir, &num_dbx_files);
++  for(n = 0; n < num_dbx_files; n++) {
++    if (_undbx(dbx_dir, out_dir, dbx_files[n], &options,out_info))
+       fail++;
+   }
+ 

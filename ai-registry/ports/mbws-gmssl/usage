@@ -1,0 +1,7 @@
+mbws-gmssl provides CMake targets:
+
+  find_package(mbws-gmssl CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE
+    mbws-gmssl::ssl
+    mbws-gmssl::crypto
+  )

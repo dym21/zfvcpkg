@@ -1,0 +1,45 @@
+diff --git a/crypto/sm2/sm2_enc.c b/crypto/sm2/sm2_enc.c
+index 3904dad..487c0d2 100644
+--- a/crypto/sm2/sm2_enc.c
++++ b/crypto/sm2/sm2_enc.c
+@@ -972,6 +972,7 @@ X509 *  CertDataToX509(unsigned char * lpszCert ,int iCertlen,int iFormat )
+ {
+ 	BIO * pBioCert = NULL;
+ 	X509 * x509 = NULL;  
++	const unsigned char *cert_cursor = lpszCert;
+ 	pBioCert = BIO_new_mem_buf((void *)lpszCert,iCertlen);
+ 	if(NULL == lpszCert) {
+ 		printf("lpszCert is null\n");
+@@ -982,7 +983,7 @@ X509 *  CertDataToX509(unsigned char * lpszCert ,int iCertlen,int iFormat )
+ 	if (x509 == NULL)
+ 	{
+ 		printf("d2i_X509_bio is null\n");
+-		x509=d2i_X509(NULL,&lpszCert,iCertlen);
++		x509=d2i_X509(NULL,&cert_cursor,iCertlen);
+ 		if (x509==NULL)
+ 		{
+ 			printf("d2i_X509 is null\n");
+diff --git a/crypto/sm9/sm9_rate.c b/crypto/sm9/sm9_rate.c
+index b284590..da5cc65 100644
+--- a/crypto/sm9/sm9_rate.c
++++ b/crypto/sm9/sm9_rate.c
+@@ -1166,6 +1166,6 @@ int fp12_to_bin(const fp12_t a, unsigned char to[384])
+-static int fp12_from_bin(fp4_t a, const unsigned char from[384])
++static int fp12_from_bin(fp12_t a, const unsigned char from[384])
+ {
+ 	return fp4_from_bin(a[2], from)
+ 		&& fp4_from_bin(a[1], from + 128)
+ 		&& fp4_from_bin(a[0], from + 256);
+ }
+diff --git a/ssl/statem/statem_gmtls.c b/ssl/statem/statem_gmtls.c
+index f9e08fa..00250ef 100644
+--- a/ssl/statem/statem_gmtls.c
++++ b/ssl/statem/statem_gmtls.c
+@@ -60,6 +60,7 @@
+ # include <openssl/rand.h>
+ # include <openssl/objects.h>
+ # include <openssl/evp.h>
++# include <openssl/engine.h>
+ # include <openssl/hmac.h>
+ # include <openssl/x509.h>
+ # include <openssl/x509v3.h>

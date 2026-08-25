@@ -6,6 +6,15 @@ vcpkg_from_github(
     HEAD_REF master
 )
 
+# The x86_64 cross linker shipped with the target SDK cannot decompress
+# zlib-compressed DWARF sections emitted by GCC.  Keep debug information
+# uncompressed for this triplet so dependent ports (notably python3) link
+# successfully; other architectures retain the toolchain defaults.
+if(VCPKG_TARGET_TRIPLET STREQUAL "cross-x64-linux-x86")
+    set(ENV{CFLAGS} "$ENV{CFLAGS} -gz=none")
+    set(ENV{CXXFLAGS} "$ENV{CXXFLAGS} -gz=none")
+endif()
+
 vcpkg_make_configure(
     AUTORECONF
     SOURCE_PATH "${SOURCE_PATH}"

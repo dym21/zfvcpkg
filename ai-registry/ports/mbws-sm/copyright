@@ -1,0 +1,4 @@
+LibTomMath and LibTomCrypt are released into the public domain by Tom St Denis.
+
+The legacy MBWS SM2, KDF and SM3 sources do not carry an explicit upstream
+license notice. They are packaged here only for the internal MBWS build.

@@ -1,0 +1,50 @@
+diff --git a/src/os/linux/linux_sigar.c b/src/os/linux/linux_sigar.c
+index c278209..5a13335 100644
+--- a/src/os/linux/linux_sigar.c
++++ b/src/os/linux/linux_sigar.c
+@@ -21,6 +21,7 @@
+ #include <errno.h>
+ #include <sys/param.h>
+ #include <sys/stat.h>
++#include <sys/sysmacros.h>
+ #include <sys/times.h>
+ #include <sys/utsname.h>
+ 
+@@ -1261,8 +1261,8 @@ static int get_iostat_sys_dstat(sigar_t *sigar,
+-        unsigned long major, minor;
++        unsigned long disk_major, disk_minor;
+ 
+-        major = sigar_strtoul(ptr);
+-        minor = sigar_strtoul(ptr);
++        disk_major = sigar_strtoul(ptr);
++        disk_minor = sigar_strtoul(ptr);
+ 
+-        if ((major == ST_MAJOR(sb)) &&
+-            ((minor == ST_MINOR(sb)) || (minor == 0)))
++        if ((disk_major == ST_MAJOR(sb)) &&
++            ((disk_minor == ST_MINOR(sb)) || (disk_minor == 0)))
+         {
+@@ -1318,8 +1318,8 @@ static int get_iostat_sys_dstat(sigar_t *sigar,
+-            if (minor == ST_MINOR(sb)) {
++            if (disk_minor == ST_MINOR(sb)) {
+                 status = SIGAR_OK;
+                 break;
+             }
+-            else if (minor == 0) {
++            else if (disk_minor == 0) {
+                 memcpy(device_usage, disk, sizeof(*device_usage));
+             }
+         }
+@@ -1364,7 +1364,8 @@ static int get_iostat_procp(sigar_t *sigar,
+-        unsigned long major, minor;
++        unsigned long disk_major, disk_minor;
+ 
+-        major = sigar_strtoul(ptr);
+-        minor = sigar_strtoul(ptr);
++        disk_major = sigar_strtoul(ptr);
++        disk_minor = sigar_strtoul(ptr);
+ 
+-        if ((major == ST_MAJOR(sb)) && (minor == ST_MINOR(sb))) {
++        if ((disk_major == ST_MAJOR(sb)) &&
++            (disk_minor == ST_MINOR(sb))) {
+             ptr = sigar_skip_token(ptr); /* blocks */

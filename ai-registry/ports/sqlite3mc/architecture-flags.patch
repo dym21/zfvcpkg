@@ -1,0 +1,26 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 8f66de5..c295f31 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -249,10 +249,17 @@ if(MSVC)
+   )
+ endif()
+ 
+-if (CMAKE_SYSTEM_NAME STREQUAL "Linux"
+-    OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse4.2 -maes -fPIC")
+-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.2 -maes -fPIC")
++if(CMAKE_SYSTEM_NAME STREQUAL "Linux"
++    OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
++  if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|amd64|AMD64)$")
++    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse4.2 -maes")
++    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.2 -maes")
++  elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64|arm64|ARM64)$")
++    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=armv8-a+crypto")
++    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=armv8-a+crypto")
++  endif()
++  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
++  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+   set(SQLITE3MC_LINK_LIBRARIES
+     pthread
+     dl

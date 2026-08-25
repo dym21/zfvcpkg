@@ -1,0 +1,7 @@
+rabitq provides a header target:
+
+    find_package(rabitq CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE rabitq::rabitq)
+
+The current upstream compiled SIMD core is Linux-oriented. This port exposes the
+portable headers needed by projects which disable RaBitQ on unsupported targets.

@@ -53,6 +53,11 @@ if(VCPKG_TARGET_IS_IOS)
     vcpkg_list(APPEND LIBPNG_HARDWARE_OPTIMIZATIONS_OPTION "-DPNG_HARDWARE_OPTIMIZATIONS=OFF")
 endif()
 
+# The old-world LoongArch toolchain targets OBJ-v0 and does not expose LSX.
+if(TARGET_TRIPLET STREQUAL "cross-loongarch64-linux-x86-oldworld")
+    vcpkg_list(APPEND LIBPNG_HARDWARE_OPTIMIZATIONS_OPTION "-DPNG_LOONGARCH_LSX=off")
+endif()
+
 vcpkg_list(SET LD_VERSION_SCRIPT_OPTION)
 if(VCPKG_TARGET_IS_ANDROID)
     vcpkg_list(APPEND LD_VERSION_SCRIPT_OPTION "-Dld-version-script=OFF")

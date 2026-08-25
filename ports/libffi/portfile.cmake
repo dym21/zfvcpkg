@@ -3,11 +3,20 @@ vcpkg_download_distfile(ARCHIVE
     FILENAME "libffi-${VERSION}.tar.gz"
     SHA512 a259d50f40b5dcde9cb6227bd105761e667290f107553b204a5a6cfdfbf2e6b022ed04be2ea4596da42961d11396125425def3cb67e2844a9eba90b6750c8c39
 )
+set(_libffi_patches
+    dll-bindir.diff
+    loongarch64-mcmodel.patch
+)
+if(VCPKG_TARGET_IS_OHOS)
+    list(APPEND _libffi_patches
+        "${CMAKE_CURRENT_LIST_DIR}/config-sub-ohos.patch"
+    )
+endif()
+
 vcpkg_extract_source_archive(
     SOURCE_PATH
     ARCHIVE "${ARCHIVE}"
-    PATCHES
-    	dll-bindir.diff
+    PATCHES ${_libffi_patches}
 )
 
 vcpkg_list(SET options)

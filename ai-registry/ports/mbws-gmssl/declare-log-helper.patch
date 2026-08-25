@@ -1,0 +1,34 @@
+diff --git a/crypto/evp/e_sms4.c b/crypto/evp/e_sms4.c
+index 4241588..685bc6e 100644
+--- a/crypto/evp/e_sms4.c
++++ b/crypto/evp/e_sms4.c
+@@ -68,6 +68,7 @@ extern void
+ _MY_LOG_Message_Bin(
+ 					unsigned char *msgBin,
+ 					unsigned int msgBinLen);
++extern void _MY_LOG_Message(char *msg);
+ //#define ZF_SDF
+ typedef struct {
+ 	block128_f block;
+diff --git a/crypto/paillier/pai_pmeth.c b/crypto/paillier/pai_pmeth.c
+index 8c72b75..e45ef29 100644
+--- a/crypto/paillier/pai_pmeth.c
++++ b/crypto/paillier/pai_pmeth.c
+@@ -50,5 +50,6 @@
+ 
+ #include <stdio.h>
++#include <string.h>
+ #include <openssl/evp.h>
+ #include <openssl/err.h>
+ #include <openssl/paillier.h>
+diff --git a/crypto/sdf/sdf_sansec.c b/crypto/sdf/sdf_sansec.c
+index d01b9c1..84b531c 100644
+--- a/crypto/sdf/sdf_sansec.c
++++ b/crypto/sdf/sdf_sansec.c
+@@ -49,5 +49,6 @@
+ 
++#include <string.h>
+ #include <openssl/err.h>
+ #include <openssl/gmsdf.h>
+ #include "internal/sdf_int.h"
+ #include "../../e_os.h"

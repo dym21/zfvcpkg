@@ -1,0 +1,412 @@
+diff --git a/sherpa-ncnn/csrc/conv-emformer-model.cc b/sherpa-ncnn/csrc/conv-emformer-model.cc
+index d48d374..ad40eac 100644
+--- a/sherpa-ncnn/csrc/conv-emformer-model.cc
++++ b/sherpa-ncnn/csrc/conv-emformer-model.cc
+@@ -36,9 +36,12 @@ ConvEmformerModel::ConvEmformerModel(const ModelConfig &config) {
+     //           static_cast<int32_t>(config.use_vulkan_compute));
+   }
+ 
+-  InitEncoder(config.encoder_param, config.encoder_bin);
+-  InitDecoder(config.decoder_param, config.decoder_bin);
+-  InitJoiner(config.joiner_param, config.joiner_bin);
++  InitEncoder(config.encoder_param, config.encoder_bin,
++              config.encoder_param_mem, config.encoder_bin_mem);
++  InitDecoder(config.decoder_param, config.decoder_bin,
++              config.decoder_param_mem, config.decoder_bin_mem);
++  InitJoiner(config.joiner_param, config.joiner_bin, config.joiner_param_mem,
++             config.joiner_bin_mem);
+ 
+   InitEncoderInputOutputIndexes();
+   InitDecoderInputOutputIndexes();
+@@ -169,20 +172,29 @@ void ConvEmformerModel::InitEncoderPostProcessing() {
+ }
+ 
+ void ConvEmformerModel::InitEncoder(const std::string &encoder_param,
+-                                    const std::string &encoder_bin) {
++                                    const std::string &encoder_bin,
++                                    const std::string &encoder_param_mem,
++                                    const std::string &encoder_bin_mem) {
+   RegisterCustomLayers(encoder_);
+-  InitNet(encoder_, encoder_param, encoder_bin);
++  InitNet(encoder_, encoder_param, encoder_bin, encoder_param_mem,
++          encoder_bin_mem);
+   InitEncoderPostProcessing();
+ }
+ 
+ void ConvEmformerModel::InitDecoder(const std::string &decoder_param,
+-                                    const std::string &decoder_bin) {
+-  InitNet(decoder_, decoder_param, decoder_bin);
++                                    const std::string &decoder_bin,
++                                    const std::string &decoder_param_mem,
++                                    const std::string &decoder_bin_mem) {
++  InitNet(decoder_, decoder_param, decoder_bin, decoder_param_mem,
++          decoder_bin_mem);
+ }
+ 
+ void ConvEmformerModel::InitJoiner(const std::string &joiner_param,
+-                                   const std::string &joiner_bin) {
+-  InitNet(joiner_, joiner_param, joiner_bin);
++                                   const std::string &joiner_bin,
++                                   const std::string &joiner_param_mem,
++                                   const std::string &joiner_bin_mem) {
++  InitNet(joiner_, joiner_param, joiner_bin, joiner_param_mem,
++          joiner_bin_mem);
+ }
+ 
+ #if __ANDROID_API__ >= 9
+diff --git a/sherpa-ncnn/csrc/conv-emformer-model.h b/sherpa-ncnn/csrc/conv-emformer-model.h
+index 71241ee..ee227dc 100644
+--- a/sherpa-ncnn/csrc/conv-emformer-model.h
++++ b/sherpa-ncnn/csrc/conv-emformer-model.h
+@@ -59,11 +59,17 @@ class ConvEmformerModel : public Model {
+ 
+  private:
+   void InitEncoder(const std::string &encoder_param,
+-                   const std::string &encoder_bin);
++                   const std::string &encoder_bin,
++                   const std::string &encoder_param_mem,
++                   const std::string &encoder_bin_mem);
+   void InitDecoder(const std::string &decoder_param,
+-                   const std::string &decoder_bin);
++                   const std::string &decoder_bin,
++                   const std::string &decoder_param_mem,
++                   const std::string &decoder_bin_mem);
+   void InitJoiner(const std::string &joiner_param,
+-                  const std::string &joiner_bin);
++                  const std::string &joiner_bin,
++                  const std::string &joiner_param_mem,
++                  const std::string &joiner_bin_mem);
+ 
+   void InitEncoderPostProcessing();
+ 
+diff --git a/sherpa-ncnn/csrc/lstm-model.cc b/sherpa-ncnn/csrc/lstm-model.cc
+index f4dc56d..6b97ab3 100644
+--- a/sherpa-ncnn/csrc/lstm-model.cc
++++ b/sherpa-ncnn/csrc/lstm-model.cc
+@@ -46,9 +46,12 @@ LstmModel::LstmModel(const ModelConfig &config) {
+     //           static_cast<int32_t>(config.use_vulkan_compute));
+   }
+ 
+-  InitEncoder(config.encoder_param, config.encoder_bin);
+-  InitDecoder(config.decoder_param, config.decoder_bin);
+-  InitJoiner(config.joiner_param, config.joiner_bin);
++  InitEncoder(config.encoder_param, config.encoder_bin,
++              config.encoder_param_mem, config.encoder_bin_mem);
++  InitDecoder(config.decoder_param, config.decoder_bin,
++              config.decoder_param_mem, config.decoder_bin_mem);
++  InitJoiner(config.joiner_param, config.joiner_bin, config.joiner_param_mem,
++             config.joiner_bin_mem);
+ 
+   InitEncoderInputOutputIndexes();
+   InitDecoderInputOutputIndexes();
+@@ -158,21 +161,30 @@ ncnn::Mat LstmModel::RunJoiner(ncnn::Mat &encoder_out, ncnn::Mat &decoder_out,
+ }
+ 
+ void LstmModel::InitEncoder(const std::string &encoder_param,
+-                            const std::string &encoder_bin) {
++                            const std::string &encoder_bin,
++                            const std::string &encoder_param_mem,
++                            const std::string &encoder_bin_mem) {
+   RegisterCustomLayers(encoder_);
+-  InitNet(encoder_, encoder_param, encoder_bin);
++  InitNet(encoder_, encoder_param, encoder_bin, encoder_param_mem,
++          encoder_bin_mem);
+ 
+   InitEncoderPostProcessing();
+ }
+ 
+ void LstmModel::InitDecoder(const std::string &decoder_param,
+-                            const std::string &decoder_bin) {
+-  InitNet(decoder_, decoder_param, decoder_bin);
++                            const std::string &decoder_bin,
++                            const std::string &decoder_param_mem,
++                            const std::string &decoder_bin_mem) {
++  InitNet(decoder_, decoder_param, decoder_bin, decoder_param_mem,
++          decoder_bin_mem);
+ }
+ 
+ void LstmModel::InitJoiner(const std::string &joiner_param,
+-                           const std::string &joiner_bin) {
+-  InitNet(joiner_, joiner_param, joiner_bin);
++                           const std::string &joiner_bin,
++                           const std::string &joiner_param_mem,
++                           const std::string &joiner_bin_mem) {
++  InitNet(joiner_, joiner_param, joiner_bin, joiner_param_mem,
++          joiner_bin_mem);
+ }
+ 
+ #if __ANDROID_API__ >= 9
+diff --git a/sherpa-ncnn/csrc/lstm-model.h b/sherpa-ncnn/csrc/lstm-model.h
+index f944da6..32c0fb5 100644
+--- a/sherpa-ncnn/csrc/lstm-model.h
++++ b/sherpa-ncnn/csrc/lstm-model.h
+@@ -86,11 +86,17 @@ class LstmModel : public Model {
+ 
+  private:
+   void InitEncoder(const std::string &encoder_param,
+-                   const std::string &encoder_bin);
++                   const std::string &encoder_bin,
++                   const std::string &encoder_param_mem,
++                   const std::string &encoder_bin_mem);
+   void InitDecoder(const std::string &decoder_param,
+-                   const std::string &decoder_bin);
++                   const std::string &decoder_bin,
++                   const std::string &decoder_param_mem,
++                   const std::string &decoder_bin_mem);
+   void InitJoiner(const std::string &joiner_param,
+-                  const std::string &joiner_bin);
++                  const std::string &joiner_bin,
++                  const std::string &joiner_param_mem,
++                  const std::string &joiner_bin_mem);
+ 
+   void InitEncoderPostProcessing();
+ 
+diff --git a/sherpa-ncnn/csrc/model.cc b/sherpa-ncnn/csrc/model.cc
+index f2c97f5..281f9e9 100644
+--- a/sherpa-ncnn/csrc/model.cc
++++ b/sherpa-ncnn/csrc/model.cc
+@@ -19,6 +19,7 @@
+ 
+ #include <sstream>
+ 
++#include "datareader.h"  // NOLINT
+ #include "sherpa-ncnn/csrc/conv-emformer-model.h"
+ #include "sherpa-ncnn/csrc/lstm-model.h"
+ #include "sherpa-ncnn/csrc/meta-data.h"
+@@ -124,13 +125,31 @@ static bool IsZipformerModel(const ncnn::Net &net) {
+ }
+ 
+ void Model::InitNet(ncnn::Net &net, const std::string &param,
+-                    const std::string &bin) {
+-  if (net.load_param(param.c_str())) {
++                    const std::string &bin, const std::string &param_mem,
++                    const std::string &bin_mem) {
++  int32_t ret = 0;
++  if (!param_mem.empty()) {
++    ret = net.load_param_mem(param_mem.c_str());
++  } else {
++    ret = net.load_param(param.c_str());
++  }
++  if (ret) {
+     NCNN_LOGE("failed to load %s", param.c_str());
+     exit(-1);
+   }
+ 
+-  if (net.load_model(bin.c_str())) {
++  if (!bin_mem.empty()) {
++    // 不直接调 Net::load_model(const unsigned char*)：其返回类型在不同 ncnn
++    // 版本间不一致（int/size_t），MSVC 名字修饰包含返回类型会导致链接失败；
++    // DataReaderFromMemory + load_model(const DataReader&) 的 ABI 跨版本稳定
++    const unsigned char *mem =
++        reinterpret_cast<const unsigned char *>(bin_mem.data());
++    ncnn::DataReaderFromMemory dr(mem);
++    ret = net.load_model(dr);
++  } else {
++    ret = net.load_model(bin.c_str());
++  }
++  if (ret) {
+     NCNN_LOGE("failed to load %s", bin.c_str());
+     exit(-1);
+   }
+@@ -170,7 +189,9 @@ std::unique_ptr<Model> Model::Create(const ModelConfig &config) {
+   ncnn::Net net;
+   RegisterCustomLayers(net);
+ 
+-  auto ret = net.load_param(config.encoder_param.c_str());
++  auto ret = config.encoder_param_mem.empty()
++                 ? net.load_param(config.encoder_param.c_str())
++                 : net.load_param_mem(config.encoder_param_mem.c_str());
+   if (ret != 0) {
+     NCNN_LOGE("Failed to load %s", config.encoder_param.c_str());
+     return nullptr;
+diff --git a/sherpa-ncnn/csrc/model.h b/sherpa-ncnn/csrc/model.h
+index 0c29e4a..75a09ab 100644
+--- a/sherpa-ncnn/csrc/model.h
++++ b/sherpa-ncnn/csrc/model.h
+@@ -38,6 +38,16 @@ struct ModelConfig {
+   std::string tokens;         // path to tokens.txt
+   bool use_vulkan_compute = true;
+ 
++  // 非空时优先从内存缓冲区加载（用于加密模型等不落盘场景），对应路径字段将被忽略
++  // 注意：ncnn 对 bin 内存采用零拷贝引用，调用方必须保证缓冲区生命周期不短于模型
++  std::string encoder_param_mem;
++  std::string encoder_bin_mem;
++  std::string decoder_param_mem;
++  std::string decoder_bin_mem;
++  std::string joiner_param_mem;
++  std::string joiner_bin_mem;
++  std::string tokens_mem;
++
+   ncnn::Option encoder_opt;
+   ncnn::Option decoder_opt;
+   ncnn::Option joiner_opt;
+@@ -133,7 +143,9 @@ class Model {
+   virtual int32_t Offset() const = 0;
+ 
+   static void InitNet(ncnn::Net &net, const std::string &param,
+-                      const std::string &bin);
++                      const std::string &bin,
++                      const std::string &param_mem = {},
++                      const std::string &bin_mem = {});
+ 
+ #if __ANDROID_API__ >= 9
+   static void InitNet(AAssetManager *mgr, ncnn::Net &net,
+diff --git a/sherpa-ncnn/csrc/recognizer.cc b/sherpa-ncnn/csrc/recognizer.cc
+index 7884f9f..a2b9a9e 100644
+--- a/sherpa-ncnn/csrc/recognizer.cc
++++ b/sherpa-ncnn/csrc/recognizer.cc
+@@ -21,6 +21,7 @@
+ 
+ #include <fstream>
+ #include <memory>
++#include <sstream>
+ #include <string>
+ #include <utility>
+ #include <vector>
+@@ -93,13 +94,28 @@ std::string RecognizerConfig::ToString() const {
+   return os.str();
+ }
+ 
++namespace {
++
++// tokens_mem 非空时从内存构造符号表，否则按原逻辑从文件加载
++SymbolTable LoadSymbolTable(const ModelConfig &config) {
++  if (!config.tokens_mem.empty()) {
++    std::istringstream is(config.tokens_mem);
++    return SymbolTable(is);
++  }
++  return SymbolTable(config.tokens);
++}
++
++}  // namespace
++
+ class Recognizer::Impl {
+  public:
+   explicit Impl(const RecognizerConfig &config)
+       : config_(config),
+-        model_(Model::Create(config.model_config)),
++        // ncnn 对内存加载的 bin 权重零拷贝引用，须从成员副本 config_ 加载，
++        // 使缓冲区生命周期与 Impl 一致
++        model_(Model::Create(config_.model_config)),
+         endpoint_(config.endpoint_config),
+-        sym_(config.model_config.tokens) {
++        sym_(LoadSymbolTable(config.model_config)) {
+     if (config.decoder_config.method == "greedy_search") {
+       decoder_ = std::make_unique<GreedySearchDecoder>(model_.get());
+     } else if (config.decoder_config.method == "modified_beam_search") {
+diff --git a/sherpa-ncnn/csrc/symbol-table.cc b/sherpa-ncnn/csrc/symbol-table.cc
+index e3dbdca..9776b98 100644
+--- a/sherpa-ncnn/csrc/symbol-table.cc
++++ b/sherpa-ncnn/csrc/symbol-table.cc
+@@ -38,6 +38,8 @@ SymbolTable::SymbolTable(const std::string &filename) {
+   Init(is);
+ }
+ 
++SymbolTable::SymbolTable(std::istream &is) { Init(is); }
++
+ #if __ANDROID_API__ >= 9
+ SymbolTable::SymbolTable(AAssetManager *mgr, const std::string &filename) {
+   AAsset *asset = AAssetManager_open(mgr, filename.c_str(), AASSET_MODE_BUFFER);
+diff --git a/sherpa-ncnn/csrc/symbol-table.h b/sherpa-ncnn/csrc/symbol-table.h
+index a2f88d1..cbc07af 100644
+--- a/sherpa-ncnn/csrc/symbol-table.h
++++ b/sherpa-ncnn/csrc/symbol-table.h
+@@ -19,6 +19,7 @@
+ #ifndef SHERPA_NCNN_CSRC_SYMBOL_TABLE_H_
+ #define SHERPA_NCNN_CSRC_SYMBOL_TABLE_H_
+ 
++#include <istream>
+ #include <string>
+ #include <unordered_map>
+ #include <cstdint>
+@@ -42,6 +43,9 @@ class SymbolTable {
+   /// Fields are separated by space(s).
+   explicit SymbolTable(const std::string &filename);
+ 
++  /// Construct a symbol table from an input stream.
++  explicit SymbolTable(std::istream &is);
++
+ #if __ANDROID_API__ >= 9
+   SymbolTable(AAssetManager *mgr, const std::string &filename);
+ #endif
+diff --git a/sherpa-ncnn/csrc/zipformer-model.cc b/sherpa-ncnn/csrc/zipformer-model.cc
+index 0e733e2..ed01c17 100644
+--- a/sherpa-ncnn/csrc/zipformer-model.cc
++++ b/sherpa-ncnn/csrc/zipformer-model.cc
+@@ -36,9 +36,12 @@ ZipformerModel::ZipformerModel(const ModelConfig &config) {
+     //           static_cast<int32_t>(config.use_vulkan_compute));
+   }
+ 
+-  InitEncoder(config.encoder_param, config.encoder_bin);
+-  InitDecoder(config.decoder_param, config.decoder_bin);
+-  InitJoiner(config.joiner_param, config.joiner_bin);
++  InitEncoder(config.encoder_param, config.encoder_bin,
++              config.encoder_param_mem, config.encoder_bin_mem);
++  InitDecoder(config.decoder_param, config.decoder_bin,
++              config.decoder_param_mem, config.decoder_bin_mem);
++  InitJoiner(config.joiner_param, config.joiner_bin, config.joiner_param_mem,
++             config.joiner_bin_mem);
+ 
+   InitEncoderInputOutputIndexes();
+   InitDecoderInputOutputIndexes();
+@@ -195,20 +198,29 @@ void ZipformerModel::InitEncoderPostProcessing() {
+ }
+ 
+ void ZipformerModel::InitEncoder(const std::string &encoder_param,
+-                                 const std::string &encoder_bin) {
++                                 const std::string &encoder_bin,
++                                 const std::string &encoder_param_mem,
++                                 const std::string &encoder_bin_mem) {
+   RegisterCustomLayers(encoder_);
+-  InitNet(encoder_, encoder_param, encoder_bin);
++  InitNet(encoder_, encoder_param, encoder_bin, encoder_param_mem,
++          encoder_bin_mem);
+   InitEncoderPostProcessing();
+ }
+ 
+ void ZipformerModel::InitDecoder(const std::string &decoder_param,
+-                                 const std::string &decoder_bin) {
+-  InitNet(decoder_, decoder_param, decoder_bin);
++                                 const std::string &decoder_bin,
++                                 const std::string &decoder_param_mem,
++                                 const std::string &decoder_bin_mem) {
++  InitNet(decoder_, decoder_param, decoder_bin, decoder_param_mem,
++          decoder_bin_mem);
+ }
+ 
+ void ZipformerModel::InitJoiner(const std::string &joiner_param,
+-                                const std::string &joiner_bin) {
+-  InitNet(joiner_, joiner_param, joiner_bin);
++                                const std::string &joiner_bin,
++                                const std::string &joiner_param_mem,
++                                const std::string &joiner_bin_mem) {
++  InitNet(joiner_, joiner_param, joiner_bin, joiner_param_mem,
++          joiner_bin_mem);
+ }
+ 
+ #if __ANDROID_API__ >= 9
+diff --git a/sherpa-ncnn/csrc/zipformer-model.h b/sherpa-ncnn/csrc/zipformer-model.h
+index 74c2581..1c5dfd8 100644
+--- a/sherpa-ncnn/csrc/zipformer-model.h
++++ b/sherpa-ncnn/csrc/zipformer-model.h
+@@ -60,11 +60,17 @@ class ZipformerModel : public Model {
+ 
+  private:
+   void InitEncoder(const std::string &encoder_param,
+-                   const std::string &encoder_bin);
++                   const std::string &encoder_bin,
++                   const std::string &encoder_param_mem,
++                   const std::string &encoder_bin_mem);
+   void InitDecoder(const std::string &decoder_param,
+-                   const std::string &decoder_bin);
++                   const std::string &decoder_bin,
++                   const std::string &decoder_param_mem,
++                   const std::string &decoder_bin_mem);
+   void InitJoiner(const std::string &joiner_param,
+-                  const std::string &joiner_bin);
++                  const std::string &joiner_bin,
++                  const std::string &joiner_param_mem,
++                  const std::string &joiner_bin_mem);
+ 
+   void InitEncoderPostProcessing();
+ 

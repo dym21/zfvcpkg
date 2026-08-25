@@ -1,0 +1,14 @@
+diff --git a/gnulib/lib/wchar.in.h b/gnulib/lib/wchar.in.h
+index c474e39..dad4a32 100644
+--- a/gnulib/lib/wchar.in.h
++++ b/gnulib/lib/wchar.in.h
+@@ -27,7 +27,8 @@
+  * the declaration of wcwidth().
+  */
+ 
+-#ifndef _GL_WCHAR_H
++#if !defined _GL_WCHAR_H || defined __need_mbstate_t || \
++    defined __need_wint_t
+ 
+ /* Tru64 with Desktop Toolkit C has a bug: <stdio.h> must be included before
+    <wchar.h>.

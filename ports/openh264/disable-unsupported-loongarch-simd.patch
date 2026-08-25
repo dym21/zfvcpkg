@@ -1,0 +1,153 @@
+diff --git a/meson.build b/meson.build
+index 952c717..5539ba1 100644
+--- a/meson.build
++++ b/meson.build
+@@ -6,6 +6,7 @@ project('openh264', ['c', 'cpp'],
+ major_version = '7'
+ 
+ cpp = meson.get_compiler('cpp')
++cc = meson.get_compiler('c')
+ 
+ inc = include_directories([
+   join_paths('codec', 'api', 'wels'),
+@@ -52,6 +52,7 @@ cpp_args = []
+ asm_args = []
+ asm_inc = []
+ casm_inc = []
++loongarch_simd = false
+ cpp_lib = '-lstdc++'
+ 
+ libm_dep = cpp.find_library('m', required : false)
+@@ -88,14 +89,20 @@ if ['linux', 'android', 'ios', 'darwin', 'freebsd', 'netbsd', 'openbsd'].contain
+     casm_inc = include_directories(join_paths('codec', 'common', 'arm64'))
+   elif cpu_family == 'loongarch32'
+     asm_format = asm_format32
+-    add_project_arguments('-mlsx', '-DHAVE_LSX', '-mlasx', '-DHAVE_LASX', language: 'c')
+-    add_project_arguments('-DHAVE_LSX', '-DHAVE_LASX', language: 'cpp')
+-    casm_inc = include_directories(join_paths('codec', 'common', 'loongarch'))
++    loongarch_simd = cc.has_argument('-mlsx') and cc.has_argument('-mlasx')
++    if loongarch_simd
++      add_project_arguments('-mlsx', '-DHAVE_LSX', '-mlasx', '-DHAVE_LASX', language: 'c')
++      add_project_arguments('-DHAVE_LSX', '-DHAVE_LASX', language: 'cpp')
++      casm_inc = include_directories(join_paths('codec', 'common', 'loongarch'))
++    endif
+   elif cpu_family == 'loongarch64'
+     asm_format = asm_format64
+-    add_project_arguments('-mlsx', '-DHAVE_LSX', '-mlasx', '-DHAVE_LASX', language: 'c')
+-    add_project_arguments('-DHAVE_LSX', '-DHAVE_LASX', language: 'cpp')
+-    casm_inc = include_directories(join_paths('codec', 'common', 'loongarch'))
++    loongarch_simd = cc.has_argument('-mlsx') and cc.has_argument('-mlasx')
++    if loongarch_simd
++      add_project_arguments('-mlsx', '-DHAVE_LSX', '-mlasx', '-DHAVE_LASX', language: 'c')
++      add_project_arguments('-DHAVE_LSX', '-DHAVE_LASX', language: 'cpp')
++      casm_inc = include_directories(join_paths('codec', 'common', 'loongarch'))
++    endif
+   elif cpu_family == 'riscv64'
+     # We don't have riscv64-specific optimization for now.
+     asm_format = asm_format64
+diff --git a/codec/common/meson.build b/codec/common/meson.build
+index 8a36a18..8bab940 100644
+--- a/codec/common/meson.build
++++ b/codec/common/meson.build
+@@ -59,16 +59,18 @@ elif cpu_family == 'aarch64'
+     cpp_sources += asm_sources
+   endif
+ elif cpu_family in ['loongarch32', 'loongarch64']
+-  asm_sources = [
+-    'loongarch/copy_mb_lsx.c',
+-    'loongarch/deblock_lsx.c',
+-    'loongarch/intra_pred_com_lsx.c',
+-    'loongarch/intra_pred_com_lasx.c',
+-    'loongarch/mc_chroma_lsx.c',
+-    'loongarch/mc_horver_lsx.c',
+-    'loongarch/satd_sad_lasx.c',
+-  ]
+-  cpp_sources += asm_sources
++  if loongarch_simd
++    asm_sources = [
++      'loongarch/copy_mb_lsx.c',
++      'loongarch/deblock_lsx.c',
++      'loongarch/intra_pred_com_lsx.c',
++      'loongarch/intra_pred_com_lasx.c',
++      'loongarch/mc_chroma_lsx.c',
++      'loongarch/mc_horver_lsx.c',
++      'loongarch/satd_sad_lasx.c',
++    ]
++    cpp_sources += asm_sources
++  endif
+ elif cpu_family == 'riscv64'
+   asm_sources = []
+ elif cpu_family == 'ppc'
+diff --git a/codec/encoder/meson.build b/codec/encoder/meson.build
+index 6d0b8d5..622d8b2 100644
+--- a/codec/encoder/meson.build
++++ b/codec/encoder/meson.build
+@@ -75,14 +75,16 @@ elif cpu_family == 'aarch64'
+     cpp_sources += asm_sources
+   endif
+ elif cpu_family in ['loongarch32', 'loongarch64']
+-  asm_sources = [
+-    'core/loongarch/quant_lsx.c',
+-    'core/loongarch/get_intra_predictor_lsx.c',
+-    'core/loongarch/dct_lasx.c',
+-    'core/loongarch/svc_motion_estimate_lsx.c',
+-    'core/loongarch/sample_lasx.c',
+-  ]
+-  cpp_sources += asm_sources
++  if loongarch_simd
++    asm_sources = [
++      'core/loongarch/quant_lsx.c',
++      'core/loongarch/get_intra_predictor_lsx.c',
++      'core/loongarch/dct_lasx.c',
++      'core/loongarch/svc_motion_estimate_lsx.c',
++      'core/loongarch/sample_lasx.c',
++    ]
++    cpp_sources += asm_sources
++  endif
+ elif cpu_family == 'riscv64'
+   asm_sources = []
+ elif cpu_family == 'ppc'
+diff --git a/codec/decoder/meson.build b/codec/decoder/meson.build
+index 21c7b2b..f7cf5e1 100644
+--- a/codec/decoder/meson.build
++++ b/codec/decoder/meson.build
+@@ -50,10 +50,12 @@ elif cpu_family == 'aarch64'
+     cpp_sources += asm_sources
+   endif
+ elif cpu_family in ['loongarch32', 'loongarch64']
+-  asm_sources = [
+-    'core/loongarch/mb_aux_lsx.c',
+-  ]
+-  cpp_sources += asm_sources
++  if loongarch_simd
++    asm_sources = [
++      'core/loongarch/mb_aux_lsx.c',
++    ]
++    cpp_sources += asm_sources
++  endif
+ elif cpu_family == 'riscv64'
+   asm_sources = []
+ elif cpu_family == 'ppc'
+diff --git a/codec/processing/meson.build b/codec/processing/meson.build
+index 0a16d33..8abf431 100644
+--- a/codec/processing/meson.build
++++ b/codec/processing/meson.build
+@@ -51,11 +51,13 @@ elif cpu_family == 'aarch64'
+     cpp_sources += asm_sources
+   endif
+ elif cpu_family in ['loongarch32', 'loongarch64']
+-  asm_sources = [
+-    'src/loongarch/vaa_lsx.c',
+-    'src/loongarch/vaa_lasx.c',
+-  ]
+-  cpp_sources += asm_sources
++  if loongarch_simd
++    asm_sources = [
++      'src/loongarch/vaa_lsx.c',
++      'src/loongarch/vaa_lasx.c',
++    ]
++    cpp_sources += asm_sources
++  endif
+ elif cpu_family == 'riscv64'
+   asm_sources = []
+ elif cpu_family == 'ppc'

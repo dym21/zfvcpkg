@@ -1,0 +1,31 @@
+diff --git a/configure.ac b/configure.ac
+index 7b0495b..1990559 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -165,13 +165,9 @@ win32/vs15/Makefile
+ docs/Makefile
+ docs/examples/Makefile
+ docs/reference/Makefile
+-tests/Makefile
+-tests/test-inputs/Makefile
+-tests/test-output-refs/Makefile
+ global-test-vars.sh
+ src/Makefile
+ src/libcroco-config.h
+-csslint/Makefile
+ 
+ ])
+ 
+diff --git a/Makefile.am b/Makefile.am
+index 4b482f3..2e91335 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -2,7 +2,7 @@ ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
+ 
+ DISTCHECK_CONFIGURE_FLAGS = --enable-gtk-doc
+ 
+-SUBDIRS = src csslint docs tests win32
++SUBDIRS = src docs win32
+ 
+ PKG_CONFIG_FILE_UNINSTALLED=libcroco-@LIBCROCO_MAJOR_VERSION@.@LIBCROCO_MINOR_VERSION@-uninstalled.pc
+ PKG_CONFIG_FILE=libcroco-@LIBCROCO_MAJOR_VERSION@.@LIBCROCO_MINOR_VERSION@.pc

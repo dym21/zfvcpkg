@@ -1,0 +1,13 @@
+{
+  "name": "lzip-cli",
+  "version": "1.26",
+  "description": "Lzip lossless data compressor command-line tool",
+  "homepage": "https://www.nongnu.org/lzip/",
+  "license": "GPL-2.0-or-later",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake-get-vars",
+      "host": true
+    }
+  ]
+}

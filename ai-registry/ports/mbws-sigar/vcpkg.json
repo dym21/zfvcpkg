@@ -1,0 +1,13 @@
+{
+  "name": "mbws-sigar",
+  "version-string": "1.6.2",
+  "port-version": 7,
+  "description": "Hyperic SIGAR with the MBWS GCC compatibility option",
+  "license": "Apache-2.0",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    }
+  ]
+}

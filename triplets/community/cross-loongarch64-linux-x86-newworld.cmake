@@ -2,6 +2,11 @@
 set(VCPKG_CMAKE_SYSTEM_NAME Linux)
 set(VCPKG_TARGET_ARCHITECTURE loongarch64)
 
+set(ZF_LOONGARCH_TOOLCHAIN_ROOT "/opt/zftoolchain/loongarch64-zftoolchain-linux-gnu-newworld-x86_64")
+if(NOT EXISTS "${ZF_LOONGARCH_TOOLCHAIN_ROOT}/bin/loongarch64-zftoolchain-linux-gnu-gcc")
+    message(FATAL_ERROR "LoongArch64 newworld toolchain not found: ${ZF_LOONGARCH_TOOLCHAIN_ROOT}")
+endif()
+
 set(VCPKG_CHAINLOAD_TOOLCHAIN_FILE "/opt/zftoolchain/toolchain_loongarch64_newworld.cmake")
 set(VCPKG_MESON_CROSS_FILE "${VCPKG_ROOT_DIR}/scripts/loongarch64-linux-newworld.meson")
 

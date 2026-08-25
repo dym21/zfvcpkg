@@ -1,0 +1,10 @@
+mbws-sm provides CMake targets for the legacy MBWS SM algorithm libraries:
+
+    find_package(mbws-sm CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE
+        mbws-sm::sm2
+        mbws-sm::kdf
+        mbws-sm::sm3
+        mbws-sm::tomcrypt
+        mbws-sm::tommath
+    )

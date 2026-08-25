@@ -1,0 +1,16 @@
+vcpkg_from_github(
+    OUT_SOURCE_PATH SOURCE_PATH
+    REPO SciQLop/CDFpp
+    REF v0.11.0
+    SHA512 07ee1461e9f443c3fa2f353679ece93d0f1e60c6f19e0de564251e9c31037564f60439d57e2d2c8e3d02d675e1a43eb38a7823512b998f97f1d317ed48d464ca
+    HEAD_REF main
+)
+
+file(INSTALL "${SOURCE_PATH}/include/cdfpp"
+     DESTINATION "${CURRENT_PACKAGES_DIR}/include")
+file(INSTALL "${CMAKE_CURRENT_LIST_DIR}/cdfpp_config.h"
+     DESTINATION "${CURRENT_PACKAGES_DIR}/include/cdfpp")
+file(INSTALL "${CMAKE_CURRENT_LIST_DIR}/cdfpp-config.cmake"
+     DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}")
+
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/COPYING")

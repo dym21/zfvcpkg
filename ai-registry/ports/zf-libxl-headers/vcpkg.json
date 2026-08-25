@@ -1,0 +1,7 @@
+{
+  "name": "zf-libxl-headers",
+  "version-string": "3.6.5",
+  "description": "LibXL interface headers required by the legacy UI source",
+  "license": "LicenseRef-LibXL-Commercial",
+  "supports": "linux"
+}

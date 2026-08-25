@@ -1,0 +1,121 @@
+diff --git a/include/boost/asio/ssl/context_base.hpp b/include/boost/asio/ssl/context_base.hpp
+index 780040219..fc2ba110a 100644
+--- a/include/boost/asio/ssl/context_base.hpp
++++ b/include/boost/asio/ssl/context_base.hpp
+@@ -102,7 +102,18 @@ public:
+     tls_client,
+ 
+     /// TLS server.
+-    tls_server
++    tls_server,
++
++#if defined(USE_OPENSSL_GMTLS)
++    /// Generic GM/T 0024 TLS provided by GmSSL.
++    gm_tls,
++
++    /// GM/T 0024 TLS client.
++    gm_tls_client,
++
++    /// GM/T 0024 TLS server.
++    gm_tls_server
++#endif
+   };
+ 
+   /// Bitmask type for SSL options.
+diff --git a/include/boost/asio/ssl/context.hpp b/include/boost/asio/ssl/context.hpp
+index 8ae956e5a..c10bac13d 100644
+--- a/include/boost/asio/ssl/context.hpp
++++ b/include/boost/asio/ssl/context.hpp
+@@ -35,5 +35,14 @@ BOOST_ASIO_INLINE_NAMESPACE_BEGIN
+ namespace ssl {
+ 
++#if defined(USE_OPENSSL_GMTLS)
++/// Certificate role used by the GmSSL dual-certificate GMTLS implementation.
++enum gm_certificate_type
++{
++  GM_CERT_TYPE_SIGN,
++  GM_CERT_TYPE_ENC
++};
++#endif
++
+ class context
+   : public context_base,
+     private noncopyable
+@@ -453,6 +463,17 @@ public:
+   BOOST_ASIO_DECL BOOST_ASIO_SYNC_OP_VOID use_certificate_chain(
+       const const_buffer& chain, boost::system::error_code& ec);
+ 
++#if defined(USE_OPENSSL_GMTLS)
++  /// Use a signing or encryption certificate chain for GMTLS.
++  BOOST_ASIO_DECL void use_certificate_chain(
++      const const_buffer& chain, gm_certificate_type certificate_type);
++
++  /// Use a signing or encryption certificate chain for GMTLS.
++  BOOST_ASIO_DECL BOOST_ASIO_SYNC_OP_VOID use_certificate_chain(
++      const const_buffer& chain, gm_certificate_type certificate_type,
++      boost::system::error_code& ec);
++#endif
++
+   /// Use a certificate chain from a file.
+   /**
+    * This function is used to load a certificate chain into the context from a
+diff --git a/include/boost/asio/ssl/impl/context.ipp b/include/boost/asio/ssl/impl/context.ipp
+index 038215d85..64113dd14 100644
+--- a/include/boost/asio/ssl/impl/context.ipp
++++ b/include/boost/asio/ssl/impl/context.ipp
+@@ -66,6 +66,18 @@ context::context(context::method m)
+ 
+   switch (m)
+   {
++#if defined(USE_OPENSSL_GMTLS)
++  case context::gm_tls:
++    handle_ = ::SSL_CTX_new(::GMTLS_method());
++    break;
++  case context::gm_tls_client:
++    handle_ = ::SSL_CTX_new(::GMTLS_client_method());
++    break;
++  case context::gm_tls_server:
++    handle_ = ::SSL_CTX_new(::GMTLS_server_method());
++    break;
++#endif
++
+     // SSL v2.
+ #if (OPENSSL_VERSION_NUMBER >= 0x10100000L) || defined(OPENSSL_NO_SSL2)
+   case context::sslv2:
+@@ -745,6 +757,24 @@ void context::use_certificate_chain(const const_buffer& chain)
+ BOOST_ASIO_SYNC_OP_VOID context::use_certificate_chain(
+     const const_buffer& chain, boost::system::error_code& ec)
+ {
++#if defined(USE_OPENSSL_GMTLS)
++  use_certificate_chain(chain, GM_CERT_TYPE_SIGN, ec);
++  BOOST_ASIO_SYNC_OP_VOID_RETURN(ec);
++}
++
++void context::use_certificate_chain(
++    const const_buffer& chain, gm_certificate_type certificate_type)
++{
++  boost::system::error_code ec;
++  use_certificate_chain(chain, certificate_type, ec);
++  boost::asio::detail::throw_error(ec, "use_certificate_chain");
++}
++
++BOOST_ASIO_SYNC_OP_VOID context::use_certificate_chain(
++    const const_buffer& chain, gm_certificate_type certificate_type,
++    boost::system::error_code& ec)
++{
++#endif
+   ::ERR_clear_error();
+ 
+   bio_cleanup bio = { make_buffer_bio(chain) };
+@@ -770,6 +800,11 @@ BOOST_ASIO_SYNC_OP_VOID context::use_certificate_chain(
+       BOOST_ASIO_SYNC_OP_VOID_RETURN(ec);
+     }
+ 
++#if defined(USE_OPENSSL_GMTLS)
++    if (certificate_type == GM_CERT_TYPE_ENC)
++      ::X509_set_key_usage(cert.p, ~X509v3_KU_DIGITAL_SIGNATURE);
++#endif
++
+     int result = ::SSL_CTX_use_certificate(handle_, cert.p);
+     if (result == 0 || ::ERR_peek_error() != 0)
+     {

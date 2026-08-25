@@ -1,3 +1,7 @@
+if(VCPKG_TARGET_IS_OHOS)
+    set(VCPKG_TARGET_IS_LINUX ON)
+endif()
+
 if(EXISTS "${CURRENT_INSTALLED_DIR}/share/libressl/copyright"
     OR EXISTS "${CURRENT_INSTALLED_DIR}/share/boringssl/copyright")
     message(FATAL_ERROR "Can't build openssl if libressl/boringssl is installed. Please remove libressl/boringssl, and try install openssl again if you need it.")
@@ -31,6 +35,11 @@ vcpkg_list(SET CONFIGURE_OPTIONS
     no-tests
     no-docs
 )
+
+# The target CPU is Zhaoxin KX-U6780A. Its OpenSSL CTR32 optimized path
+# produces an invalid AES-CTR stream, so keep OpenSSL builds in this port
+# on the portable implementation without assembly.
+vcpkg_list(APPEND CONFIGURE_OPTIONS no-asm)
 
 # https://github.com/openssl/openssl/blob/master/INSTALL.md#enable-ec_nistp_64_gcc_128
 vcpkg_cmake_get_vars(cmake_vars_file)

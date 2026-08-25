@@ -1,0 +1,10 @@
+{
+  "name": "cppjieba",
+  "version-semver": "5.6.7",
+  "description": "C++ Chinese text segmentation library",
+  "homepage": "https://github.com/yanyiwu/cppjieba",
+  "license": "MIT",
+  "dependencies": [
+    "limonp"
+  ]
+}

@@ -1,0 +1,15 @@
+vcpkg_from_github(
+    OUT_SOURCE_PATH SOURCE_PATH
+    REPO VectorDB-NTU/RaBitQ-Library
+    REF 540242ea0a68926f1b827bf1f9add844f07a427b
+    SHA512 d0a2f1f85e83037679a89e9102ab0ea0d4170811f9fb00b65d9f22f9f3e1242ee121cf5a493b91e7afefe6ffad194fd01551f26e12d1c01cdacf64ed23a99dd7
+    HEAD_REF main
+)
+
+file(INSTALL "${SOURCE_PATH}/include/"
+     DESTINATION "${CURRENT_PACKAGES_DIR}/include")
+file(INSTALL "${CMAKE_CURRENT_LIST_DIR}/rabitq-config.cmake"
+     DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}")
+file(INSTALL "${CMAKE_CURRENT_LIST_DIR}/usage"
+     DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}")
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")

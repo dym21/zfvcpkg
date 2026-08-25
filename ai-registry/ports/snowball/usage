@@ -1,0 +1,4 @@
+snowball provides a CMake target:
+
+    find_package(snowball CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE snowball::snowball)

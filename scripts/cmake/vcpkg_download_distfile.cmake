@@ -112,6 +112,69 @@ If you do not know the SHA512, add it as 'SHA512 0' and retry.")
         message(FATAL_ERROR "Downloads are disabled, but '${downloaded_file_path}' does not exist.")
     endif()
 
+    # Prefer wget when it is available. The complete wget phase is limited to
+    # ten attempts (across the supplied URLs); wget's connect/read timeout is
+    # fifteen seconds and the process is configured for one attempt so the retry
+    # policy remains controlled here. If wget is unavailable or all attempts
+    # fail, fall back to vcpkg x-download below.
+    find_program(Z_VCPKG_WGET_EXECUTABLE NAMES wget wget.exe)
+    if(Z_VCPKG_WGET_EXECUTABLE)
+        set(wget_download_succeeded OFF)
+        list(LENGTH arg_URLS wget_url_count)
+        foreach(wget_attempt RANGE 1 10)
+            math(EXPR wget_url_index "(${wget_attempt} - 1) % ${wget_url_count}")
+            list(GET arg_URLS ${wget_url_index} url)
+            file(REMOVE "${downloaded_file_path}")
+
+            set(wget_args
+                "--connect-timeout=15"
+                "--timeout=15"
+                "--tries=1"
+                "--no-verbose"
+                "--output-document=${downloaded_file_path}"
+            )
+            foreach(header IN LISTS arg_HEADERS)
+                list(APPEND wget_args "--header=${header}")
+            endforeach()
+            list(APPEND wget_args "${url}")
+
+            execute_process(
+                COMMAND "${Z_VCPKG_WGET_EXECUTABLE}" ${wget_args}
+                WORKING_DIRECTORY "${DOWNLOADS}"
+                RESULT_VARIABLE wget_result
+                OUTPUT_VARIABLE wget_output
+                ERROR_VARIABLE wget_error
+            )
+
+            if("${wget_result}" EQUAL "0" AND EXISTS "${downloaded_file_path}")
+                set(wget_hash_valid ON)
+                if(NOT arg_SKIP_SHA512 AND NOT "${arg_SHA512}" MATCHES "^0+$")
+                    file(SHA512 "${downloaded_file_path}" wget_file_hash)
+                    if(NOT "${wget_file_hash}" STREQUAL "${arg_SHA512}")
+                        set(wget_hash_valid OFF)
+                        message(STATUS "wget attempt ${wget_attempt}/10 downloaded an unexpected hash for ${arg_FILENAME}")
+                    endif()
+                endif()
+
+                if(wget_hash_valid)
+                    message(STATUS "Downloaded ${arg_FILENAME} with wget")
+                    set(wget_download_succeeded ON)
+                    break()
+                endif()
+            endif()
+
+            file(REMOVE "${downloaded_file_path}")
+            message(STATUS "wget attempt ${wget_attempt}/10 failed for ${arg_FILENAME}; retrying")
+        endforeach()
+
+        if(wget_download_succeeded)
+            set("${out_var}" "${downloaded_file_path}" PARENT_SCOPE)
+            return()
+        endif()
+
+        message(STATUS "wget failed for ${arg_FILENAME}; falling back to vcpkg x-download")
+    endif()
+
     vcpkg_list(SET params "x-download" "${arg_FILENAME}")
     foreach(url IN LISTS arg_URLS)
         vcpkg_list(APPEND params "--url=${url}")

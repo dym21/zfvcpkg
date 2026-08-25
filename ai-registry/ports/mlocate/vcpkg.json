@@ -1,0 +1,7 @@
+{
+  "name": "mlocate",
+  "version": "0.26",
+  "description": "Locate and updatedb command-line tools",
+  "homepage": "https://pagure.io/mlocate",
+  "license": "GPL-2.0-or-later"
+}

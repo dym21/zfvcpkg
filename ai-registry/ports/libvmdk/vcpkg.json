@@ -1,0 +1,7 @@
+{
+  "name": "libvmdk",
+  "version-date": "2024-05-10",
+  "description": "Library and tools to access VMware Virtual Disk (VMDK) images",
+  "homepage": "https://github.com/libyal/libvmdk",
+  "license": "LGPL-3.0-or-later"
+}

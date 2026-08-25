@@ -1,0 +1,16 @@
+{
+  "name": "mbws-libjson",
+  "version-string": "7.6.1",
+  "description": "Legacy libjson C++ API used by MBWS",
+  "license": "BSD-3-Clause",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ]
+}

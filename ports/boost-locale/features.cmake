@@ -10,14 +10,16 @@ if(VCPKG_TARGET_IS_WINDOWS)
     set(BOOST_LOCALE_ENABLE_POSIX off)
 else()
     set(BOOST_LOCALE_ENABLE_ICONV on)
-    if(VCPKG_TARGET_IS_ANDROID)
+    if(VCPKG_TARGET_IS_ANDROID OR VCPKG_TARGET_IS_OHOS)
+        # Android and HarmonyOS libc do not provide the full POSIX locale API.
+        # In particular, HarmonyOS does not implement strfmon_l.
         set(BOOST_LOCALE_ENABLE_POSIX off)
     else()
         set(BOOST_LOCALE_ENABLE_POSIX on)
     endif()
 endif()
 
-list(APPEND FEATURE_OPTIONS
+list(APPEND FEATURE_OPTIONS 
   -DBOOST_LOCALE_ENABLE_ICONV=${BOOST_LOCALE_ENABLE_ICONV}
   -DBOOST_LOCALE_ENABLE_POSIX=${BOOST_LOCALE_ENABLE_POSIX}
   )

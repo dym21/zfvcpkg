@@ -5,7 +5,8 @@ vcpkg_from_git(
     # Check https://chromium.googlesource.com/libyuv/libyuv/+/refs/heads/main/include/libyuv/version.h for a version!
     PATCHES
         cmake.diff
-	0001-disable-aarch64-asm.patch
+        0001-disable-aarch64-asm.patch
+        check-loongarch-compiler-flags.patch
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS

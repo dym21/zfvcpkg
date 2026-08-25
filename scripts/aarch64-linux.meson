@@ -5,6 +5,10 @@ ar = '/opt/zftoolchain/aarch64-zftoolchain-linux-gnu-x86_64/bin/aarch64-zftoolch
 strip = '/opt/zftoolchain/aarch64-zftoolchain-linux-gnu-x86_64/bin/aarch64-zftoolchain-linux-gnu-strip'
 pkgconfig = 'pkg-config'
 
+[built-in options]
+c_link_args = ['-static-libgcc']
+cpp_link_args = ['-static-libgcc', '-static-libstdc++']
+
 [host_machine]
 system = 'linux'
 cpu_family = 'aarch64'

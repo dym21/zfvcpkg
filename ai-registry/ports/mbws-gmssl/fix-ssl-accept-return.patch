@@ -1,0 +1,11 @@
+--- a/ssl/ssl_lib.c
++++ b/ssl/ssl_lib.c
+@@ -1527,7 +1527,7 @@ int SSL_accept(SSL *s)
+    rv=SSL_do_handshake(s);
+    _MY_LOG_Message("SSL_accept end");
+ 
+-    //return SSL_do_handshake(s);
++    return rv;
+ }
+ 
+ int SSL_connect(SSL *s)

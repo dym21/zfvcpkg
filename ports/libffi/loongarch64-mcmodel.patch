@@ -1,0 +1,13 @@
+diff --git a/configure b/configure
+index e050ddc..f5db4a4 100755
+--- a/configure
++++ b/configure
+@@ -19308,7 +19308,7 @@ printf "%s\n" "#define HAVE_AS_S390_ZARCH 1" >>confdefs.h
+     CFLAGS="$CFLAGS -sMEMORY64=$WASM64_MEMORY64"
+     ;;
+   LOONGARCH64)
+-    CFLAGS="$CFLAGS -mcmodel=medium"
++    CFLAGS="$CFLAGS -mcmodel=large"
+     ;;
+   LOONGARCH32)
+     # No special for LoongArch32 now.

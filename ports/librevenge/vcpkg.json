@@ -1,0 +1,21 @@
+{
+  "name": "librevenge",
+  "version-semver": "0.0.6",
+  "description": "Base library for document import filters",
+  "homepage": "https://sourceforge.net/projects/libwpd/files/librevenge/",
+  "license": "MPL-2.0 OR LGPL-2.1-or-later",
+  "supports": "!uwp",
+  "dependencies": [
+    "boost-serialization",
+    "boost-spirit",
+    "zlib",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ]
+}

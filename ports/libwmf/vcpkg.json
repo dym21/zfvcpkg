@@ -5,16 +5,16 @@
   "homepage": "https://github.com/caolanm/libwmf",
   "license": "LGPL-2.1-or-later",
   "dependencies": [
+    "freetype",
+    "libpng",
     {
       "name": "vcpkg-cmake",
       "host": true
     },
     {
-      "name": "vcpkg-cmake-config", 
+      "name": "vcpkg-cmake-config",
       "host": true
     },
-    "freetype",
-    "libpng",
     "zlib"
   ]
 }

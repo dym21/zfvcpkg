@@ -1,0 +1,9 @@
+{
+  "name": "mbws-gmssl",
+  "version-string": "2.5.0-mbws",
+  "port-version": 8,
+  "description": "MBWS GmSSL 2.5.0 static libraries with GMTLS dual-certificate support",
+  "homepage": "https://github.com/guanzhi/GmSSL",
+  "license": "OpenSSL",
+  "supports": "linux"
+}

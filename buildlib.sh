@@ -51,19 +51,26 @@ fi
 TRIPLETS=(
     "cross-x64-linux-x86"
     "cross-mips64-linux-x86"
-    "cross-loongarch64-linux-x86"
+    "cross-loongarch64-linux-x86-oldworld"
     "cross-loongarch64-linux-x86-newworld"
     "cross-aarch64-linux-x86"
 )
 
 # VCPKG root directory is current directory
 VCPKG_ROOT="."
-VCPKG_EXE="${VCPKG_ROOT}/vcpkg_x86"
+VCPKG_EXE="${VCPKG_ROOT}/vcpkg"
+OVERLAY_PORTS="${VCPKG_ROOT}/ai-registry/ports"
 
 # Check if vcpkg exists
 if [ ! -f "$VCPKG_EXE" ]; then
     echo "Error: vcpkg executable not found at $VCPKG_EXE"
     echo "Please set VCPKG_ROOT or ensure vcpkg is in the current directory"
+    exit 1
+fi
+
+# Check if the custom overlay ports directory exists
+if [ ! -d "$OVERLAY_PORTS" ]; then
+    echo "Error: custom overlay ports directory not found at $OVERLAY_PORTS"
     exit 1
 fi
 
@@ -77,7 +84,8 @@ for triplet in "${TRIPLETS[@]}"; do
 
     if [ "$ACTION" == "upgrade" ]; then
         echo "Upgrading all packages for $triplet..."
-        "$VCPKG_EXE" upgrade --no-dry-run --triplet="$triplet"
+        "$VCPKG_EXE" upgrade --no-dry-run --triplet="$triplet" \
+            --overlay-ports="$OVERLAY_PORTS"
         if [ $? -ne 0 ]; then
             echo "Warning: Failed to upgrade packages for $triplet"
         fi
@@ -85,7 +93,8 @@ for triplet in "${TRIPLETS[@]}"; do
         for LIBRARY_NAME in "${LIBRARIES[@]}"; do
             if [ "$ACTION" == "install" ]; then
                 echo "Installing $LIBRARY_NAME for $triplet..."
-                "$VCPKG_EXE" install "$LIBRARY_NAME" --triplet="$triplet" --no-binarycaching $RECURSE_FLAG
+                "$VCPKG_EXE" install "$LIBRARY_NAME" --triplet="$triplet" \
+                    --overlay-ports="$OVERLAY_PORTS" --no-binarycaching $RECURSE_FLAG
                 if [ $? -ne 0 ]; then
                     echo "Warning: Failed to install $LIBRARY_NAME for $triplet"
                 fi
@@ -109,4 +118,3 @@ else
     echo "Completed $ACTION operation for ${LIBRARIES[*]}"
 fi
 echo "========================================="
-

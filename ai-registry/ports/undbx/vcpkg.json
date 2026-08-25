@@ -1,0 +1,13 @@
+{
+  "name": "undbx",
+  "version": "0.21",
+  "description": "Tool and library code for extracting e-mail messages from Outlook Express DBX files",
+  "homepage": "https://github.com/ZungBang/undbx",
+  "license": "GPL-3.0-only",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    }
+  ]
+}

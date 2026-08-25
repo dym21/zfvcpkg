@@ -1,0 +1,12 @@
+{
+  "name": "cdfpp",
+  "version-semver": "0.11.0",
+  "description": "Header-only C++ reader and writer for NASA Common Data Format files",
+  "homepage": "https://github.com/SciQLop/CDFpp",
+  "license": "MIT",
+  "supports": "!uwp",
+  "dependencies": [
+    "fmt",
+    "libdeflate"
+  ]
+}

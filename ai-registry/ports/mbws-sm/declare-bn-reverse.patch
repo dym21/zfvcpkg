@@ -1,0 +1,13 @@
+diff --git a/KDFLib/KDF.c b/KDFLib/KDF.c
+index 062036e..ef6c132 100644
+--- a/KDFLib/KDF.c
++++ b/KDFLib/KDF.c
+@@ -13,7 +13,7 @@
+ #include "KDF.h"
+ #include "SM3.h"
+ #include <tomcrypt.h>
+-//#include <tommath.h>
++#include <tommath.h>
+ //#pragma comment (lib,"MathLib")
+ //#pragma comment (lib,"tomcrypt")
+ //#pragma comment (lib,"SM3Lib")

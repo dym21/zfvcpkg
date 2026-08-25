@@ -1,0 +1,20 @@
+diff --git a/source/data/Makefile.in b/source/data/Makefile.in
+index 4427699..e26d9a1 100644
+--- a/source/data/Makefile.in
++++ b/source/data/Makefile.in
+@@ -190,6 +190,7 @@ else
+ endif
+ endif
+ endif
++	test ! -f ../lib/libicudata.a || cp -f ../lib/libicudata.a ../lib/libicudata.lib
+ ifneq ($(ICUDATA_SOURCE_IS_NATIVE_TARGET),YES)
+ # For MinGW, do we want the DLL to go in the bin location?
+ ifeq ($(MINGW_MOVEDLLSTOBINDIR),YES)
+@@ -200,6 +201,7 @@ endif
+ else
+ 	$(INSTALL_DATA) $(ICUDATA_SOURCE_ARCHIVE) $(DESTDIR)$(ICUPKGDATA_DIR)
+ endif
++	rm -f ../lib/libicudata.lib
+ 
+ 
+ ## Include the main build rules for data files

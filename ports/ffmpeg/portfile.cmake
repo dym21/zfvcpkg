@@ -1,3 +1,9 @@
+# FFmpeg has no OHOS target-os spelling; use its Linux/POSIX path while
+# retaining the OHOS compiler and sysroot from the active toolchain.
+if(VCPKG_TARGET_IS_OHOS)
+    set(VCPKG_TARGET_IS_LINUX ON)
+endif()
+
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO ffmpeg/ffmpeg
@@ -13,7 +19,6 @@ vcpkg_from_github(
         0024-fix-osx-host-c11.patch
         0040-ffmpeg-add-av_stream_get_first_dts-for-chromium.patch # Do not remove this patch. It is required by chromium
 		0001-fix-c11-flag.patch
-		0001-fix-aarch64-error.patch
         0045-use-prebuilt-bin2c.patch
         0046-fix-msvc-detection.patch
         0047-fix-msvc-utf8.patch
@@ -36,6 +41,12 @@ if (VCPKG_TARGET_ARCHITECTURE STREQUAL "x86" OR VCPKG_TARGET_ARCHITECTURE STREQU
 endif()
 
 set(OPTIONS "--enable-pic --disable-doc --enable-runtime-cpudetect --disable-autodetect")
+
+# The fixed AArch64 sysroot predates AT_HWCAP2 in <elf.h>/<sys/auxv.h>,
+# while FFmpeg's AArch64 runtime CPU detection uses its Linux ABI value.
+if(VCPKG_TARGET_IS_LINUX AND VCPKG_TARGET_ARCHITECTURE MATCHES "^(arm64|aarch64)$")
+    string(APPEND OPTIONS " --extra-cflags=-DAT_HWCAP2=26")
+endif()
 
 if(VCPKG_TARGET_IS_MINGW)
     if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x86")

@@ -6,6 +6,12 @@
   "license": "Apache-2.0",
   "supports": "windows & !uwp",
   "dependencies": [
+    "abseil",
+    "freetype",
+    "icu",
+    "libjpeg-turbo",
+    "libpng",
+    "openjpeg",
     {
       "name": "vcpkg-gn",
       "host": true
@@ -14,12 +20,6 @@
       "name": "vcpkg-tool-ninja",
       "host": true
     },
-    "freetype",
-    "libjpeg-turbo",
-    "libpng",
-    "zlib",
-    "icu",
-    "openjpeg",
-    "abseil"
+    "zlib"
   ]
 }

@@ -1,0 +1,43 @@
+#pragma once
+
+#include <cstdint>
+
+#if defined(__clang__) && __has_builtin(__builtin_COLUMN)
+#define CDFPP_BUILTIN_COLUMN() __builtin_COLUMN()
+#else
+#define CDFPP_BUILTIN_COLUMN() 0
+#endif
+
+namespace std {
+
+class source_location {
+ public:
+  static consteval source_location current(
+      const char* file = __builtin_FILE(),
+      const char* function = __builtin_FUNCTION(),
+      uint_least32_t line = __builtin_LINE(),
+      uint_least32_t column = CDFPP_BUILTIN_COLUMN()) noexcept {
+    return source_location(file, function, line, column);
+  }
+
+  constexpr source_location() noexcept = default;
+  constexpr const char* file_name() const noexcept { return file_; }
+  constexpr const char* function_name() const noexcept { return function_; }
+  constexpr uint_least32_t line() const noexcept { return line_; }
+  constexpr uint_least32_t column() const noexcept { return column_; }
+
+ private:
+  consteval source_location(const char* file, const char* function,
+                            uint_least32_t line,
+                            uint_least32_t column) noexcept
+      : file_(file), function_(function), line_(line), column_(column) {}
+
+  const char* file_ = "";
+  const char* function_ = "";
+  uint_least32_t line_ = 0;
+  uint_least32_t column_ = 0;
+};
+
+}  // namespace std
+
+#undef CDFPP_BUILTIN_COLUMN

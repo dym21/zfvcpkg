@@ -1,0 +1,29 @@
+{
+  "name": "gmime",
+  "version": "3.2.15",
+  "port-version": 2,
+  "description": "MIME message creation and parsing library",
+  "homepage": "https://github.com/jstedfast/gmime",
+  "license": "LGPL-2.1-or-later",
+  "supports": "!xbox",
+  "dependencies": [
+    "glib",
+    {
+      "name": "gmime",
+      "host": true
+    },
+    "libiconv",
+    "zlib"
+  ],
+  "features": {
+    "crypto": {
+      "description": "PGP and S/MIME support",
+      "dependencies": [
+        {
+          "name": "gpgme",
+          "default-features": false
+        }
+      ]
+    }
+  }
+}

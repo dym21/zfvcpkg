@@ -31,11 +31,19 @@ vcpkg_download_distfile(ARCHIVE
     SHA512 d8b22d7fba10052a2045f477f0a5b684d932513bdb3b295c22fbd9dfc2a9d8fccd9aefd90692136c62897149aa2f7d1145ce6618aa1f0be787cb88eba5bc09be
 )
 
+set(_gettext_patches
+    uwp.patch
+    0003-Fix-win-unicode-paths.patch
+)
+if(VCPKG_TARGET_IS_OHOS)
+    list(APPEND _gettext_patches
+        "${CMAKE_CURRENT_LIST_DIR}/config-sub-ohos.patch"
+    )
+endif()
+
 vcpkg_extract_source_archive(SOURCE_PATH
     ARCHIVE "${ARCHIVE}"
-    PATCHES
-        uwp.patch
-        0003-Fix-win-unicode-paths.patch
+    PATCHES ${_gettext_patches}
 )
 
 if(VCPKG_HOST_IS_WINDOWS)

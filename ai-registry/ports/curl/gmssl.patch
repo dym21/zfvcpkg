@@ -1,0 +1,575 @@
+--- a/include/curl/curl.h
++++ b/include/curl/curl.h
+@@ -2262,6 +2262,25 @@
+   /* set TLS supported signature algorithms */
+   CURLOPT(CURLOPT_SSL_SIGNATURE_ALGORITHMS, CURLOPTTYPE_STRINGPOINT, 328),
+ 
++  /* name of the file keeping the SSL encryption certificate */
++  CURLOPT(CURLOPT_ENCSSLCERT, CURLOPTTYPE_STRINGPOINT, 329),
++
++  /* type of the SSL encryption certificate ("DER", "PEM", "ENG") */
++  CURLOPT(CURLOPT_ENCSSLCERTTYPE, CURLOPTTYPE_STRINGPOINT, 330),
++
++  /* name of the file keeping the SSL encryption private key */
++  CURLOPT(CURLOPT_ENCSSLKEY, CURLOPTTYPE_STRINGPOINT, 331),
++
++  /* type of the SSL encryption private key ("DER", "PEM", "ENG") */
++  CURLOPT(CURLOPT_ENCSSLKEYTYPE, CURLOPTTYPE_STRINGPOINT, 332),
++
++  /* password for the SSL encryption private key */
++  CURLOPT(CURLOPT_ENCKEYPASSWD, CURLOPTTYPE_STRINGPOINT, 333),
++
++  /* BLOBs containing the SSL encryption certificate and private key */
++  CURLOPT(CURLOPT_ENCSSLCERT_BLOB, CURLOPTTYPE_BLOB, 334),
++  CURLOPT(CURLOPT_ENCSSLKEY_BLOB, CURLOPTTYPE_BLOB, 335),
++
+   CURLOPT_LASTENTRY /* the last unused */
+ } CURLoption;
+ 
+@@ -2373,8 +2392,9 @@
+ #define CURL_SSLVERSION_TLSv1_1 5L
+ #define CURL_SSLVERSION_TLSv1_2 6L
+ #define CURL_SSLVERSION_TLSv1_3 7L
++#define CURL_SSLVERSION_GMSSL   8L
+ 
+-#define CURL_SSLVERSION_LAST    8L /* never use, keep last */
++#define CURL_SSLVERSION_LAST    9L /* never use, keep last */
+ 
+ #define CURL_SSLVERSION_MAX_NONE 0L
+ #define CURL_SSLVERSION_MAX_DEFAULT (CURL_SSLVERSION_TLSv1   << 16)
+--- a/include/curl/typecheck-gcc.h
++++ b/include/curl/typecheck-gcc.h
+@@ -425,6 +425,11 @@
+    (option) == CURLOPT_DOH_URL ||                                       \
+    (option) == CURLOPT_ECH ||                                           \
+    (option) == CURLOPT_EGDSOCKET ||                                     \
++   (option) == CURLOPT_ENCKEYPASSWD ||                                  \
++   (option) == CURLOPT_ENCSSLCERT ||                                    \
++   (option) == CURLOPT_ENCSSLCERTTYPE ||                                \
++   (option) == CURLOPT_ENCSSLKEY ||                                     \
++   (option) == CURLOPT_ENCSSLKEYTYPE ||                                 \
+    (option) == CURLOPT_FTP_ACCOUNT ||                                   \
+    (option) == CURLOPT_FTP_ALTERNATIVE_TO_USER ||                       \
+    (option) == CURLOPT_FTPPORT ||                                       \
+--- a/lib/curl_sha512_256.c
++++ b/lib/curl_sha512_256.c
+@@ -38,7 +38,8 @@
+ 
+ #ifdef USE_OPENSSL
+ #  include <openssl/opensslv.h>
+-#  if !defined(LIBRESSL_VERSION_NUMBER) || \
++#  if (!defined(LIBRESSL_VERSION_NUMBER) && \
++       OPENSSL_VERSION_NUMBER >= 0x10101000L) || \
+   (defined(LIBRESSL_VERSION_NUMBER) && LIBRESSL_VERSION_NUMBER >= 0x3080000fL)
+ #    include <openssl/evp.h>
+ #    define USE_OPENSSL_SHA512_256          1
+--- a/lib/easyoptions.c
++++ b/lib/easyoptions.c
+@@ -89,6 +89,13 @@
+   { "DOH_URL", CURLOPT_DOH_URL, CURLOT_STRING, 0 },
+   { "ECH", CURLOPT_ECH, CURLOT_STRING, 0 },
+   { "EGDSOCKET", CURLOPT_EGDSOCKET, CURLOT_STRING, 0 },
++  { "ENCKEYPASSWD", CURLOPT_ENCKEYPASSWD, CURLOT_STRING, 0 },
++  { "ENCSSLCERT", CURLOPT_ENCSSLCERT, CURLOT_STRING, 0 },
++  { "ENCSSLCERTTYPE", CURLOPT_ENCSSLCERTTYPE, CURLOT_STRING, 0 },
++  { "ENCSSLCERT_BLOB", CURLOPT_ENCSSLCERT_BLOB, CURLOT_BLOB, 0 },
++  { "ENCSSLKEY", CURLOPT_ENCSSLKEY, CURLOT_STRING, 0 },
++  { "ENCSSLKEYTYPE", CURLOPT_ENCSSLKEYTYPE, CURLOT_STRING, 0 },
++  { "ENCSSLKEY_BLOB", CURLOPT_ENCSSLKEY_BLOB, CURLOT_BLOB, 0 },
+   { "ENCODING", CURLOPT_ACCEPT_ENCODING, CURLOT_STRING, CURLOT_FLAG_ALIAS },
+   { "ERRORBUFFER", CURLOPT_ERRORBUFFER, CURLOT_OBJECT, 0 },
+   { "EXPECT_100_TIMEOUT_MS", CURLOPT_EXPECT_100_TIMEOUT_MS, CURLOT_LONG, 0 },
+--- a/lib/setopt.c
++++ b/lib/setopt.c
+@@ -1897,6 +1897,10 @@
+      */
+     result = Curl_setstropt(&s->str[STRING_KEY_PASSWD], ptr);
+     break;
++  case CURLOPT_ENCKEYPASSWD:
++    /* SSL encryption private key password */
++    result = Curl_setstropt(&s->str[STRING_KEY_PASSWD_ENC], ptr);
++    break;
+ #ifdef USE_SSL
+   case CURLOPT_CAINFO:
+     /*
+@@ -1956,21 +1960,33 @@
+      * String that holds filename of the SSL certificate to use
+      */
+     return Curl_setstropt(&s->str[STRING_CERT], ptr);
++  case CURLOPT_ENCSSLCERT:
++    /* SSL encryption certificate filename */
++    return Curl_setstropt(&s->str[STRING_CERT_ENC], ptr);
+   case CURLOPT_SSLCERTTYPE:
+     /*
+      * String that holds file type of the SSL certificate to use
+      */
+     return Curl_setstropt(&s->str[STRING_CERT_TYPE], ptr);
++  case CURLOPT_ENCSSLCERTTYPE:
++    /* SSL encryption certificate file type */
++    return Curl_setstropt(&s->str[STRING_CERT_TYPE_ENC], ptr);
+   case CURLOPT_SSLKEY:
+     /*
+      * String that holds filename of the SSL key to use
+      */
+     return Curl_setstropt(&s->str[STRING_KEY], ptr);
++  case CURLOPT_ENCSSLKEY:
++    /* SSL encryption private key filename */
++    return Curl_setstropt(&s->str[STRING_KEY_ENC], ptr);
+   case CURLOPT_SSLKEYTYPE:
+     /*
+      * String that holds file type of the SSL key to use
+      */
+     return Curl_setstropt(&s->str[STRING_KEY_TYPE], ptr);
++  case CURLOPT_ENCSSLKEYTYPE:
++    /* SSL encryption private key file type */
++    return Curl_setstropt(&s->str[STRING_KEY_TYPE_ENC], ptr);
+   case CURLOPT_SSLENGINE:
+     /*
+      * String that holds the SSL crypto engine.
+@@ -2815,6 +2831,9 @@
+      * Blob that holds file content of the SSL certificate to use
+      */
+     return Curl_setblobopt(&s->blobs[BLOB_CERT], blob);
++  case CURLOPT_ENCSSLCERT_BLOB:
++    /* Blob containing the SSL encryption certificate */
++    return Curl_setblobopt(&s->blobs[BLOB_ENCERT], blob);
+ #ifndef CURL_DISABLE_PROXY
+   case CURLOPT_PROXY_SSLCERT_BLOB:
+     /*
+@@ -2852,6 +2871,9 @@
+      * Blob that holds file content of the SSL key to use
+      */
+     return Curl_setblobopt(&s->blobs[BLOB_KEY], blob);
++  case CURLOPT_ENCSSLKEY_BLOB:
++    /* Blob containing the SSL encryption private key */
++    return Curl_setblobopt(&s->blobs[BLOB_ENKEY], blob);
+   case CURLOPT_CAINFO_BLOB:
+     /*
+      * Blob that holds CA info for SSL connection.
+--- a/lib/urldata.h
++++ b/lib/urldata.h
+@@ -757,10 +757,15 @@
+ 
+ enum dupstring {
+   STRING_CERT,            /* client certificate filename */
++  STRING_CERT_ENC,        /* client encryption certificate filename */
+   STRING_CERT_TYPE,       /* format for certificate (default: PEM)*/
++  STRING_CERT_TYPE_ENC,   /* format for encryption certificate */
+   STRING_KEY,             /* private key filename */
++  STRING_KEY_ENC,         /* private encryption key filename */
+   STRING_KEY_PASSWD,      /* plain text private key password */
++  STRING_KEY_PASSWD_ENC,  /* plain text private encryption key password */
+   STRING_KEY_TYPE,        /* format for private key (default: PEM) */
++  STRING_KEY_TYPE_ENC,    /* format for private encryption key */
+   STRING_SSL_CAPATH,      /* CA directory name (does not work on Windows) */
+   STRING_SSL_CAFILE,      /* certificate file to verify peer against */
+   STRING_SSL_PINNEDPUBLICKEY, /* public key file to verify peer against */
+@@ -890,7 +895,9 @@
+ 
+ enum dupblob {
+   BLOB_CERT,
++  BLOB_ENCERT,
+   BLOB_KEY,
++  BLOB_ENKEY,
+   BLOB_SSL_ISSUERCERT,
+   BLOB_CAINFO,
+ #ifndef CURL_DISABLE_PROXY
+--- a/lib/vtls/openssl.c
++++ b/lib/vtls/openssl.c
+@@ -89,7 +89,7 @@
+ #  if LIBRESSL_VERSION_NUMBER < 0x2090100fL /* 2019-04-13 */
+ #    error "LibreSSL 2.9.1 or later required"
+ #  endif
+-#elif !defined(HAVE_BORINGSSL_LIKE)
++#elif !defined(HAVE_BORINGSSL_LIKE) && !defined(HAVE_GMSSL)
+ #  ifndef HAVE_OPENSSL3 /* 2021-09-07 */
+ #    error "OpenSSL 3.0.0 or later required"
+ #  endif
+@@ -131,7 +131,8 @@
+  * LibreSSL: supported since 3.4.1 (released 2021-10-14)
+  * OpenSSL: supported since 1.1.1 (commit a53b5be6a05)
+  */
+-#if (!defined(LIBRESSL_VERSION_NUMBER) || \
++#if ((!defined(LIBRESSL_VERSION_NUMBER) && \
++      OPENSSL_VERSION_NUMBER >= 0x10101000L) || \
+      (defined(LIBRESSL_VERSION_NUMBER) && \
+       LIBRESSL_VERSION_NUMBER >= 0x3040100fL)) && \
+     !defined(OPENSSL_IS_BORINGSSL)
+@@ -152,6 +153,8 @@
+ 
+ #ifdef LIBRESSL_VERSION_NUMBER
+ #define OSSL_PACKAGE "LibreSSL"
++#elif defined(HAVE_GMSSL)
++#define OSSL_PACKAGE "GmSSL"
+ #elif defined(OPENSSL_IS_AWSLC)
+ #define OSSL_PACKAGE "AWS-LC"
+ #elif defined(OPENSSL_IS_BORINGSSL)
+@@ -1427,7 +1430,8 @@
+                             char *key_file,
+                             const struct curl_blob *key_blob,
+                             const char *key_type,
+-                            char *key_passwd)
++                            char *key_passwd,
++                            enum gm_cert_type cert_role)
+ {
+   char error_buffer[256];
+   bool check_privkey = TRUE;
+@@ -1450,15 +1454,46 @@
+     switch(file_type) {
+     case SSL_FILETYPE_PEM:
+       /* SSL_CTX_use_certificate_chain_file() only works on PEM files */
+-      cert_use_result = cert_blob ?
+-        use_certificate_chain_blob(ctx, cert_blob, key_passwd) :
+-        SSL_CTX_use_certificate_chain_file(ctx, cert_file);
++      if(cert_role == GM_CERT_TYPE_ENC) {
++#ifdef HAVE_GMSSL
++        BIO *cert_bio = cert_blob ?
++          BIO_new_mem_buf(cert_blob->data, curlx_uztosi(cert_blob->len)) :
++          BIO_new_file(cert_file, "r");
++        X509 *enc_cert;
++
++        if(!cert_bio) {
++          failf(data, "could not open GmSSL encryption certificate from %s",
++                cert_blob ? "CURLOPT_ENCSSLCERT_BLOB" : cert_file);
++          return CURLE_SSL_CERTPROBLEM;
++        }
++        enc_cert = PEM_read_bio_X509_AUX(cert_bio, NULL, NULL, NULL);
++        BIO_free(cert_bio);
++        if(!enc_cert) {
++          failf(data, "could not read GmSSL encryption certificate from %s",
++                cert_blob ? "CURLOPT_ENCSSLCERT_BLOB" : cert_file);
++          return CURLE_SSL_CERTPROBLEM;
++        }
++        if(X509_get_key_usage(enc_cert) & X509v3_KU_DIGITAL_SIGNATURE)
++          X509_set_key_usage(enc_cert, ~X509v3_KU_DIGITAL_SIGNATURE);
++        cert_use_result = SSL_CTX_use_certificate(ctx, enc_cert);
++        X509_free(enc_cert);
++#else
++        return CURLE_NOT_BUILT_IN;
++#endif
++      }
++      else {
++        cert_use_result = cert_blob ?
++          use_certificate_chain_blob(ctx, cert_blob, key_passwd) :
++          SSL_CTX_use_certificate_chain_file(ctx, cert_file);
++      }
+       if(cert_use_result != 1) {
+         failf(data,
+               "could not load PEM client certificate from %s, " OSSL_PACKAGE
+               " error %s, "
+               "(no key found, wrong passphrase, or wrong file format?)",
+-              (cert_blob ? "CURLOPT_SSLCERT_BLOB" : cert_file),
++              (cert_blob ? (cert_role == GM_CERT_TYPE_ENC ?
++                            "CURLOPT_ENCSSLCERT_BLOB" :
++                            "CURLOPT_SSLCERT_BLOB") : cert_file),
+               ossl_strerror(ERR_get_error(), error_buffer,
+                             sizeof(error_buffer)));
+         return CURLE_SSL_CERTPROBLEM;
+@@ -2490,9 +2525,11 @@
+     verstr = "TLSv1.2";
+     break;
+ #endif
++#ifdef TLS1_3_VERSION
+   case TLS1_3_VERSION:
+     verstr = "TLSv1.3";
+     break;
++#endif
+   default:
+     curl_msnprintf(unknown, sizeof(unknown), "(%x)", (unsigned int)ssl_ver);
+     verstr = unknown;
+@@ -2592,8 +2629,12 @@
+     ossl_ssl_version_min = TLS1_2_VERSION;
+     break;
+   case CURL_SSLVERSION_TLSv1_3:
++#ifdef TLS1_3_VERSION
+     ossl_ssl_version_min = TLS1_3_VERSION;
+     break;
++#else
++    return CURLE_NOT_BUILT_IN;
++#endif
+   }
+ 
+   /* ... then, TLS max version */
+@@ -2611,8 +2652,12 @@
+     ossl_ssl_version_max = TLS1_2_VERSION;
+     break;
+   case CURL_SSLVERSION_MAX_TLSv1_3:
++#ifdef TLS1_3_VERSION
+     ossl_ssl_version_max = TLS1_3_VERSION;
+     break;
++#else
++    return CURLE_NOT_BUILT_IN;
++#endif
+   case CURL_SSLVERSION_MAX_NONE:  /* none selected */
+   case CURL_SSLVERSION_MAX_DEFAULT:  /* max selected */
+   default:
+@@ -3629,6 +3674,14 @@
+       /* it is handled later with the context options */
+       *pmethod = TLS_client_method();
+       break;
++    case CURL_SSLVERSION_GMSSL:
++#ifdef HAVE_GMSSL
++      *pmethod = GMTLS_client_method();
++      break;
++#else
++      failf(data, "No GmSSL support");
++      return CURLE_NOT_BUILT_IN;
++#endif
+     case CURL_SSLVERSION_SSLv2:
+       failf(data, "No SSLv2 support");
+       return CURLE_NOT_BUILT_IN;
+@@ -3677,8 +3730,12 @@
+   struct ssl_primary_config *conn_config = Curl_ssl_cf_get_primary_config(cf);
+   struct ssl_config_data *ssl_config = Curl_ssl_cf_get_config(cf, data);
+   char * const ssl_cert = ssl_config->primary.clientcert;
++  char * const enc_ssl_cert = ssl_config->primary.enc_clientcert;
+   const struct curl_blob *ssl_cert_blob = ssl_config->primary.cert_blob;
++  const struct curl_blob *enc_ssl_cert_blob =
++    ssl_config->primary.enc_cert_blob;
+   const char * const ssl_cert_type = ssl_config->primary.cert_type;
++  const char * const enc_ssl_cert_type = ssl_config->primary.enc_cert_type;
+   unsigned int ssl_version_min;
+   char error_buffer[256];
+ 
+@@ -3791,6 +3848,11 @@
+       return result;
+     break;
+ 
++  case CURL_SSLVERSION_GMSSL:
++    ctx_options |= SSL_OP_NO_SSLv2;
++    ctx_options |= SSL_OP_NO_SSLv3;
++    break;
++
+   default:
+     failf(data, "Unrecognized parameter passed via CURLOPT_SSLVERSION");
+     return CURLE_SSL_CONNECT_ERROR;
+@@ -3847,7 +3909,21 @@
+                          ssl_cert, ssl_cert_blob, ssl_cert_type,
+                          ssl_config->primary.key, ssl_config->primary.key_blob,
+                          ssl_config->primary.key_type,
+-                         ssl_config->primary.key_passwd);
++                         ssl_config->primary.key_passwd,
++                         GM_CERT_TYPE_SIGN);
++    if(result)
++      /* failf() is already done in client_cert() */
++      return result;
++  }
++
++  if(enc_ssl_cert || enc_ssl_cert_blob || enc_ssl_cert_type) {
++    result = client_cert(data, octx->ssl_ctx,
++                         enc_ssl_cert, enc_ssl_cert_blob, enc_ssl_cert_type,
++                         ssl_config->primary.enc_key,
++                         ssl_config->primary.enc_key_blob,
++                         ssl_config->primary.enc_key_type,
++                         ssl_config->primary.enc_key_passwd,
++                         GM_CERT_TYPE_ENC);
+     if(result)
+       /* failf() is already done in client_cert() */
+       return result;
+@@ -5425,6 +5501,9 @@
+ #else
+   return curl_msnprintf(buffer, size, OSSL_PACKAGE);
+ #endif
++#elif defined(HAVE_GMSSL)
++  return curl_msnprintf(buffer, size, "%s/%s",
++                        OSSL_PACKAGE, OpenSSL_version(OPENSSL_VERSION));
+ #else /* OpenSSL 3+ */
+   return curl_msnprintf(buffer, size, "%s/%s",
+                         OSSL_PACKAGE, OpenSSL_version(OPENSSL_VERSION_STRING));
+--- a/lib/vtls/openssl.h
++++ b/lib/vtls/openssl.h
+@@ -68,6 +68,14 @@
+ #include <openssl/ossl_typ.h>
+ #include <openssl/ssl.h>
+ 
++#if defined(__has_include)
++#  if __has_include(<openssl/is_gmssl.h>)
++#    include <openssl/is_gmssl.h>
++#    include <openssl/gmtls.h>
++#    define HAVE_GMSSL
++#  endif
++#endif
++
+ #include "urldata.h"
+ 
+ #if OPENSSL_VERSION_NUMBER >= 0x30000000L
+@@ -90,7 +98,8 @@
+  * LibreSSL: not supported. 3.5.0+ has a stub function that does nothing.
+  * OpenSSL: supported since 1.1.1 https://github.com/openssl/openssl/pull/2287
+  */
+-#ifndef LIBRESSL_VERSION_NUMBER
++#if !defined(LIBRESSL_VERSION_NUMBER) && \
++  (defined(HAVE_BORINGSSL_LIKE) || OPENSSL_VERSION_NUMBER >= 0x10101000L)
+ #define HAVE_KEYLOG_CALLBACK
+ #endif
+ 
+@@ -104,6 +113,11 @@
+ struct ssl_peer;
+ struct Curl_ssl_session;
+ 
++enum gm_cert_type {
++  GM_CERT_TYPE_SIGN,
++  GM_CERT_TYPE_ENC
++};
++
+ /* Struct to hold a curl OpenSSL instance */
+ struct ossl_ctx {
+   /* these ones requires specific SSL-types */
+--- a/lib/vtls/vtls_config.c
++++ b/lib/vtls/vtls_config.c
+@@ -119,20 +119,27 @@
+     curlx_safefree(sslc->CAfile);
+     curlx_safefree(sslc->issuercert);
+     curlx_safefree(sslc->clientcert);
++    curlx_safefree(sslc->enc_clientcert);
+     curlx_safefree(sslc->cipher_list);
+     curlx_safefree(sslc->cipher_list13);
+     curlx_safefree(sslc->pinned_key);
+     curlx_safefree(sslc->cert_blob);
++    curlx_safefree(sslc->enc_cert_blob);
+     curlx_safefree(sslc->ca_info_blob);
+     curlx_safefree(sslc->issuercert_blob);
+     curlx_safefree(sslc->key_blob);
++    curlx_safefree(sslc->enc_key_blob);
+     curlx_safefree(sslc->curves);
+     curlx_safefree(sslc->signature_algorithms);
+     curlx_safefree(sslc->CRLfile);
+     curlx_safefree(sslc->cert_type);
++    curlx_safefree(sslc->enc_cert_type);
+     curlx_safefree(sslc->key);
++    curlx_safefree(sslc->enc_key);
+     curlx_safefree(sslc->key_type);
++    curlx_safefree(sslc->enc_key_type);
+     curlx_safefree(sslc->key_passwd);
++    curlx_safefree(sslc->enc_key_passwd);
+ #ifdef USE_TLS_SRP
+     curlx_safefree(sslc->username);
+     curlx_safefree(sslc->password);
+@@ -153,13 +160,16 @@
+      (c1->verifyhost == c2->verifyhost) &&
+      (c1->verifystatus == c2->verifystatus) &&
+      blobcmp(c1->cert_blob, c2->cert_blob) &&
++     blobcmp(c1->enc_cert_blob, c2->enc_cert_blob) &&
+      blobcmp(c1->ca_info_blob, c2->ca_info_blob) &&
+      blobcmp(c1->issuercert_blob, c2->issuercert_blob) &&
+      blobcmp(c1->key_blob, c2->key_blob) &&
++     blobcmp(c1->enc_key_blob, c2->enc_key_blob) &&
+      Curl_safecmp(c1->CApath, c2->CApath) &&
+      Curl_safecmp(c1->CAfile, c2->CAfile) &&
+      Curl_safecmp(c1->issuercert, c2->issuercert) &&
+      Curl_safecmp(c1->clientcert, c2->clientcert) &&
++     Curl_safecmp(c1->enc_clientcert, c2->enc_clientcert) &&
+ #ifdef USE_TLS_SRP
+      !Curl_timestrcmp(c1->username, c2->username) &&
+      !Curl_timestrcmp(c1->password, c2->password) &&
+@@ -171,9 +181,13 @@
+      Curl_safecmp(c1->CRLfile, c2->CRLfile) &&
+      Curl_safecmp(c1->pinned_key, c2->pinned_key) &&
+      curl_strequal(c1->cert_type, c2->cert_type) &&
++     curl_strequal(c1->enc_cert_type, c2->enc_cert_type) &&
+      Curl_safecmp(c1->key, c2->key) &&
++     Curl_safecmp(c1->enc_key, c2->enc_key) &&
+      curl_strequal(c1->key_type, c2->key_type) &&
+-     !Curl_timestrcmp(c1->key_passwd, c2->key_passwd))
++     curl_strequal(c1->enc_key_type, c2->enc_key_type) &&
++     !Curl_timestrcmp(c1->key_passwd, c2->key_passwd) &&
++     !Curl_timestrcmp(c1->enc_key_passwd, c2->enc_key_passwd))
+     return TRUE;
+ 
+   return FALSE;
+@@ -208,6 +222,7 @@
+   dest->ssl_options = source->ssl_options;
+ 
+   CLONE_BLOB(cert_blob);
++  CLONE_BLOB(enc_cert_blob);
+   CLONE_BLOB(ca_info_blob);
+   CLONE_BLOB(issuercert_blob);
+   CLONE_STRING(CApath);
+@@ -221,11 +236,17 @@
+   CLONE_STRING(CRLfile);
+   /* SSL credentials: client certificate, SRP auth */
+   CLONE_STRING(clientcert);
++  CLONE_STRING(enc_clientcert);
+   CLONE_STRING(cert_type);
++  CLONE_STRING(enc_cert_type);
+   CLONE_STRING(key);
++  CLONE_STRING(enc_key);
+   CLONE_STRING(key_type);
++  CLONE_STRING(enc_key_type);
+   CLONE_STRING(key_passwd);
++  CLONE_STRING(enc_key_passwd);
+   CLONE_BLOB(key_blob);
++  CLONE_BLOB(enc_key_blob);
+ #ifdef USE_TLS_SRP
+   CLONE_STRING(username);
+   CLONE_STRING(password);
+@@ -301,12 +322,19 @@
+   if(Curl_peer_equal(data->state.initial_origin, origin)) {
+     sslc->primary.pinned_key = data->set.str[STRING_SSL_PINNEDPUBLICKEY];
+     sslc->primary.cert_blob = data->set.blobs[BLOB_CERT];
++    sslc->primary.enc_cert_blob = data->set.blobs[BLOB_ENCERT];
+     sslc->primary.cert_type = data->set.str[STRING_CERT_TYPE];
++    sslc->primary.enc_cert_type = data->set.str[STRING_CERT_TYPE_ENC];
+     sslc->primary.key = data->set.str[STRING_KEY];
++    sslc->primary.enc_key = data->set.str[STRING_KEY_ENC];
+     sslc->primary.key_type = data->set.str[STRING_KEY_TYPE];
++    sslc->primary.enc_key_type = data->set.str[STRING_KEY_TYPE_ENC];
+     sslc->primary.key_passwd = data->set.str[STRING_KEY_PASSWD];
++    sslc->primary.enc_key_passwd = data->set.str[STRING_KEY_PASSWD_ENC];
+     sslc->primary.clientcert = data->set.str[STRING_CERT];
++    sslc->primary.enc_clientcert = data->set.str[STRING_CERT_ENC];
+     sslc->primary.key_blob = data->set.blobs[BLOB_KEY];
++    sslc->primary.enc_key_blob = data->set.blobs[BLOB_ENKEY];
+ #ifdef USE_TLS_SRP
+     sslc->primary.username = data->set.str[STRING_TLSAUTH_USERNAME];
+     sslc->primary.password = data->set.str[STRING_TLSAUTH_PASSWORD];
+@@ -315,12 +343,19 @@
+   else {
+     sslc->primary.pinned_key = NULL;
+     sslc->primary.cert_blob = NULL;
++    sslc->primary.enc_cert_blob = NULL;
+     sslc->primary.cert_type = NULL;
++    sslc->primary.enc_cert_type = NULL;
+     sslc->primary.key = NULL;
++    sslc->primary.enc_key = NULL;
+     sslc->primary.key_type = NULL;
++    sslc->primary.enc_key_type = NULL;
+     sslc->primary.key_passwd = NULL;
++    sslc->primary.enc_key_passwd = NULL;
+     sslc->primary.clientcert = NULL;
++    sslc->primary.enc_clientcert = NULL;
+     sslc->primary.key_blob = NULL;
++    sslc->primary.enc_key_blob = NULL;
+ #ifdef USE_TLS_SRP
+     sslc->primary.username = NULL;
+     sslc->primary.password = NULL;
+--- a/lib/vtls/vtls_config.h
++++ b/lib/vtls/vtls_config.h
+@@ -34,19 +34,26 @@
+   char *CAfile;          /* certificate to verify peer against */
+   char *issuercert;      /* optional issuer certificate filename */
+   char *clientcert;
++  char *enc_clientcert;  /* client encryption certificate filename */
+   char *cipher_list;     /* list of ciphers to use */
+   char *cipher_list13;   /* list of TLS 1.3 cipher suites to use */
+   char *signature_algorithms; /* list of signature algorithms to use */
+   char *pinned_key;
+   char *CRLfile;         /* CRL to check certificate revocation */
+   char *cert_type;       /* format for certificate (default: PEM) */
++  char *enc_cert_type;   /* format for encryption certificate */
+   char *key;             /* private key filename */
++  char *enc_key;         /* private encryption key filename */
+   char *key_type;        /* format for private key (default: PEM) */
++  char *enc_key_type;    /* format for private encryption key */
+   char *key_passwd;      /* plain text private key password */
++  char *enc_key_passwd;  /* plain text private encryption key password */
+   struct curl_blob *cert_blob;
++  struct curl_blob *enc_cert_blob;
+   struct curl_blob *ca_info_blob;
+   struct curl_blob *issuercert_blob;
+   struct curl_blob *key_blob;
++  struct curl_blob *enc_key_blob;
+ #ifdef USE_TLS_SRP
+   char *username; /* TLS username (for, e.g., SRP) */
+   char *password; /* TLS password (for, e.g., SRP) */
+

@@ -1,13 +1,34 @@
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
-    REPO k2-fsa/sherpa-ncnn
-    REF v${VERSION} 
-    SHA512 96d0bc707480124f02762275d44d6314118b500f56c9968f3abe2bc037498f98991ddfd3f0ccb432e627af1295bdeb2e5f0b7cab24ff3a6c8892c10399734ac3
+    REPO dym21/sherpa-ncnn
+    REF 64384245932f4c8adaf5dc7cc60c40cb5c148dc2
+    SHA512 58a93cdb4131b36d0b18cad43b098705c34ee6ceac2910afde2aec4d58aef663abc24fdc6d05b165cd0cff32cff70c220558911cf6c4bf71dc3d0f76338de299
     HEAD_REF master
-	PATCHES
-		0001-fix-3party-locale.patch
-		0001-fix-gcc14-mingw-stdint.patch
 )
+
+# The nested OpenFST FetchContent logic invokes sed for non-Windows targets.
+# When cross-compiling OHOS on Windows, provide the host MSYS implementation.
+if(VCPKG_HOST_IS_WINDOWS)
+    vcpkg_acquire_msys(MSYS_ROOT PACKAGES sed)
+    vcpkg_add_to_path(PREPEND "${MSYS_ROOT}/usr/bin")
+endif()
+
+# Keep sherpa-ncnn's nested CMake dependencies in vcpkg's shared download
+# cache. Copying them into the top-level source directory makes both the
+# direct FetchContent calls and their nested dependencies work offline.
+set(SHERPA_NCNN_CACHED_ARCHIVES
+    kaldi-native-fbank-1.22.3.tar.gz
+    kissfft-febd4caeed32e33ad8b2e0bb5ea77542c40f18ec.zip
+    kaldifst-1.7.17.tar.gz
+    openfst-sherpa-onnx-2024-06-19.tar.gz
+)
+foreach(ARCHIVE IN LISTS SHERPA_NCNN_CACHED_ARCHIVES)
+    set(CACHED_ARCHIVE "${DOWNLOADS}/${ARCHIVE}")
+    if(NOT EXISTS "${CACHED_ARCHIVE}")
+        message(FATAL_ERROR "Missing offline sherpa-ncnn dependency: ${CACHED_ARCHIVE}")
+    endif()
+    file(COPY "${CACHED_ARCHIVE}" DESTINATION "${SOURCE_PATH}")
+endforeach()
 
 # Fix kaldi-native-fbank missing <cstdint> include on GCC 15 / LoongArch
 vcpkg_replace_string(
@@ -21,10 +42,42 @@ file(GLOB SHERPA_NCNN_HEADERS "${SOURCE_PATH}/sherpa-ncnn/csrc/*.h")
 foreach(HEADER IN LISTS SHERPA_NCNN_HEADERS)
     file(READ "${HEADER}" _header_content)
     if(NOT _header_content MATCHES "#include <cstdint>")
-        string(REPLACE "#include" "#include <cstdint>\n#include" _header_content "${_header_content}")
-        file(WRITE "${HEADER}" "${_header_content}")
+        string(FIND "${_header_content}" "#include" _first_include)
+        if(NOT _first_include EQUAL -1)
+            string(SUBSTRING "${_header_content}" 0 ${_first_include} _header_prefix)
+            string(SUBSTRING "${_header_content}" ${_first_include} -1 _header_suffix)
+            string(CONCAT _header_content
+                "${_header_prefix}" "#include <cstdint>\n" "${_header_suffix}")
+            file(WRITE "${HEADER}" "${_header_content}")
+        endif()
     endif()
 endforeach()
+
+# The system ncnn package used by the OHOS build does not expose sherpa's
+# private NativeResourceManager/rawfile API. Disable only those optional
+# instantiations for OHOS; Windows and Linux retain the upstream sources.
+if(VCPKG_TARGET_IS_OHOS)
+    foreach(_resource_source IN ITEMS
+        offline-recognizer-impl.cc
+        offline-recognizer.cc
+        offline-sense-voice-model.cc
+    )
+        vcpkg_replace_string(
+            "${SOURCE_PATH}/sherpa-ncnn/csrc/${_resource_source}"
+            "#if __OHOS__" "#if 0"
+        )
+    endforeach()
+endif()
+
+# Use the ncnn package declared by this port instead of building sherpa-ncnn's
+# private FetchContent copy.  Mixing the private CPU-only ncnn headers with a
+# consumer linked to ncnn[vulkan] changes ncnn::Option (and therefore
+# sherpa_ncnn::ModelConfig) layout across the static-library boundary.
+vcpkg_replace_string(
+    "${SOURCE_PATH}/CMakeLists.txt"
+    "include(ncnn)"
+    "find_package(ncnn CONFIG REQUIRED)"
+)
 
 string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
 
@@ -35,6 +88,7 @@ vcpkg_configure_cmake(
 		-DNCNN_OPENMP=OFF
 		-DSHERPA_NCNN_ENABLE_BINARY=OFF
 		-DSHERPA_NCNN_ENABLE_PORTAUDIO=OFF
+		-DSHERPA_NCNN_ENABLE_GENERATE_INT8_SCALE_TABLE=OFF
 )
 
 vcpkg_install_cmake()

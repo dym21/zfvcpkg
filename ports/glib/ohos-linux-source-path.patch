@@ -1,0 +1,44 @@
+diff --git a/meson.build b/meson.build
+index 5d88e35..54922d9 100644
+--- a/meson.build
++++ b/meson.build
+@@ -72,7 +72,7 @@ host_system = host_machine.system()
+ subsystem = ''
+ 
+ linux_libc = ''
+-if host_system == 'linux'
++if host_system == 'linux' or host_system == 'ohos'
+   musl_test_code = '''#include <stdlib.h>
+   #if defined __GLIBC__ || defined __UCLIBC__
+   #error "Not in glibc or uclibc"
+diff --git a/glib/meson.build b/glib/meson.build
+index b65c7c2..ecf6034 100644
+--- a/glib/meson.build
++++ b/glib/meson.build
+@@ -392,3 +392,3 @@
+-if host_system == 'linux'
++if host_system == 'linux' or host_system == 'ohos'
+   glib_sources += files('gjournal-private.c')
+ endif
+@@ -567,7 +567,7 @@ meson.add_devenv(env)
+ gdb_conf = configuration_data()
+ gdb_conf.set('datadir', glib_datadir)
+ # This is also used in gobject/meson.build
+-if host_system != 'windows'
++if host_system != 'windows' and host_system != 'ohos'
+   gdb_install = true
+ else
+   # FIXME: Cannot install on Windows because the path will contain a drive
+diff --git a/gio/meson.build b/gio/meson.build
+index 08b3ec1..c041b76 100644
+--- a/gio/meson.build
++++ b/gio/meson.build
+@@ -423,7 +423,7 @@ if host_system != 'windows'
+     if process_spawn_allowed
+       launch_desktop_sources = files('gio-launch-desktop.c')
+ 
+-      if host_system == 'linux'
++      if host_system == 'linux' or host_system == 'ohos'
+         launch_desktop_sources += files('../glib/gjournal-private.c')
+       endif
+ 

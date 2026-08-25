@@ -1,0 +1,19 @@
+diff --git a/src/sigar_getline.c b/src/sigar_getline.c
+index 1768dbb..9561bbb 100644
+--- a/src/sigar_getline.c
++++ b/src/sigar_getline.c
+@@ -360,7 +360,13 @@ static int gl_init_done = -1;
+ #   define R__ALPHALINUX    // = linux on Alpha
+ #endif
+ 
++#if defined(TIOCGETP) && (!defined(TIOCGETC) || !defined(TIOCGLTC))
++#undef TIOCGETP
++#undef TIOCSETP
++#endif
++
+-#if defined(TIOCGETP) && !defined(__sgi) && !defined(R__MKLINUX) && \
++#if defined(TIOCGETP) && defined(TIOCGETC) && defined(TIOCGLTC) && \
++   !defined(__sgi) && !defined(R__MKLINUX) && \
+    !defined(R__ALPHALINUX)  /* use BSD interface if possible */
+ #include <sgtty.h>
+ static struct sgttyb   new_tty, old_tty;
