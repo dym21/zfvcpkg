@@ -9,6 +9,8 @@ vcpkg_from_github(
     PATCHES
         remove-cpm.patch
         fix-arm-checker.patch
+        loongarch-simde.patch
+        fix-install-interface.patch
 )
 
 file(REMOVE

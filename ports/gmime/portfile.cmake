@@ -38,7 +38,24 @@ vcpkg_configure_make(
         --disable-glibtest
         --disable-introspection
         --disable-vala
+        --without-libidn
 )
+
+# Some relocated cross toolchains retain their original install directory in a
+# compiler-runtime .la file. Prefer an existing shared object or static archive
+# so libtool leaves -latomic for the compiler driver to resolve in its sysroot.
+foreach(build_type rel dbg)
+    set(libtool_file
+        "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-${build_type}/libtool"
+    )
+    if(EXISTS "${libtool_file}")
+        vcpkg_replace_string(
+            "${libtool_file}"
+            "for search_ext in .la $std_shrext .so .a; do"
+            "for search_ext in $std_shrext .so .a .la; do"
+        )
+    endif()
+endforeach()
 
 if(EXISTS "${iconv_detect_h}")
     file(COPY_FILE "${iconv_detect_h}" "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/iconv-detect.h")

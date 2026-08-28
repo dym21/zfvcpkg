@@ -10,6 +10,8 @@ vcpkg_configure_meson(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS
         -Dutils=false
+        -Dexamples=false
+        -Dtests=false
 )
 
 vcpkg_install_meson()

@@ -74,10 +74,34 @@ vcpkg_make_configure(
 )
 
 if(VCPKG_CROSSCOMPILING)
-    file(GLOB FOR_BUILD_FILES "${CURRENT_HOST_INSTALLED_DIR}/manual-tools/${PORT}/*")
-    file(COPY ${FOR_BUILD_FILES} DESTINATION "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/src/util")
+    # The host libx11 package is normally an empty system-package shim on
+    # Linux, so it does not provide the makekeys generator expected here.
+    # Build that generator natively; only its generated C tables are consumed
+    # by the target build.
+    find_program(LIBX11_HOST_CC NAMES cc gcc REQUIRED)
+    set(LIBX11_HOST_TOOLS_DIR "${CURRENT_BUILDTREES_DIR}/host-tools")
+    file(MAKE_DIRECTORY "${LIBX11_HOST_TOOLS_DIR}")
+    vcpkg_execute_required_process(
+        COMMAND "${LIBX11_HOST_CC}" -c "${SOURCE_PATH}/src/util/makekeys.c"
+                -o "${LIBX11_HOST_TOOLS_DIR}/makekeys.o"
+        WORKING_DIRECTORY "${LIBX11_HOST_TOOLS_DIR}"
+        LOGNAME host-makekeys-compile
+    )
+    vcpkg_execute_required_process(
+        COMMAND "${LIBX11_HOST_CC}" "${LIBX11_HOST_TOOLS_DIR}/makekeys.o"
+                -o "${LIBX11_HOST_TOOLS_DIR}/makekeys"
+        WORKING_DIRECTORY "${LIBX11_HOST_TOOLS_DIR}"
+        LOGNAME host-makekeys-link
+    )
+    file(COPY
+        "${LIBX11_HOST_TOOLS_DIR}/makekeys"
+        "${LIBX11_HOST_TOOLS_DIR}/makekeys.o"
+        DESTINATION "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/src/util")
     if(NOT VCPKG_BUILD_TYPE)
-        file(COPY ${FOR_BUILD_FILES} DESTINATION "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg/src/util")
+        file(COPY
+            "${LIBX11_HOST_TOOLS_DIR}/makekeys"
+            "${LIBX11_HOST_TOOLS_DIR}/makekeys.o"
+            DESTINATION "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg/src/util")
     endif()
 endif()
 vcpkg_make_install()

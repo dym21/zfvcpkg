@@ -1,0 +1,235 @@
+diff --git a/src/include/override/malloc.h b/src/include/override/malloc.h
+new file mode 100644
+index 0000000000..7682877081
+--- /dev/null
++++ b/src/include/override/malloc.h
+@@ -0,0 +1,40 @@
++/* SPDX-License-Identifier: LGPL-2.1-or-later */
++#pragma once
++
++#include_next <malloc.h>        /* IWYU pragma: export */
++
++/* mallinfo2() was added in glibc 2.33.  The old-world LoongArch ABI is
++ * intentionally tied to glibc 2.28, so convert the older mallinfo result.
++ * This is sufficient for sd_event_trim_memory(), which only reads arena and
++ * hblkhd to report how much memory malloc_trim() returned to the OS. */
++#if defined(__GLIBC__) && !__GLIBC_PREREQ(2, 33)
++struct mallinfo2 {
++        size_t arena;
++        size_t ordblks;
++        size_t smblks;
++        size_t hblks;
++        size_t hblkhd;
++        size_t usmblks;
++        size_t fsmblks;
++        size_t uordblks;
++        size_t fordblks;
++        size_t keepcost;
++};
++
++static inline struct mallinfo2 mallinfo2(void) {
++        struct mallinfo m = mallinfo();
++
++        return (struct mallinfo2) {
++                .arena = (size_t) m.arena,
++                .ordblks = (size_t) m.ordblks,
++                .smblks = (size_t) m.smblks,
++                .hblks = (size_t) m.hblks,
++                .hblkhd = (size_t) m.hblkhd,
++                .usmblks = (size_t) m.usmblks,
++                .fsmblks = (size_t) m.fsmblks,
++                .uordblks = (size_t) m.uordblks,
++                .fordblks = (size_t) m.fordblks,
++                .keepcost = (size_t) m.keepcost,
++        };
++}
++#endif
+diff --git a/src/include/override/sys/syscall.h b/src/include/override/sys/syscall.h
+index b3ed954285..382b422527 100644
+--- a/src/include/override/sys/syscall.h
++++ b/src/include/override/sys/syscall.h
+@@ -10,6 +10,46 @@
+ #pragma once
+ 
+ #include_next <sys/syscall.h>   /* IWYU pragma: export */
++
++/* The old-world LoongArch SDK ships old Linux UAPI headers.  LoongArch uses
++ * the asm-generic syscall table, so supply the stable asm-generic numbers
++ * missing from those headers.  Unsupported calls return ENOSYS. */
++#ifndef __NR_pidfd_send_signal
++#  define __NR_pidfd_send_signal 424
++#endif
++#ifndef __NR_open_tree
++#  define __NR_open_tree 428
++#endif
++#ifndef __NR_move_mount
++#  define __NR_move_mount 429
++#endif
++#ifndef __NR_fsopen
++#  define __NR_fsopen 430
++#endif
++#ifndef __NR_fsconfig
++#  define __NR_fsconfig 431
++#endif
++#ifndef __NR_fsmount
++#  define __NR_fsmount 432
++#endif
++#ifndef __NR_pidfd_open
++#  define __NR_pidfd_open 434
++#endif
++#ifndef __NR_close_range
++#  define __NR_close_range 436
++#endif
++#ifndef __NR_faccessat2
++#  define __NR_faccessat2 439
++#endif
++#ifndef __NR_mount_setattr
++#  define __NR_mount_setattr 442
++#endif
++#ifndef __NR_getxattrat
++#  define __NR_getxattrat 464
++#endif
++#ifndef __NR_listxattrat
++#  define __NR_listxattrat 465
++#endif
+ 
+ #ifdef __mips__
+ #include <asm/sgidefs.h>
+diff --git a/src/include/override/unistd.h b/src/include/override/unistd.h
+index 5f36ae6e40..c6c62d0925 100644
+--- a/src/include/override/unistd.h
++++ b/src/include/override/unistd.h
+@@ -3,6 +3,32 @@
+ 
+ #include_next <unistd.h>        /* IWYU pragma: export */
+ 
++/* gettid() was added to glibc in 2.30. */
++#if defined(__GLIBC__) && !__GLIBC_PREREQ(2, 30)
++#  include <sys/syscall.h>
++
++static inline pid_t missing_gettid(void) {
++        return (pid_t) syscall(__NR_gettid);
++}
++#  define gettid missing_gettid
++#endif
++
++/* close_range() was added to glibc in 2.34. */
++#if defined(__GLIBC__) && !__GLIBC_PREREQ(2, 34)
++static inline int missing_close_range(unsigned first_fd, unsigned last_fd, unsigned flags) {
++        return (int) syscall(__NR_close_range, first_fd, last_fd, flags);
++}
++#  define close_range missing_close_range
++#endif
++
++/* getdents64() was made public in glibc 2.30. */
++#if defined(__GLIBC__) && !__GLIBC_PREREQ(2, 30)
++static inline ssize_t missing_getdents64(int fd, void *buffer, size_t length) {
++        return (ssize_t) syscall(__NR_getdents64, fd, buffer, length);
++}
++#  define getdents64 missing_getdents64
++#endif
++
+ #if !HAVE_PIVOT_ROOT
+ int missing_pivot_root(const char *new_root, const char *put_old);
+ #  define pivot_root missing_pivot_root
+diff --git a/src/include/override/sys/stat.h b/src/include/override/sys/stat.h
+index 5953f1642f..36230f5f19 100644
+--- a/src/include/override/sys/stat.h
++++ b/src/include/override/sys/stat.h
+@@ -3,6 +3,39 @@
+ 
+ #include_next <sys/stat.h>      /* IWYU pragma: export */
+ 
++/* STATX_MNT_ID and stx_mnt_id were added after glibc 2.28. */
++#if defined(__GLIBC__) && !defined(STATX_MNT_ID)
++#  define stx_mnt_id __statx_pad2[0]
++#  define STATX_MNT_ID 0x00001000U
++#endif
++#ifndef STATX_DIOALIGN
++#  define STATX_DIOALIGN 0x00002000U
++#endif
++#ifndef STATX_MNT_ID_UNIQUE
++#  define STATX_MNT_ID_UNIQUE 0x00004000U
++#endif
++#ifndef STATX_SUBVOL
++#  define STATX_SUBVOL 0x00008000U
++#endif
++#ifndef STATX_WRITE_ATOMIC
++#  define STATX_WRITE_ATOMIC 0x00010000U
++#endif
++#ifndef STATX_DIO_READ_ALIGN
++#  define STATX_DIO_READ_ALIGN 0x00020000U
++#endif
++#ifndef STATX_ATTR_MOUNT_ROOT
++#  define STATX_ATTR_MOUNT_ROOT 0x00002000
++#endif
++#ifndef STATX_ATTR_VERITY
++#  define STATX_ATTR_VERITY 0x00100000
++#endif
++#ifndef STATX_ATTR_DAX
++#  define STATX_ATTR_DAX 0x00200000
++#endif
++#ifndef STATX_ATTR_WRITE_ATOMIC
++#  define STATX_ATTR_WRITE_ATOMIC 0x00400000
++#endif
++
+ /* Supported since kernel v6.6 (78252deb023cf0879256fcfbafe37022c390762b). */
+ #if !HAVE_FCHMODAT2
+ int missing_fchmodat2(int dirfd, const char *path, mode_t mode, int flags);
+diff --git a/src/basic/errno-list.c b/src/basic/errno-list.c
+index 052a30d88c..a3ff82ca1d 100644
+--- a/src/basic/errno-list.c
++++ b/src/basic/errno-list.c
+@@ -23,7 +23,7 @@ int errno_from_name(const char *name) {
+         return sc->id;
+ }
+ 
+-#ifdef __GLIBC__
++#if defined(__GLIBC__) && __GLIBC_PREREQ(2, 32)
+ const char* errno_name_no_fallback(int id) {
+         if (id == 0) /* To stay in line with our implementation below.  */
+                 return NULL;
+diff --git a/src/include/override/sched.h b/src/include/override/sched.h
+index ab79793c09..2d6df93caf 100644
+--- a/src/include/override/sched.h
++++ b/src/include/override/sched.h
+@@ -8,6 +8,10 @@
+ 
+ #include_next <sched.h>         /* IWYU pragma: export */
+ 
++#ifndef CLONE_PIDFD
++#  define CLONE_PIDFD 0x00001000
++#endif
++
+ #include <assert.h>
+ 
+ /* 769071ac9f20b6a447410c7eaa55d1a5233ef40c (5.8),
+diff --git a/src/include/override/sys/socket.h b/src/include/override/sys/socket.h
+index a331b26f8c..1d1cc16e3f 100644
+--- a/src/include/override/sys/socket.h
++++ b/src/include/override/sys/socket.h
+@@ -3,6 +3,10 @@
+ 
+ #include_next <sys/socket.h>    /* IWYU pragma: export */
+ 
++#ifndef SO_BINDTOIFINDEX
++#  define SO_BINDTOIFINDEX 62
++#endif
++
+ /* Supported since kernel v6.5 (5e2ff6704a275be009be8979af17c52361b79b89) */
+ #ifndef SO_PASSPIDFD
+ #define SO_PASSPIDFD 76
+diff --git a/src/include/override/sys/random.h b/src/include/override/sys/random.h
+new file mode 100644
+index 0000000000..f22bb08cb6
+--- /dev/null
++++ b/src/include/override/sys/random.h
+@@ -0,0 +1,8 @@
++/* SPDX-License-Identifier: LGPL-2.1-or-later */
++#pragma once
++
++#include_next <sys/random.h>    /* IWYU pragma: export */
++
++#ifndef GRND_INSECURE
++#  define GRND_INSECURE 0x0004
++#endif

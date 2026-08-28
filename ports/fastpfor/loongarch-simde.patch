@@ -1,0 +1,196 @@
+diff --git a/cmake_modules/environment.cmake b/cmake_modules/environment.cmake
+index 6c71212..6f53407 100644
+--- a/cmake_modules/environment.cmake
++++ b/cmake_modules/environment.cmake
+@@ -1,6 +1,6 @@
+ include(CheckCXXCompilerFlag)
+ 
+-if (CMAKE_SYSTEM_PROCESSOR MATCHES "^[Aa][Rr][Mm]64$" OR CMAKE_SYSTEM_PROCESSOR MATCHES "^[Aa][Rr][Mm]$" OR CMAKE_SYSTEM_PROCESSOR MATCHES "^[Aa][Aa][Rr][Cc][Hh]64$")
++if (CMAKE_SYSTEM_PROCESSOR MATCHES "^[Aa][Rr][Mm]64$" OR CMAKE_SYSTEM_PROCESSOR MATCHES "^[Aa][Rr][Mm]$" OR CMAKE_SYSTEM_PROCESSOR MATCHES "^[Aa][Aa][Rr][Cc][Hh]64$" OR CMAKE_SYSTEM_PROCESSOR MATCHES "^[Ll][Oo][Oo][Nn][Gg][Aa][Rr][Cc][Hh]64$")
+     set(SUPPORT_NEON ON)
+ endif ()
+ 
+diff --git a/headers/VarIntG8IU.h b/headers/VarIntG8IU.h
+index 337073d..6a31e90 100644
+--- a/headers/VarIntG8IU.h
++++ b/headers/VarIntG8IU.h
+@@ -2,7 +2,7 @@
+  * This code is released under the
+  * Apache License Version 2.0 http://www.apache.org/licenses/.
+  */
+-#if (!defined(__SSSE3__) && !(defined(_MSC_VER) && defined(__AVX__))) && !(defined(__ARM_NEON) || defined(__aarch64__))
++#if (!defined(__SSSE3__) && !(defined(_MSC_VER) && defined(__AVX__))) && !(defined(__ARM_NEON) || defined(__aarch64__) || defined(__loongarch__))
+ #ifndef _MSC_VER
+ #pragma message                                                                \
+     "Disabling varintg8iu due to lack of SSSE3 support, try adding -mssse3 or the equivalent on your compiler"
+@@ -14,7 +14,7 @@
+ #define VARINTG8IU_H__
+ #if defined(__GNUC__) && (defined(__x86_64__) || defined(__i386__))
+ #include <emmintrin.h>
+-#elif defined(__aarch64__)
++#elif defined(__aarch64__) || defined(__loongarch__)
+ /* GCC-compatible compiler, targeting ARM with NEON */
+ #include <simde/x86/sse3.h>
+ #endif
+diff --git a/headers/common.h b/headers/common.h
+index b1c97b5..6f2e8f4 100644
+--- a/headers/common.h
++++ b/headers/common.h
+@@ -12,7 +12,7 @@
+ #include <fcntl.h>
+ #if defined(__GNUC__) && (defined(__x86_64__) || defined(__i386__))
+ #include <immintrin.h>
+-#elif defined(__GNUC__) && defined(__aarch64__)
++#elif defined(__GNUC__) && (defined(__aarch64__) || defined(__loongarch__))
+ #include <simde/x86/sse4.1.h>
+ #endif
+ 
+diff --git a/headers/cpubenchmark.h b/headers/cpubenchmark.h
+index ea5ebf7..5e78a7b 100644
+--- a/headers/cpubenchmark.h
++++ b/headers/cpubenchmark.h
+@@ -100,7 +100,7 @@ static __inline__ unsigned long long stopRDTSCP(void) { return rdtsc(); }
+     static __inline__ uint64_t startRDTSC(void) { return rdtsc(); }
+ 
+     static __inline__ uint64_t stopRDTSCP(void) { return rdtsc(); }
+-#elif(defined(__arm__) || defined(__ppc__) || defined(__ppc64__)) || (defined(_MSC_VER) && defined(_M_ARM64))
++#elif(defined(__arm__) || defined(__loongarch__) || defined(__ppc__) || defined(__ppc64__)) || (defined(_MSC_VER) && defined(_M_ARM64))
+ 
+ // for PPC we should be able to use tbl, but I could not find
+ // an equivalent to rdtsc for ARM.
+diff --git a/headers/horizontalbitpacking.h b/headers/horizontalbitpacking.h
+index 90cef10..19fe889 100644
+--- a/headers/horizontalbitpacking.h
++++ b/headers/horizontalbitpacking.h
+@@ -22,7 +22,7 @@
+ #define HORIZONTALBITPACKING_H_
+ 
+ 
+-#if (!defined(__SSE4_1__) && !(defined(_MSC_VER) && defined(__AVX__))) && (!(defined(__ARM_NEON) || defined(__aarch64__)))
++#if (!defined(__SSE4_1__) && !(defined(_MSC_VER) && defined(__AVX__))) && (!(defined(__ARM_NEON) || defined(__aarch64__) || defined(__loongarch__)))
+ #ifndef _MSC_VER
+ #pragma message "No SSSE4.1 support? try adding -msse4.1 or the equivalent on your compiler"
+ #else
+diff --git a/headers/simdgroupsimple.h b/headers/simdgroupsimple.h
+index 501f29e..c56c862 100644
+--- a/headers/simdgroupsimple.h
++++ b/headers/simdgroupsimple.h
+@@ -166,7 +166,7 @@ namespace FastPForLib {
+             _mm_storeu_si128(out++, comprBlock);
+         }
+ 
+-#elif (defined(__GNUC__) && (defined(__aarch64__))) || (defined(_MSC_VER) && defined(_M_ARM64))
++#elif (defined(__GNUC__) && (defined(__aarch64__) || defined(__loongarch__))) || (defined(_MSC_VER) && defined(_M_ARM64))
+         inline static void comprIncompleteBlock(const uint8_t &n, const __m128i *&in,
+                                                   __m128i *&out) {
+             // Since we have to produce exactly one compressed vector anyway, we can
+@@ -641,7 +641,7 @@ namespace FastPForLib {
+                                  _mm_and_si128(_mm_srli_epi32(comprBlock, (int)(k * b)), mask));
+         }
+ 
+-#elif (defined(__GNUC__) && (defined(__aarch64__))) || (defined(_MSC_VER) && defined(_M_ARM64))
++#elif (defined(__GNUC__) && (defined(__aarch64__) || defined(__loongarch__))) || (defined(_MSC_VER) && defined(_M_ARM64))
+         inline static void decomprIncompleteBlock(const uint8_t &n,
+                                             const __m128i *&in,
+                                             __m128i *&out) {
+diff --git a/headers/util.h b/headers/util.h
+index 0ea3699..2a16def 100644
+--- a/headers/util.h
++++ b/headers/util.h
+@@ -122,7 +122,7 @@ __attribute__((const)) inline uint32_t gccbits(const uint64_t v) {
+       return static_cast<uint32_t>(index + 32 + 1);
+     }
+   #endif
+-#elif defined(__aarch64__)
++#elif defined(__aarch64__) || defined(__loongarch__)
+     return 64 - __builtin_clzll(v);
+ #else
+   uint32_t answer;
+@@ -175,7 +175,7 @@ inline void checkifdivisibleby(size_t a, uint32_t x) {
+ __attribute__((const)) inline uint32_t asmbits(const uint32_t v) {
+ #ifdef _MSC_VER
+   return gccbits(v);
+-#elif defined(__aarch64__)
++#elif defined(__aarch64__) || defined(__loongarch__)
+   return gccbits(v);
+ #else
+   if (v == 0)
+@@ -189,7 +189,7 @@ __attribute__((const)) inline uint32_t asmbits(const uint32_t v) {
+ __attribute__((const)) inline uint32_t asmbits(const uint64_t v) {
+ #ifdef _MSC_VER
+   return gccbits(v);
+-#elif defined(__aarch64__)
++#elif defined(__aarch64__) || defined(__loongarch__)
+     return gccbits(v);
+ #else
+   if (v == 0) return 0;
+diff --git a/headers/vsencoding.h b/headers/vsencoding.h
+index db7f100..716a65a 100644
+--- a/headers/vsencoding.h
++++ b/headers/vsencoding.h
+@@ -324,7 +324,7 @@ public:
+                                // VSEncodingBlocks::TAIL_MERGIN];
+ };
+ 
+-#if defined(_MSC_VER) || (defined(__GNUC__) && defined(__aarch64__))
++#if defined(_MSC_VER) || (defined(__GNUC__) && (defined(__aarch64__) || defined(__loongarch__)))
+ inline void __vseblocks_copy16(const uint32_t *src, uint32_t *dest) {
+   memcpy(dest, src, 16 * sizeof(uint32_t));
+ }
+diff --git a/src/simdbitpacking.cpp b/src/simdbitpacking.cpp
+index 49a8930..1dee2da 100644
+--- a/src/simdbitpacking.cpp
++++ b/src/simdbitpacking.cpp
+@@ -8943,7 +8943,7 @@ static void __SIMD_fastunpack1_32(const __m128i *__restrict__ in,
+     _mm_storeu_si128(out++, OutReg3);
+     _mm_storeu_si128(out++, OutReg4);
+   }
+-#elif (defined(__GNUC__) && (defined(__aarch64__))) || (defined(_MSC_VER) && defined(_M_ARM64))
++#elif (defined(__GNUC__) && (defined(__aarch64__) || defined(__loongarch__))) || (defined(_MSC_VER) && defined(_M_ARM64))
+   OutReg1 = _mm_and_si128(_mm_srli_epi32(InReg1, 0), mask);
+   OutReg2 = _mm_and_si128(_mm_srli_epi32(InReg2, 1), mask);
+   OutReg3 = _mm_and_si128(_mm_srli_epi32(InReg1, 2), mask);
+diff --git a/src/simdunalignedbitpacking.cpp b/src/simdunalignedbitpacking.cpp
+index 5e3646e..7774bdc 100644
+--- a/src/simdunalignedbitpacking.cpp
++++ b/src/simdunalignedbitpacking.cpp
+@@ -8943,7 +8943,7 @@ static void __SIMD_fastunpack1_32(const __m128i *__restrict__ in,
+     _mm_storeu_si128(out++, OutReg3);
+     _mm_storeu_si128(out++, OutReg4);
+   }
+-#elif (defined(__GNUC__) && (defined(__aarch64__))) || (defined(_MSC_VER) && defined(_M_ARM64))
++#elif (defined(__GNUC__) && (defined(__aarch64__) || defined(__loongarch__))) || (defined(_MSC_VER) && defined(_M_ARM64))
+   OutReg1 = _mm_and_si128(_mm_srli_epi32(InReg1, 0), mask);
+   OutReg2 = _mm_and_si128(_mm_srli_epi32(InReg2, 1), mask);
+   OutReg3 = _mm_and_si128(_mm_srli_epi32(InReg1, 2), mask);
+diff --git a/src/streamvbyte.c b/src/streamvbyte.c
+index 1f9dc6b..0102a55 100644
+--- a/src/streamvbyte.c
++++ b/src/streamvbyte.c
+@@ -19,7 +19,7 @@
+ #elif defined(__GNUC__) && (defined(__x86_64__) || defined(__i386__))
+     /* GCC-compatible compiler, targeting x86/x86-64 */
+     #include <x86intrin.h>
+-#elif defined(__aarch64__)
++#elif defined(__aarch64__) || defined(__loongarch__)
+     /* GCC-compatible compiler, targeting ARM with NEON */
+     #include <simde/x86/sse4.1.h>
+ #elif defined(__GNUC__) && defined(__IWMMXT__)
+diff --git a/src/varintdecode.c b/src/varintdecode.c
+index 7807e12..c33a7bb 100644
+--- a/src/varintdecode.c
++++ b/src/varintdecode.c
+@@ -14,7 +14,7 @@
+     /* GCC-compatible compiler, targeting x86/x86-64 */
+     #include <x86intrin.h>
+ 
+-#elif defined(__aarch64__)
++#elif defined(__aarch64__) || defined(__loongarch__)
+     /* GCC-compatible compiler, targeting ARM with NEON */
+     #include <simde/x86/sse4.1.h>
+ #elif defined(__GNUC__) && defined(__IWMMXT__)
+@@ -1624,4 +1624,3 @@ size_t altmasked_vbyte_read_loop_fromcompressedsize(const uint8_t *in,
+   }
+   return out - initout;
+ }
+-

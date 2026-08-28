@@ -8,6 +8,7 @@ vcpkg_from_github(
     only-libsystemd.patch
     pkgconfig.patch
     fix-2604-build.patch
+    old-glibc-2.28-compat.patch
 )
 
 set(static false)
