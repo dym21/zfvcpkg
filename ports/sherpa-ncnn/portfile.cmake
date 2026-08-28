@@ -53,6 +53,14 @@ foreach(HEADER IN LISTS SHERPA_NCNN_HEADERS)
     endif()
 endforeach()
 
+# Match ContextState's floating-point score parameters explicitly. This avoids
+# narrowing diagnostics in consumers that instantiate the inline constructor.
+vcpkg_replace_string(
+    "${SOURCE_PATH}/sherpa-ncnn/csrc/context-graph.h"
+    "std::make_unique<ContextState>(-1, 0, 0, 0)"
+    "std::make_unique<ContextState>(-1, 0.0f, 0.0f, 0.0f)"
+)
+
 # The system ncnn package used by the OHOS build does not expose sherpa's
 # private NativeResourceManager/rawfile API. Disable only those optional
 # instantiations for OHOS; Windows and Linux retain the upstream sources.
@@ -93,10 +101,24 @@ vcpkg_configure_cmake(
 
 vcpkg_install_cmake()
 
+file(MAKE_DIRECTORY
+    "${CURRENT_PACKAGES_DIR}/lib/pkgconfig"
+    "${CURRENT_PACKAGES_DIR}/debug/lib/pkgconfig")
+if(EXISTS "${CURRENT_PACKAGES_DIR}/sherpa-ncnn.pc")
+    file(RENAME "${CURRENT_PACKAGES_DIR}/sherpa-ncnn.pc"
+        "${CURRENT_PACKAGES_DIR}/lib/pkgconfig/sherpa-ncnn.pc")
+endif()
+if(EXISTS "${CURRENT_PACKAGES_DIR}/debug/sherpa-ncnn.pc")
+    file(RENAME "${CURRENT_PACKAGES_DIR}/debug/sherpa-ncnn.pc"
+        "${CURRENT_PACKAGES_DIR}/debug/lib/pkgconfig/sherpa-ncnn.pc")
+endif()
+vcpkg_fixup_pkgconfig()
+
 FILE(GLOB SHERPA_C_HEADS "${SOURCE_PATH}/sherpa-ncnn/csrc/*.h")
 FILE(INSTALL ${SHERPA_C_HEADS} DESTINATION "${CURRENT_PACKAGES_DIR}/include/${PORT}/csrc")
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/bin")
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/bin")
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
 vcpkg_copy_pdbs()

@@ -9,6 +9,7 @@ vcpkg_from_github(
     PATCHES
         guiddef.patch
         fix-mingw.patch
+        secure-anonymous-tempfile.patch
 )
 
 file(COPY "${CMAKE_CURRENT_LIST_DIR}/CMakeLists.txt" DESTINATION "${SOURCE_PATH}")

@@ -1,0 +1,281 @@
+diff --git a/README b/README
+index f44ea3d..c2e8f25 100644
+--- a/README
++++ b/README
+@@ -1,7 +1,7 @@
+ libmspub is a library and a set of tools for reading and converting MS
+ Publisher files.
+ 
+-libmspub requires boost, icu, librevenge and zlib to build. Most up to
++libmspub requires boost, libiconv, librevenge and zlib to build. Most up to
+ date code is available from Git repository at libreoffice.org
+ (https://gerrit.libreoffice.org/gitweb?p=libmspub.git) or the mirror at
+ freedesktop.org (http://cgit.freedesktop.org/libreoffice/libmspub/). See
+diff --git a/configure.ac b/configure.ac
+index 4935ed1..bcd2ccc 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -102,11 +102,11 @@ AC_CHECK_HEADERS(
+ )
+ 
+ # ========
+-# Find icu
++# Find iconv
+ # ========
+-PKG_CHECK_MODULES([ICU], [icu-i18n])
+-AC_SUBST(ICU_CFLAGS)
+-AC_SUBST(ICU_LIBS)
++PKG_CHECK_MODULES([ICONV], [iconv])
++AC_SUBST(ICONV_CFLAGS)
++AC_SUBST(ICONV_LIBS)
+ 
+ 
+ # =================================
+diff --git a/libmspub.pc.in b/libmspub.pc.in
+index f4cd33d..6583961 100644
+--- a/libmspub.pc.in
++++ b/libmspub.pc.in
+@@ -10,4 +10,4 @@ Requires: librevenge-0.0
+ Libs: -L${libdir} -lmspub-@MSPUB_MAJOR_VERSION@.@MSPUB_MINOR_VERSION@
+ Cflags: -I${includedir}/libmspub-@MSPUB_MAJOR_VERSION@.@MSPUB_MINOR_VERSION@
+ 
+-Requires.private: icu-i18n zlib
++Requires.private: iconv zlib
+diff --git a/src/conv/raw/Makefile.am b/src/conv/raw/Makefile.am
+index 5f2a7f5..c559472 100644
+--- a/src/conv/raw/Makefile.am
++++ b/src/conv/raw/Makefile.am
+@@ -10,7 +10,7 @@ pub2raw_DEPENDENCIES = @PUB2RAW_WIN32_RESOURCE@
+ 
+ pub2raw_LDADD = \
+ 	$(top_builddir)/src/lib/libmspub-@MSPUB_MAJOR_VERSION@.@MSPUB_MINOR_VERSION@.la \
+-	$(ICU_LIBS) \
++	$(ICONV_LIBS) \
+ 	$(REVENGE_GENERATORS_LIBS) \
+ 	$(REVENGE_LIBS) \
+ 	$(REVENGE_STREAM_LIBS) \
+diff --git a/src/conv/svg/Makefile.am b/src/conv/svg/Makefile.am
+index bfd2121..243d8b0 100644
+--- a/src/conv/svg/Makefile.am
++++ b/src/conv/svg/Makefile.am
+@@ -9,7 +9,7 @@ pub2xhtml_DEPENDENCIES = @PUB2XHTML_WIN32_RESOURCE@
+ 
+ pub2xhtml_LDADD = \
+ 	$(top_builddir)/src/lib/libmspub-@MSPUB_MAJOR_VERSION@.@MSPUB_MINOR_VERSION@.la \
+-	$(ICU_LIBS) \
++	$(ICONV_LIBS) \
+ 	$(REVENGE_LIBS) \
+ 	$(REVENGE_STREAM_LIBS) \
+ 	@PUB2XHTML_WIN32_RESOURCE@ 
+diff --git a/src/lib/MSPUBCollector.cpp b/src/lib/MSPUBCollector.cpp
+index 73c7264..f48192a 100644
+--- a/src/lib/MSPUBCollector.cpp
++++ b/src/lib/MSPUBCollector.cpp
+@@ -16,9 +16,6 @@
+ 
+ #include <boost/multi_array.hpp>
+ 
+-#include <unicode/ucsdet.h>
+-#include <unicode/uloc.h>
+-
+ #include "Arrow.h"
+ #include "Coordinate.h"
+ #include "Dash.h"
+@@ -329,21 +326,43 @@ void fillUnderline(librevenge::RVNGPropertyList &props, const Underline underlin
+ 
+ void fillLocale(librevenge::RVNGPropertyList &props, const unsigned lcid)
+ {
+-  char locale[ULOC_FULLNAME_CAPACITY];
+-  UErrorCode status = U_ZERO_ERROR;
+-  uloc_getLocaleForLCID(lcid, locale, ULOC_FULLNAME_CAPACITY, &status);
+-  if (!U_SUCCESS(status))
+-    return;
+-  char component[ULOC_FULLNAME_CAPACITY];
+-  int32_t len = uloc_getLanguage(locale, component, ULOC_FULLNAME_CAPACITY, &status);
+-  if (U_SUCCESS(status) && len > 0)
+-    props.insert("fo:language", component);
+-  len = uloc_getCountry(locale, component, ULOC_FULLNAME_CAPACITY, &status);
+-  if (U_SUCCESS(status) && len > 0)
+-    props.insert("fo:country", component);
+-  len = uloc_getScript(locale, component, ULOC_FULLNAME_CAPACITY, &status);
+-  if (U_SUCCESS(status) && len > 0)
+-    props.insert("fo:script", component);
++  struct LocaleInfo
++  {
++    unsigned lcid;
++    const char *language;
++    const char *country;
++    const char *script;
++  };
++  static const LocaleInfo locales[] = {
++    { 0x0404, "zh", "TW", "Hant" }, { 0x0804, "zh", "CN", "Hans" },
++    { 0x0405, "cs", "CZ", "" }, { 0x0406, "da", "DK", "" },
++    { 0x0407, "de", "DE", "" }, { 0x0408, "el", "GR", "" },
++    { 0x0409, "en", "US", "" }, { 0x040a, "es", "ES", "" },
++    { 0x040b, "fi", "FI", "" }, { 0x040c, "fr", "FR", "" },
++    { 0x040e, "hu", "HU", "" }, { 0x0410, "it", "IT", "" },
++    { 0x0411, "ja", "JP", "" }, { 0x0412, "ko", "KR", "" },
++    { 0x0413, "nl", "NL", "" }, { 0x0414, "nb", "NO", "" },
++    { 0x0415, "pl", "PL", "" }, { 0x0416, "pt", "BR", "" },
++    { 0x0418, "ro", "RO", "" }, { 0x0419, "ru", "RU", "" },
++    { 0x041b, "sk", "SK", "" }, { 0x041d, "sv", "SE", "" },
++    { 0x041e, "th", "TH", "" }, { 0x041f, "tr", "TR", "" },
++    { 0x0421, "id", "ID", "" }, { 0x0422, "uk", "UA", "" },
++    { 0x0424, "sl", "SI", "" }, { 0x0425, "et", "EE", "" },
++    { 0x0426, "lv", "LV", "" }, { 0x0427, "lt", "LT", "" },
++    { 0x042a, "vi", "VN", "" }, { 0x0809, "en", "GB", "" },
++    { 0x0816, "pt", "PT", "" }
++  };
++  for (const LocaleInfo &locale : locales)
++  {
++    if (locale.lcid == lcid)
++    {
++      props.insert("fo:language", locale.language);
++      props.insert("fo:country", locale.country);
++      if (*locale.script)
++        props.insert("fo:script", locale.script);
++      return;
++    }
++  }
+ }
+ 
+ } // anonymous namespace
+@@ -1260,53 +1279,10 @@ const char *MSPUBCollector::getCalculatedEncoding() const
+     m_calculatedEncoding = "UTF-16LE";
+     return m_calculatedEncoding.get();
+   }
+-  // for older versions of PUB, see if we can get ICU to tell us the encoding.
+-  UErrorCode status = U_ZERO_ERROR;
+-  UCharsetDetector *ucd = nullptr;
+-  const UCharsetMatch **matches = nullptr;
+-  const UCharsetMatch *ucm = nullptr;
+-  ucd = ucsdet_open(&status);
+-  int matchesFound = -1;
+-  const char *name = nullptr;
+-  const char *windowsName = nullptr;
++  // libiconv performs conversion but does not detect encodings. Keep the
++  // historical fallback for older PUB files whose encoding is ambiguous.
+   if (m_allText.empty())
+-  {
+-    goto csd_fail;
+-  }
+-  if (U_FAILURE(status))
+-  {
+-    goto csd_fail;
+-  }
+-  // don't worry, the below call doesn't require a null-terminated string.
+-  ucsdet_setText(ucd, (const char *)m_allText.data(), m_allText.size(), &status);
+-  if (U_FAILURE(status))
+-  {
+-    goto csd_fail;
+-  }
+-  matches = ucsdet_detectAll(ucd, &matchesFound, &status);
+-  if (U_FAILURE(status))
+-  {
+-    goto csd_fail;
+-  }
+-  //find best fit that is an actual Windows encoding
+-  for (int i = 0; i < matchesFound; ++i)
+-  {
+-    ucm = matches[i];
+-    name = ucsdet_getName(ucm, &status);
+-    if (U_FAILURE(status))
+-    {
+-      goto csd_fail;
+-    }
+-    windowsName = windowsCharsetNameByOriginalCharset(name);
+-    if (windowsName)
+-    {
+-      m_calculatedEncoding = windowsName;
+-      ucsdet_close(ucd);
+-      return windowsName;
+-    }
+-  }
+-csd_fail:
+-  ucsdet_close(ucd);
++    return "windows-1252";
+   return "windows-1252"; // Pretty likely to give garbage text, but it's the best we can do.
+ }
+ 
+diff --git a/src/lib/Makefile.am b/src/lib/Makefile.am
+index bd8a68a..56ccb76 100644
+--- a/src/lib/Makefile.am
++++ b/src/lib/Makefile.am
+@@ -6,9 +6,9 @@ endif
+ 
+ lib_LTLIBRARIES = libmspub-@MSPUB_MAJOR_VERSION@.@MSPUB_MINOR_VERSION@.la
+ 
+-AM_CXXFLAGS = -I$(top_srcdir)/inc $(REVENGE_CFLAGS) $(ZLIB_CFLAGS) $(ICU_CFLAGS) $(DEBUG_CXXFLAGS) -DLIBMSPUB_BUILD=1
++AM_CXXFLAGS = -I$(top_srcdir)/inc $(REVENGE_CFLAGS) $(ZLIB_CFLAGS) $(ICONV_CFLAGS) $(DEBUG_CXXFLAGS) -DLIBMSPUB_BUILD=1
+ 
+-libmspub_@MSPUB_MAJOR_VERSION@_@MSPUB_MINOR_VERSION@_la_LIBADD  = $(REVENGE_LIBS) $(ZLIB_LIBS) $(ICU_LIBS) @LIBMSPUB_WIN32_RESOURCE@
++libmspub_@MSPUB_MAJOR_VERSION@_@MSPUB_MINOR_VERSION@_la_LIBADD  = $(REVENGE_LIBS) $(ZLIB_LIBS) $(ICONV_LIBS) @LIBMSPUB_WIN32_RESOURCE@
+ libmspub_@MSPUB_MAJOR_VERSION@_@MSPUB_MINOR_VERSION@_la_DEPENDENCIES = @LIBMSPUB_WIN32_RESOURCE@
+ libmspub_@MSPUB_MAJOR_VERSION@_@MSPUB_MINOR_VERSION@_la_LDFLAGS = $(version_info) -export-dynamic -no-undefined
+ libmspub_@MSPUB_MAJOR_VERSION@_@MSPUB_MINOR_VERSION@_la_SOURCES = \
+diff --git a/src/lib/libmspub_utils.cpp b/src/lib/libmspub_utils.cpp
+index 64c93a7..e075bbf 100644
+--- a/src/lib/libmspub_utils.cpp
++++ b/src/lib/libmspub_utils.cpp
+@@ -9,12 +9,13 @@
+ 
+ #include "libmspub_utils.h"
+ 
++#include <algorithm>
+ #include <cstdarg>
++#include <cerrno>
+ #include <cstring>
+ #include <string.h> // for memcpy
+ 
+-#include <unicode/ucnv.h>
+-#include <unicode/utypes.h>
++#include <iconv.h>
+ 
+ #include <zlib.h>
+ 
+@@ -389,27 +390,29 @@ void appendCharacters(librevenge::RVNGString &text, const std::vector<unsigned c
+     return;
+   }
+ 
+-  UErrorCode status = U_ZERO_ERROR;
+-  UConverter *conv = nullptr;
+-  conv = ucnv_open(encoding, &status);
+-  if (U_SUCCESS(status))
++  iconv_t conv = iconv_open("UTF-8", encoding);
++  if (conv != (iconv_t)-1)
+   {
+-    // ICU documentation claims that character-by-character processing is faster "for small amounts of data" and "'normal' charsets"
+-    // (in any case, it is more convenient :) )
+-    const auto *src = (const char *)characters.data();
+-    const char *srcLimit = (const char *)src + characters.size();
+-    while (src < srcLimit)
++    char *src = reinterpret_cast<char *>(const_cast<unsigned char *>(characters.data()));
++    size_t srcLeft = characters.size();
++    std::vector<char> buffer(std::max<size_t>(characters.size() * 4 + 1, 64));
++    while (srcLeft > 0)
+     {
+-      auto ucs4Character = (uint32_t)ucnv_getNextUChar(conv, &src, srcLimit, &status);
+-      if (U_SUCCESS(status))
++      char *dst = buffer.data();
++      size_t dstLeft = buffer.size() - 1;
++      size_t result = iconv(conv, &src, &srcLeft, &dst, &dstLeft);
++      *dst = '\0';
++      text.append(buffer.data());
++      if (result == static_cast<size_t>(-1))
+       {
+-        _appendUCS4(text, ucs4Character);
++        if (errno == E2BIG)
++        {
++          continue;
++        }
++        break;
+       }
+     }
+-  }
+-  if (conv)
+-  {
+-    ucnv_close(conv);
++    iconv_close(conv);
+   }
+ }
+ 
